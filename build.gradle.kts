@@ -24,10 +24,10 @@ dependencies {
     implementation("com.google.guava:guava:30.1.1-jre")
 }
 
-application {
+//application {
     // Define the main class for the application.
-    mainClass.set("it.unibo.sd.beccacino.App")
-}
+  //  mainClass.set("it.unibo.sd.beccacino.App")
+// }
 
 tasks.test {
     // Use JUnit Platform for unit tests.

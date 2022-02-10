@@ -7,5 +7,8 @@
  * in the user manual at https://docs.gradle.org/7.2/userguide/multi_project_builds.html
  */
 
-rootProject.name = "beccacinoSD[D[D[D[D[D[D[D[D[D[B[C[C[C[C[C[C[C[C[C[C[C[C[C[D[D[D"
-include("app")
+rootProject.name = "BeccacinoSD"
+// declares the sub - directory ./ server / as a sub - project
+include("server")
+include("client")
+
