@@ -6,3 +6,7 @@ build
 
 # Ignore macOS generated files
 *.DS_STORE
+.DS_STORE
+
+# Ignore IDE configuration files
+.idea
