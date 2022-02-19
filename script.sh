@@ -5,4 +5,6 @@ until nc -z "${MONGO:-mongo}" "${MONGODB_PORT:-27017}"; do
   sleep 5
 done
 
-./gradlew run 
+./gradlew server:run
+./gradlew client:run
+
