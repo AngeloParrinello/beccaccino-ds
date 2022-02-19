@@ -15,7 +15,7 @@ COPY --chown=gradle:gradle . ${WORKINGDIR}
 RUN apk update && apk add netcat-openbsd
 # Concede rights at the script
 RUN chmod +x /home/gradle/src/script.sh
-# TODO it will build both client and server build.gradle.
+# Build both client and server build.gradle.
 RUN ./gradlew build
 # Run the script that run both server and client
 CMD ./script.sh
