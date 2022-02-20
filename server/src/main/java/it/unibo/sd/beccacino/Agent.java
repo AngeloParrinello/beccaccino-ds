@@ -6,6 +6,7 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 
@@ -28,20 +29,35 @@ public abstract class Agent extends Thread {
     }
 
     private Connection createConnection() throws IOException, TimeoutException {
+
         ConnectionFactory factory = new ConnectionFactory();
         // anche il programma client quando va a interagire con il broker lo fa sempre con un meccanismo di access-control
         // anche il client deve avere un username ed una password con cui interagire con il broker. Ovviamente qui do pieno diritto
         // di amministrazione di un utente ma in casi reali dovremmo dare le limitazioni dovute ad ogni client e usare quello
         // per far interagire il client con il broker.
-        factory.setUsername("YOUR-NAME");
-        factory.setPassword("YOUR-PASSWORD");
+        factory.setUsername("user");
+        factory.setPassword("user");
         // indirizzo della macchina che contiene il broker, nel caso online andrebbe l'url
         factory.setVirtualHost("/");
-        factory.setHost("localhost");
+        // non localhost ma rabbitmq perchè sono da dentro il container
+        factory.setHost(System.getenv("RABBIT_HOST"));
         // porta di default rabbitmq
         factory.setPort(5672);
         // crea una connessione TCP
-        return factory.newConnection();
+        factory.setAutomaticRecoveryEnabled(true);
+        while(true) {
+            try {
+                return factory.newConnection();
+            } catch (java.net.ConnectException e) {
+                System.out.println("Retrying connection to RabbitMQ");
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
+                }
+                // apply retry logic
+            }
+        }
     }
     
     protected String declareQueueForReceive(String name, Channel channel) throws IOException {
