@@ -23,6 +23,8 @@ public class Listener extends Agent {
         // si occupa lui di creare una connessione, lo fa lui in automatico dietro le quinte. Avendo una connessione posso
         // creare un channel.
         Channel channel = connection.createChannel();
+        boolean state = true;
+
         // sul canale posso fare tantissime operazioni
         // ridichiaro uno scambio cosa non strettamente necessaria ma che qui si fa per farlo vedere. Gli dico guarda broker
         // esiste uno scambio e si chiama messages ed è di tipo diretto quindi mi aspetto una sola coda attaccata.
@@ -31,14 +33,14 @@ public class Listener extends Agent {
         // dichiaro la coda. Crea una coda il cui nome è determinato dal server e sarà di defulat esclusiva, auto-delete e non
         // durable. Coda eliminata da sola al termine del programma.NOn mi interessa sapere il nome della coda.
         var declaration = channel.queueDeclare();
-                // coda già esistente e gli dico qual'è e le proprietà devono essere identiche
-                /*channel.queueDeclare(
-                        "messages-queue", // queue
-                        false, // durable
-                        false, // exclusive
-                        false, // auto delete
-                        null // arguments
-                );*/
+        // coda già esistente e gli dico qual'è e le proprietà devono essere identiche
+            /*channel.queueDeclare(
+                    "messages-queue", // queue
+                    false, // durable
+                    false, // exclusive
+                    false, // auto delete
+                    null // arguments
+            );*/
         // il nome della coda lo genera da solo ma mi serve per poterlo utilizzare.
         String queueName = declaration.getQueue();
         // broker associa alla coda che hai appena creato allo scambio chiamato "messages" . Se il tipo di exchange fosse stato
@@ -59,28 +61,25 @@ public class Listener extends Agent {
             // dentro envelope ci sono tutti i metadati di livello protocollare per gestire sto messaggio
             @Override
             public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
-                var sender = "cazzo";
+                var sender = "prova";
                 System.out.printf("[%s] %s\n", sender, new String(body));
 
-                System.out.println("PORCA TROIA BASTARDA IMPESTATA");
 
-                /*MongoDatabase db;
-                System.out.println("ooooooooooo");
-                // MongoClient client = MongoClients.create(System.getenv("MONGODB"));
-                MongoClient client = new MongoClient(new MongoClientURI("mongodb://localhost:27017"));
-                System.out.println("aaaaaaaaaa");
-                db = client.getDatabase("local");
-                System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:"+db.getName());
-                db.getCollection("fica").insertOne(new Document());
-                System.out.println("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"+db.getCollection("fica").countDocuments());*/
+            /*MongoDatabase db;
+            System.out.println("ooooooooooo");
+            // MongoClient client = MongoClients.create(System.getenv("MONGODB"));
+            MongoClient client = new MongoClient(new MongoClientURI("mongodb://localhost:27017"));
+            System.out.println("aaaaaaaaaa");
+            db = client.getDatabase("local");
+            System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:"+db.getName());
+            db.getCollection("fica").insertOne(new Document());
+            System.out.println("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"+db.getCollection("fica").countDocuments());*/
 
             }
         });
 
         // porgramma va avanti fino a che non viene chiuso lo standard input
-        while (System.in.read() >= 0);
-
-        System.out.println("jndfbghsnjfgh");
+        while (state);
 
         // chiudo canale e connessione
         channel.close();
