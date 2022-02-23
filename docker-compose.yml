@@ -6,8 +6,11 @@ services:
     container_name: mongo
     image: mongo
     restart: always
+    ports:
+      - 27017:27017
 
   rabbitmq:
+    container_name: rabbitmq
     image: rabbitmq:3-management
     restart: always
     environment:
