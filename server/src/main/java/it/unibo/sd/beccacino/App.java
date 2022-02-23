@@ -24,7 +24,7 @@ public class App {
         System.out.println("Documents count: "+db.getCollection("testing").countDocuments());
 
 
-        Listener listener = new Listener("listener");
+        /*Listener listener = new Listener("listener");
         listener.start();
         try {
             Thread.sleep(10000);
@@ -42,6 +42,6 @@ public class App {
             listener.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
-        }
+        }*/
     }
 }
