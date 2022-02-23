@@ -1,9 +1,11 @@
 package it.unibo.sd.beccacino;
 
-import com.mongodb.client.MongoClient;
 import com.mongodb.MongoClientURI;
+import com.mongodb.MongoClient;
+//import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.internal.MongoClientImpl;
 import com.rabbitmq.client.*;
 import org.bson.Document;
 
@@ -25,7 +27,7 @@ public class Listener extends Agent {
         // ridichiaro uno scambio cosa non strettamente necessaria ma che qui si fa per farlo vedere. Gli dico guarda broker
         // esiste uno scambio e si chiama messages ed è di tipo diretto quindi mi aspetto una sola coda attaccata.
         // LA CREAZIONE DELLO SCAMBIO DOVREBBE ESSERE FATTA DAL MITTENTE NON DAL RICEVENTE OVVIAMENTE
-        channel.exchangeDeclare("messages", BuiltinExchangeType.DIRECT);
+        channel.exchangeDeclare("messages", BuiltinExchangeType.TOPIC);
         // dichiaro la coda. Crea una coda il cui nome è determinato dal server e sarà di defulat esclusiva, auto-delete e non
         // durable. Coda eliminata da sola al termine del programma.NOn mi interessa sapere il nome della coda.
         var declaration = channel.queueDeclare();
@@ -43,7 +45,7 @@ public class Listener extends Agent {
         // TOPIC in routingKey dovevamo dire a quali messaggi/a quali topic siamo interessati. Tipo se ci interessavano solo
         // i messaggi da Giovanni dovevamo mettere "from.giovanni" assicurandoci che il mittente scrivesse nella sua routing key
         // "from.giovanni". In questo caso si mette in ascolto dei messaggi da chiunque.
-        channel.queueBind(queueName, "messages", "");
+        channel.queueBind(queueName, "messages", "from.*");
 
         System.out.println("Listening for messages...");
 
@@ -60,20 +62,25 @@ public class Listener extends Agent {
                 var sender = "cazzo";
                 System.out.printf("[%s] %s\n", sender, new String(body));
 
-                MongoDatabase db;
+                System.out.println("PORCA TROIA BASTARDA IMPESTATA");
 
-                MongoClient client = MongoClients.create("mongodb://localhost:27017");
+                /*MongoDatabase db;
+                System.out.println("ooooooooooo");
+                // MongoClient client = MongoClients.create(System.getenv("MONGODB"));
+                MongoClient client = new MongoClient(new MongoClientURI("mongodb://localhost:27017"));
+                System.out.println("aaaaaaaaaa");
                 db = client.getDatabase("local");
                 System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:"+db.getName());
-                db.createCollection("test");
-                db.getCollection("test").insertOne(new Document());
-                System.out.println("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"+db.getCollection("test").countDocuments());
+                db.getCollection("fica").insertOne(new Document());
+                System.out.println("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"+db.getCollection("fica").countDocuments());*/
 
             }
         });
 
         // porgramma va avanti fino a che non viene chiuso lo standard input
         while (System.in.read() >= 0);
+
+        System.out.println("jndfbghsnjfgh");
 
         // chiudo canale e connessione
         channel.close();

@@ -17,14 +17,13 @@ public class Sender extends Agent {
         // data una connessione creo un canale
         var channel = connection.createChannel();
 
-        channel.exchangeDeclare("messages", BuiltinExchangeType.DIRECT);
-
         // dichiaro lo scambio NOME E TIPO devono essere lo stesso del ricevente. OBBLIGATORIO.
-        channel.exchangeDeclare("messages", BuiltinExchangeType.DIRECT);
+        channel.exchangeDeclare("messages", BuiltinExchangeType.TOPIC);
         // invio un SINGOLO messaggio su uno scambio precedetemente dichiarato specificando la routing key. In questo semplice
         // caso la routing key serve solo a identificare il mittente del messaggio. Scambia messaggi che sono array di byte
         // se ho una stringa o altro devo convertula in array di byte
-        channel.basicPublish("messages", "", null, message.getBytes());
+
+        channel.basicPublish("messages", "from." + myName, null, message.getBytes());
         // fino a questo momento però non memorizziamo i messaggi dichiariamo solo gli scambi. Che succede se il Listener non è
         // in ascolto? Che ci perdiamo il messaggio! Bisogna quindi dichiarare una coda. Quindi bisogna essere sicuri che
         // quando inviamo un messaggio la coda ci sia già. Quello che potrei fare è fare in modo che tramite un configuratore
