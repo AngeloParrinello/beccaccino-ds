@@ -6,6 +6,7 @@ import com.mongodb.MongoClient;
 // import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.result.UpdateResult;
 import org.bson.Document;
 
 import java.util.ArrayList;
@@ -45,7 +46,7 @@ public class DBManager {
         return db.getCollection(collectionName).find(Filters.eq(field, id)).first();
     }
 
-    /*private boolean isPresent(Filters filter, String collectionName) {
-        return db.getCollection(collectionName).countDocuments(Filters.eq(filter)) == 1;
-    }*/
+    public UpdateResult updateDocument(String id, Document document, String collectionName) {
+        return this.db.getCollection(collectionName).replaceOne(Filters.eq("_id", id), document);
+    }
 }

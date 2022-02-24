@@ -48,6 +48,8 @@ class DBManagerTest {
     }
 
     @Test void testUpdateDocument() {
-
+        this.dbManager.insertDocument(new Document("_id", "23").append("Nickname", "Pippo"), "players");
+        Document testDocument = new Document("_id", "23").append("Nickname", "Pluto");
+        assertTrue(this.dbManager.updateDocument("23", testDocument, "players").wasAcknowledged());
     }
 }
