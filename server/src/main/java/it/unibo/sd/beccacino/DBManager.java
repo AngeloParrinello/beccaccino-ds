@@ -41,11 +41,11 @@ public class DBManager {
         return this.db;
     }
 
-    /*public Document retrieveDocumentByID(String field, String id, String collectionName) {
+    public Document retrieveDocumentByID(String field, String id, String collectionName) {
         return db.getCollection(collectionName).find(Filters.eq(field, id)).first();
     }
 
-    private boolean isPresent(Filters filter, String collectionName) {
+    /*private boolean isPresent(Filters filter, String collectionName) {
         return db.getCollection(collectionName).countDocuments(Filters.eq(filter)) == 1;
     }*/
 }

@@ -19,9 +19,9 @@ class DBManagerTest {
 
     @BeforeEach
     void addItems() {
-        this.dbManager.insertDocument(new Document("player_id", "45012"), "players");
-        this.dbManager.insertDocument(new Document("player_id", "333"), "players");
-        this.dbManager.insertDocument(new Document("player_id", "4"), "players");
+        this.dbManager.insertDocument(new Document("_id", "45012"), "players");
+        this.dbManager.insertDocument(new Document("_id", "333"), "players");
+        this.dbManager.insertDocument(new Document("_id", "4"), "players");
     }
 
     @Test void testCreateDBManager() {
@@ -29,7 +29,7 @@ class DBManagerTest {
     }
 
     @Test void testRemoveDocuments() {
-        this.dbManager.removeDocument("player_id", "333", "players");
+        this.dbManager.removeDocument("_id", "333", "players");
         assertEquals(2, dbManager.getDB().getCollection("players").countDocuments());
     }
 
@@ -40,5 +40,14 @@ class DBManagerTest {
 
     @Test void testInsertDocuments() {
         assertEquals(3, dbManager.getDB().getCollection("players").countDocuments());
+    }
+
+    @Test void testRetrieveDocument() {
+        Document testDocument = new Document("_id", "4");
+        assertEquals(testDocument, this.dbManager.retrieveDocumentByID("_id", "4", "players"));
+    }
+
+    @Test void testUpdateDocument() {
+
     }
 }
