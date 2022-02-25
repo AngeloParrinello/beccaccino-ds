@@ -23,7 +23,7 @@ class RabbitMQManagerTest {
     void testCreateQueueForReceive() throws IOException, TimeoutException {
         Connection connection = rabbitMQManager.createConnection();
         RabbitMQQueueBuilder builder = rabbitMQManager.getQueueBuilder();
-        assertEquals("test1", builder.getInstanceOfQueueBuilder().setNameQueue("test1")
+        assertDoesNotThrow(() -> builder.getInstanceOfQueueBuilder().setNameQueue("test1")
                                                                     .setChannel(connection.createChannel())
                                                                     .setArguments(null)
                                                                     .setAutoDelete(true)
@@ -49,7 +49,7 @@ class RabbitMQManagerTest {
     void testCreateQueueForSend() throws IOException, TimeoutException {
         Connection connection = rabbitMQManager.createConnection();
         RabbitMQQueueBuilder builder = rabbitMQManager.getQueueBuilder();
-        assertEquals("test3", builder.getInstanceOfQueueBuilder().setNameQueue("test3")
+        assertDoesNotThrow(() -> builder.getInstanceOfQueueBuilder().setNameQueue("test3")
                                                                    .setChannel(connection.createChannel())
                                                                    .setExchangeName("test3")
                                                                    .setExchangeType(BuiltinExchangeType.FANOUT)
