@@ -10,36 +10,39 @@ import java.util.ArrayList;
 import static org.junit.jupiter.api.Assertions.*;
 
 class DBManagerTest {
-    DBManager dbManager = new DBManager();
+    private DBManager dbManager;
+    static final int DOCUMENT_NUMBER = 3;
+
+    @BeforeEach
+    void setup() {
+        this.dbManager = new DBManager();
+        this.dbManager.insertDocument(new Document("_id", "45012"), "players");
+        this.dbManager.insertDocument(new Document("_id", "333"), "players");
+        this.dbManager.insertDocument(new Document("_id", "4"), "players");
+    }
 
     @AfterEach
     void clearCollection() {
         this.dbManager.getDB().getCollection("players").drop();
     }
 
-    @BeforeEach
-    void addItems() {
-        this.dbManager.insertDocument(new Document("_id", "45012"), "players");
-        this.dbManager.insertDocument(new Document("_id", "333"), "players");
-        this.dbManager.insertDocument(new Document("_id", "4"), "players");
+    @Test void testCreateDBManager() {
+        final String databaseName = "beccacino";
+        assertEquals(databaseName, this.dbManager.getDB().getName());
     }
 
-    @Test void testCreateDBManager() {
-        assertEquals("beccacino", this.dbManager.getDB().getName());
+    @Test void testInsertDocuments() {
+        assertEquals(DOCUMENT_NUMBER, dbManager.getDB().getCollection("players").countDocuments());
     }
 
     @Test void testRemoveDocuments() {
         this.dbManager.removeDocument("_id", "333", "players");
-        assertEquals(2, dbManager.getDB().getCollection("players").countDocuments());
+        assertEquals(DOCUMENT_NUMBER - 1, dbManager.getDB().getCollection("players").countDocuments());
     }
 
     @Test void testRetrieveAllDocuments() {
-        ArrayList<Document> playersList = this.dbManager.retrieveAllDocuments("players");
-        assertEquals(3, playersList.size());
-    }
-
-    @Test void testInsertDocuments() {
-        assertEquals(3, dbManager.getDB().getCollection("players").countDocuments());
+        ArrayList<Document> documentRetrieved = this.dbManager.retrieveAllDocuments("players");
+        assertEquals(DOCUMENT_NUMBER, documentRetrieved.size());
     }
 
     @Test void testRetrieveDocument() {
