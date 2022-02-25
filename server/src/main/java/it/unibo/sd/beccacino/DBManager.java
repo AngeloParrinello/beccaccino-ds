@@ -1,9 +1,13 @@
 package it.unibo.sd.beccacino;
 
-import com.mongodb.MongoClientURI;
-import com.mongodb.MongoClient;
-// import com.mongodb.client.MongoClient;
-// import com.mongodb.client.MongoClients;
+// imports to use when running server locally.
+// import com.mongodb.MongoClientURI;
+// import com.mongodb.MongoClient;
+
+// imports to use when running server using docker.
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.result.UpdateResult;
@@ -15,9 +19,10 @@ public class DBManager {
     private final MongoDatabase db;
     
     public DBManager() {
-        // Creation of mongoclient to run local. if you wish to run it inside a container use:
-        // MongoClient client = MongoClients.create(System.getenv("MONGODB"));
-        MongoClient client = new MongoClient(new MongoClientURI("mongodb://localhost:27017"));
+        // Use this when running server using docker.
+        MongoClient client = MongoClients.create(System.getenv("MONGODB"));
+        // Use this when running server locally.
+        // MongoClient client = new MongoClient(new MongoClientURI("mongodb://localhost:27017"));
         this.db = client.getDatabase("beccacino");
     }
 
