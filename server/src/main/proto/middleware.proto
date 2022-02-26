@@ -1,0 +1,60 @@
+syntax = 'proto3';
+
+option java_multiple_files = true;
+option java_package = "it.unibo.sd.beccacino";
+option java_outer_classname = "MiddlewareProto";
+
+package beccacino;
+
+message Lobby {
+  int32 _id = 1;
+  int32 room_capacity = 2;
+  int32 target_score = 3; // not all game has target score
+  repeated Player players = 4;
+  // optional int32 lobby_timeout = 5;
+}
+
+message Player {
+  int32 _id = 1;
+  string nickname = 2;
+}
+
+message Game {
+  int32 _id = 1;
+  Player current_player = 2;
+  repeated Player players = 3;
+  PublicData public_data = 4;
+  // one PrivateData for each player
+  repeated PrivateData private_data = 5;
+  int32 target_score = 6;
+}
+
+/*
+ * Section specific for each game-type
+ */
+
+message PublicData {
+  int32 score_team1 = 1;
+  int32 score_team2 = 2;
+  repeated Card cards_on_table = 3;
+  string message = 4;
+}
+
+message PrivateData {
+  Player player = 1;
+  repeated Card my_cards = 2;
+
+}
+
+message Card {
+  Suit suit = 1;
+  Value value = 2;
+}
+
+message Suit {
+  // TODO enum
+}
+
+message Value {
+  // TODO enum
+}
