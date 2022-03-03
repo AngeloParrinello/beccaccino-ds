@@ -11,14 +11,14 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class DBManagerTest {
     private DBManager dbManager;
-    static final int DOCUMENT_NUMBER = 3;
+    private static final String TEST_COLLECTION_NAME = "players";
+    private final Document firstDocument = new Document("_id", "1");
+    private final Document secondDocument = new Document("_id", "2");
+    private final Document thirdDocument = new Document("_id", "3");
 
     @BeforeEach
     void setup() {
         this.dbManager = new DBManager();
-        this.dbManager.insertDocument(new Document("_id", "45012"), "players");
-        this.dbManager.insertDocument(new Document("_id", "333"), "players");
-        this.dbManager.insertDocument(new Document("_id", "4"), "players");
     }
 
     @AfterEach
@@ -32,27 +32,36 @@ class DBManagerTest {
     }
 
     @Test void testInsertDocuments() {
-        assertEquals(DOCUMENT_NUMBER, dbManager.getDB().getCollection("players").countDocuments());
+        this.dbManager.insertDocument(firstDocument, TEST_COLLECTION_NAME);
+        assertEquals(1, dbManager.getDB().getCollection(TEST_COLLECTION_NAME).countDocuments());
     }
 
     @Test void testRemoveDocuments() {
-        this.dbManager.removeDocument("_id", "333", "players");
-        assertEquals(DOCUMENT_NUMBER - 1, dbManager.getDB().getCollection("players").countDocuments());
+        this.dbManager.insertDocument(firstDocument, TEST_COLLECTION_NAME);
+        this.dbManager.insertDocument(secondDocument, TEST_COLLECTION_NAME);
+        this.dbManager.removeDocument("_id", "2", TEST_COLLECTION_NAME);
+        assertEquals(1, dbManager.getDB().getCollection(TEST_COLLECTION_NAME).countDocuments());
     }
 
     @Test void testRetrieveAllDocuments() {
-        ArrayList<Document> documentRetrieved = this.dbManager.retrieveAllDocuments("players");
-        assertEquals(DOCUMENT_NUMBER, documentRetrieved.size());
+        this.dbManager.insertDocument(firstDocument, TEST_COLLECTION_NAME);
+        this.dbManager.insertDocument(secondDocument, TEST_COLLECTION_NAME);
+        this.dbManager.insertDocument(thirdDocument, TEST_COLLECTION_NAME);
+        ArrayList<Document> documentRetrieved = this.dbManager.retrieveAllDocuments(TEST_COLLECTION_NAME);
+        assertEquals(3, documentRetrieved.size());
     }
 
     @Test void testRetrieveDocument() {
-        Document testDocument = new Document("_id", "4");
-        assertEquals(testDocument, this.dbManager.retrieveDocumentByID("_id", "4", "players"));
+        this.dbManager.insertDocument(firstDocument, TEST_COLLECTION_NAME);
+        this.dbManager.insertDocument(secondDocument, TEST_COLLECTION_NAME);
+        Document testDocument = new Document("_id", "2");
+        assertEquals(testDocument, this.dbManager.retrieveDocumentByID("_id", "2", TEST_COLLECTION_NAME));
     }
 
     @Test void testUpdateDocument() {
-        this.dbManager.insertDocument(new Document("_id", "23").append("Nickname", "Pippo"), "players");
-        Document testDocument = new Document("_id", "23").append("Nickname", "Pluto");
-        assertTrue(this.dbManager.updateDocument("23", testDocument, "players").wasAcknowledged());
+        this.dbManager.insertDocument(firstDocument.append("Nickname", "Pippo"), TEST_COLLECTION_NAME);
+        Document testDocument = firstDocument.append("Nickname", "Pluto");
+        this.dbManager.updateDocument("1", testDocument, TEST_COLLECTION_NAME);
+        assertEquals(testDocument, this.dbManager.retrieveDocumentByID("_id", "1", TEST_COLLECTION_NAME));
     }
 }
