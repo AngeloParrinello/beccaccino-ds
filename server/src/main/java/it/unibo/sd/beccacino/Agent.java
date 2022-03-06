@@ -31,19 +31,13 @@ public abstract class Agent extends Thread {
     private Connection createConnection() throws IOException, TimeoutException {
 
         ConnectionFactory factory = new ConnectionFactory();
-        // anche il programma client quando va a interagire con il broker lo fa sempre con un meccanismo di access-control
-        // anche il client deve avere un username ed una password con cui interagire con il broker. Ovviamente qui do pieno diritto
-        // di amministrazione di un utente ma in casi reali dovremmo dare le limitazioni dovute ad ogni client e usare quello
-        // per far interagire il client con il broker.
         factory.setUsername("user");
         factory.setPassword("user");
-        // indirizzo della macchina che contiene il broker, nel caso online andrebbe l'url
         factory.setVirtualHost("/");
-        // non localhost ma rabbitmq perchè sono da dentro il container
+        // not "localhost" because i'm in the container
+        // factory.setHost("localhost");
         factory.setHost(System.getenv("RABBIT_HOST"));
-        // porta di default rabbitmq
         factory.setPort(5672);
-        // crea una connessione TCP
         factory.setAutomaticRecoveryEnabled(true);
         while(true) {
             try {
@@ -55,7 +49,6 @@ public abstract class Agent extends Thread {
                 } catch (InterruptedException ex) {
                     ex.printStackTrace();
                 }
-                // apply retry logic
             }
         }
     }
