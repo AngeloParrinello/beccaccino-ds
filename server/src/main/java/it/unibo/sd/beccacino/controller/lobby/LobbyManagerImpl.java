@@ -1,18 +1,17 @@
-package it.unibo.sd.beccacino.controller;
+package it.unibo.sd.beccacino.controller.lobby;
 
 import it.unibo.sd.beccacino.Lobby;
+import it.unibo.sd.beccacino.controller.lobby.LobbyManager;
 
 public class LobbyManagerImpl implements LobbyManager {
     @Override
     public void getLobbies() {}
 
     @Override
-    public int createLobby() {
-        return 0;
+    public void createLobby() {
     }
 
-    @Override
-    public void deleteLobby(int lobbyID) {}
+    private void deleteLobby(int lobbyID) {}
 
     @Override
     public Lobby getLobby(int lobbyID) {
@@ -21,6 +20,11 @@ public class LobbyManagerImpl implements LobbyManager {
 
     @Override
     public void joinLobby(int lobbyID) {
+
+    }
+
+    @Override
+    public void leaveLobby(int lobbyID) {
 
     }
 }

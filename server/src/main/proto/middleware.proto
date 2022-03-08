@@ -51,10 +51,22 @@ message Card {
   Value value = 2;
 }
 
-message Suit {
-  // TODO enum
+enum Suit {
+  COPPE = 0;
+  BASTONI = 1;
+  DENARI = 2;
+  SPADE = 3;
 }
 
-message Value {
-  // TODO enum
+enum Value {
+    ASSO = 0;
+    DUE = 1;
+    TRE = 2;
+    QUATTRO = 3;
+    CINQUE = 4;
+    SEI = 5;
+    SETTE = 6;
+    FANTE = 7;
+    CAVALLO = 8;
+    RE = 9;
 }

@@ -1,7 +1,7 @@
 package it.unibo.sd.beccacino.controller;
 
-import it.unibo.sd.beccacino.model.ItalianCard;
-import it.unibo.sd.beccacino.model.Suit;
+import it.unibo.sd.beccacino.Card;
+import it.unibo.sd.beccacino.Suit;
 
 import java.util.Optional;
 
@@ -23,7 +23,7 @@ public interface GameManager {
      * Register a players' play.
      * @param playedCard the played card.
      */
-    void makePlay(ItalianCard playedCard, Optional<String> message);
+    void makePlay(Card playedCard, Optional<String> message);
 
     /**
      * End the current game.

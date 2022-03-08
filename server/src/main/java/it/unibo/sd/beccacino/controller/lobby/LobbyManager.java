@@ -1,4 +1,4 @@
-package it.unibo.sd.beccacino.controller;
+package it.unibo.sd.beccacino.controller.lobby;
 
 import it.unibo.sd.beccacino.Lobby;
 
@@ -16,13 +16,7 @@ public interface LobbyManager {
      * Create a new lobby.
      * @return the lobby's ID.
      */
-    int createLobby();
-
-    /**
-     * Delete a lobby from the lobby's list.
-     * @param lobbyID the lobby's ID.
-     */
-    void deleteLobby(int lobbyID);
+    void createLobby();
 
     /**
      * Get a specific lobby.
@@ -36,4 +30,10 @@ public interface LobbyManager {
      * @param lobbyID the lobby's ID.
      */
     void joinLobby(int lobbyID);
+
+    /**
+     *
+     * @param lobbyID
+     */
+    void leaveLobby(int lobbyID);
 }

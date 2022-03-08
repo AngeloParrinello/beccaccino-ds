@@ -1,15 +1,15 @@
-package it.unibo.sd.beccacino.controller;
+package it.unibo.sd.beccacino.controller.lobby;
 
 import com.rabbitmq.client.*;
 import it.unibo.sd.beccacino.Agent;
 
 import java.io.IOException;
 
-public class ServerListener extends Agent {
+public class LobbyListener extends Agent {
     private Boolean state;
     private Channel channel;
 
-    public ServerListener(String name) {
+    public LobbyListener(String name) {
         super(name);
     }
 
@@ -24,17 +24,7 @@ public class ServerListener extends Agent {
         channel.basicConsume(declaration.getQueue(), new DefaultConsumer(channel) {
             @Override
             public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
-                final LobbyManager lobbyManager = new LobbyManagerImpl();
-                switch (consumerTag) {
-                    case "createLobby":
-                        lobbyManager.createLobby();
-                    case "joinLobby":
-                        lobbyManager.joinLobby(8758);
-                    case "deleteLobby":
-                        lobbyManager.deleteLobby(8758);
-                    default:
-                        throw new IllegalStateException("Server: received an unknown message type.");
-                }
+
             }
         });
 

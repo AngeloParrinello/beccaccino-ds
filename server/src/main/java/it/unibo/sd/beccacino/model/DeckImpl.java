@@ -1,9 +1,13 @@
 package it.unibo.sd.beccacino.model;
 
+import it.unibo.sd.beccacino.Card;
+import it.unibo.sd.beccacino.Suit;
+import it.unibo.sd.beccacino.Value;
+
 import java.util.*;
 
 public class DeckImpl implements Deck{
-    private final List<ItalianCard> deck;
+    private final List<Card> deck;
     private final int seed;
 
     public DeckImpl(int seed) {
@@ -16,16 +20,18 @@ public class DeckImpl implements Deck{
     private void populateDeck() {
         final EnumSet<Suit> suitList = EnumSet.allOf(Suit.class);
         final EnumSet<Value> valueList = EnumSet.allOf(Value.class);
+        suitList.remove(Suit.UNRECOGNIZED);
+        valueList.remove(Value.UNRECOGNIZED);
         for (Suit suit : suitList) {
             for (Value value : valueList) {
-                ItalianCard card = new ItalianCardImpl(suit, value);
+                Card card =  Card.newBuilder().setSuit(suit).setValue(value).build();
                 this.deck.add(card);
             }
         }
     }
 
     @Override
-    public ItalianCard drawCard() {
+    public Card drawCard() {
         if (remainingCards() == 0) {
             throw new IllegalStateException("Cards cannot be drawn if the deck is empty.");
         } else {

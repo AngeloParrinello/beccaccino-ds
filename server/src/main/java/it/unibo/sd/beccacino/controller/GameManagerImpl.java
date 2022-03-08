@@ -1,7 +1,7 @@
 package it.unibo.sd.beccacino.controller;
 
-import it.unibo.sd.beccacino.model.ItalianCard;
-import it.unibo.sd.beccacino.model.Suit;
+import it.unibo.sd.beccacino.Card;
+import it.unibo.sd.beccacino.Suit;
 
 import java.util.Optional;
 
@@ -15,7 +15,7 @@ public class GameManagerImpl implements GameManager{
     }
 
     @Override
-    public void makePlay(ItalianCard playedCard, Optional<String> message) {
+    public void makePlay(Card playedCard, Optional<String> message) {
 
     }
 
