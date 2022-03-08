@@ -1,16 +1,16 @@
 package it.unibo.sd.beccacino.model;
 
 public enum Value {
-    ASSO(1),
-    DUE(2),
-    TRE(3),
-    QUATTRO(4),
-    CINQUE(5),
-    SEI(6),
-    SETTE(7),
-    FANTE(8),
-    CAVALLO(9),
-    RE(10);
+    QUATTRO(1),
+    CINQUE(2),
+    SEI(3),
+    SETTE(4),
+    FANTE(5),
+    CAVALLO(6),
+    RE(7),
+    ASSO(8),
+    DUE(9),
+    TRE(10),;
 
     private final int valueNumber;
 

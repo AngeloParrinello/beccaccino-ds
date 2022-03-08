@@ -26,7 +26,7 @@ public class ItalianCardTest {
 
     @Test
     void testCompare() {
-        Assertions.assertTrue(this.firstTestCard.getValue().toInteger() >
+        Assertions.assertTrue(this.firstTestCard.getValue().toInteger() <
                                         this.secondTestCard.getValue().toInteger());
     }
 }
