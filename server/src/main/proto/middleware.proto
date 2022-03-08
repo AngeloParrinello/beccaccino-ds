@@ -70,3 +70,9 @@ enum Value {
     CAVALLO = 8;
     RE = 9;
 }
+
+message Request {
+  int32 _id = 1;
+  string lobby_message = 2;
+  Player requesting_player = 3;
+}
