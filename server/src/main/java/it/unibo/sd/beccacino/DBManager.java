@@ -5,6 +5,8 @@ package it.unibo.sd.beccacino;
 //import com.mongodb.MongoClient;
 
 // imports to use when running server using docker.
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.util.JsonFormat;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 
@@ -53,5 +55,19 @@ public class DBManager {
 
     public UpdateResult updateDocument(String id, Document document, String collectionName) {
         return this.db.getCollection(collectionName).replaceOne(Filters.eq("_id", id), document);
+    }
+
+    public Lobby getLobbyById(String id) {
+        String lobbyJson = db.getCollection("lobbies")
+                            .find(Filters.eq("_id", id))
+                            .first()
+                            .toJson();
+        Lobby.Builder lobby = Lobby.newBuilder();
+        try {
+            JsonFormat.parser().merge(lobbyJson, lobby);
+        } catch (InvalidProtocolBufferException e) {
+            e.printStackTrace();
+        }
+        return lobby.build();
     }
 }

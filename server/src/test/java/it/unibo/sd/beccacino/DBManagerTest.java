@@ -59,7 +59,7 @@ class DBManagerTest {
     }
 
     @Test void testUpdateDocument() {
-        this.dbManager.insertDocument(firstDocument.append("Nickname", "Pippo"), TEST_COLLECTION_NAME);
+        this.dbManager.insertDocument(firstDocument.append("Nickname", "Pippo").append("Gender", "Male"), TEST_COLLECTION_NAME);
         Document testDocument = firstDocument.append("Nickname", "Pluto");
         this.dbManager.updateDocument("1", testDocument, TEST_COLLECTION_NAME);
         assertEquals(testDocument, this.dbManager.retrieveDocumentByID("_id", "1", TEST_COLLECTION_NAME));
