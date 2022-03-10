@@ -21,7 +21,7 @@ dependencies {
 
     compileOnly("org.apache.tomcat:annotations-api:6.0.53")
     
-    implementation("com.google.protobuf:protobuf-javalite:${protobufVersion}")
+    //implementation("com.google.protobuf:protobuf-javalite:${protobufVersion}")
 
     // examples/advanced need this for JsonFormat
     implementation("com.google.protobuf:protobuf-java-util:${protobufVersion}")
@@ -30,7 +30,9 @@ dependencies {
     implementation("com.google.protobuf:protobuf-java:${protobufVersion}")
 
     // MongoDB dependece
-    implementation("org.mongodb:mongo-java-driver:3.12.10")
+    //implementation("org.mongodb:mongo-java-driver:3.12.10")
+    //implementation("org.mongodb:mongodb-driver-core:4.2.1")
+    implementation("org.mongodb:mongodb-driver-sync:4.5.0")
 }
 
 protobuf {
