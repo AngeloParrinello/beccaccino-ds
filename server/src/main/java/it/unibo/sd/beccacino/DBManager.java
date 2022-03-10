@@ -1,19 +1,25 @@
 package it.unibo.sd.beccacino;
 
 // imports to use when running server locally.
-//import com.mongodb.MongoClientURI;
-//import com.mongodb.MongoClient;
-
 // imports to use when running server using docker.
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.TypeRegistry;
 import com.google.protobuf.util.JsonFormat;
+//import com.mongodb.client.MongoClient;
+//import com.mongodb.client.MongoClients;
+
+import com.mongodb.ConnectionString;
+import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
-
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.internal.MongoClientImpl;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Updates;
 import com.mongodb.client.result.UpdateResult;
+import com.mongodb.client.result.InsertOneResult;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 
 import java.util.ArrayList;
 
@@ -22,14 +28,20 @@ public class DBManager {
     
     public DBManager() {
         // Use this when running server using docker.
-        MongoClient client = MongoClients.create(System.getenv("MONGODB"));
+        //MongoClient client = MongoClients.create(System.getenv("MONGODB"));
         // Use this when running server locally.
         //MongoClient client = new MongoClient(new MongoClientURI("mongodb://localhost:27017"));
+        // Replace the uri string with your MongoDB deployment's connection string
+        String mongoUri = "mongodb://localhost:27017";
+        MongoClientSettings settings = MongoClientSettings.builder()
+                .applyConnectionString(new ConnectionString(mongoUri))
+                .build();
+        MongoClient client = MongoClients.create(settings);
         this.db = client.getDatabase("beccacino");
     }
 
-    public void insertDocument(Document document, String collectionName) {
-        db.getCollection(collectionName).insertOne(document);
+    public InsertOneResult insertDocument(Document document, String collectionName) {
+        return db.getCollection(collectionName).insertOne(document);
     }
 
     public ArrayList<Document> retrieveAllDocuments(String collectionName) {
@@ -41,33 +53,52 @@ public class DBManager {
         return documentsList;
     }
 
-    public void removeDocument(String field, String id, String collectionName) {
-        this.db.getCollection(collectionName).deleteOne(Filters.eq(field, id));
+    public boolean removeDocument(String field, int id, String collectionName) {
+        return this.db.getCollection(collectionName).deleteOne(Filters.eq(field, String.valueOf(id))).wasAcknowledged();
     }
 
     public MongoDatabase getDB() {
         return this.db;
     }
 
-    public Document retrieveDocumentByID(String field, String id, String collectionName) {
-        return db.getCollection(collectionName).find(Filters.eq(field, id)).first();
+    public Document retrieveDocumentByID(String field, int id, String collectionName) {
+        return db.getCollection(collectionName).find(Filters.eq(field, String.valueOf(id))).first();
     }
 
-    public UpdateResult updateDocument(String id, Document document, String collectionName) {
-        return this.db.getCollection(collectionName).replaceOne(Filters.eq("_id", id), document);
+    public UpdateResult updateDocument(int id, Document document, String collectionName) {
+        return this.db.getCollection(collectionName).replaceOne(Filters.eq("_id", String.valueOf(id)), document);
     }
 
-    public Lobby getLobbyById(String id) {
-        String lobbyJson = db.getCollection("lobbies")
+    public Lobby getLobbyById(int id) {
+        Document lobbyDocument = db.getCollection("lobbies")
                             .find(Filters.eq("_id", id))
-                            .first()
-                            .toJson();
-        Lobby.Builder lobby = Lobby.newBuilder();
-        try {
-            JsonFormat.parser().merge(lobbyJson, lobby);
-        } catch (InvalidProtocolBufferException e) {
-            e.printStackTrace();
+                            .first();
+        if (lobbyDocument != null) {
+            String lobbyJson = lobbyDocument.toJson();
+            Lobby.Builder lobby = Lobby.newBuilder();
+            try {
+                JsonFormat.parser().ignoringUnknownFields().merge(lobbyJson, lobby);
+            } catch (InvalidProtocolBufferException e) {
+                e.printStackTrace();
+            }
+            return lobby.build();
+        } else {
+            return null;
         }
-        return lobby.build();
+    }
+
+    public boolean removeLobbyPlayer(Player player, int lobbyId) {
+        Bson lobbyFilter = Filters.eq("_id", String.valueOf(lobbyId));
+        Bson removedPlayer = Updates.pull("players", new Document("_id", player.getId()));
+        return this.db.getCollection("lobbies")
+                .updateOne(lobbyFilter, removedPlayer).wasAcknowledged();
+    }
+
+    public boolean updateLobbyPlayers(Player playerJoined, int joinLobbyId) {
+        Bson lobbyFilter = Filters.eq("_id", String.valueOf(joinLobbyId));
+        Bson updatedPlayer = Updates.push("players", new Document("_id", playerJoined.getId())
+                        .append("nickname", playerJoined.getNickname()));
+        return this.db.getCollection("lobbies")
+                .updateOne(lobbyFilter, updatedPlayer).wasAcknowledged();
     }
 }
