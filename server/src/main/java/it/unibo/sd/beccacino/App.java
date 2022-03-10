@@ -1,7 +1,7 @@
 package it.unibo.sd.beccacino;
 
 //import com.mongodb.MongoClient;
-import com.mongodb.MongoClientURI;
+//import com.mongodb.MongoClientURI;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
