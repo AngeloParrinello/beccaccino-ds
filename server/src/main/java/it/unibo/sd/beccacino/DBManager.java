@@ -18,8 +18,10 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
 import com.mongodb.client.result.UpdateResult;
 import com.mongodb.client.result.InsertOneResult;
+import org.bson.BsonValue;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
 
 import java.util.ArrayList;
 
@@ -40,8 +42,8 @@ public class DBManager {
         this.db = client.getDatabase("beccacino");
     }
 
-    public InsertOneResult insertDocument(Document document, String collectionName) {
-        return db.getCollection(collectionName).insertOne(document);
+    public BsonValue insertDocument(Document document, String collectionName) {
+        return db.getCollection(collectionName).insertOne(document).getInsertedId();
     }
 
     public ArrayList<Document> retrieveAllDocuments(String collectionName) {
@@ -53,7 +55,7 @@ public class DBManager {
         return documentsList;
     }
 
-    public boolean removeDocument(String field, int id, String collectionName) {
+    public boolean removeDocument(String field, String id, String collectionName) {
         return this.db.getCollection(collectionName).deleteOne(Filters.eq(field, String.valueOf(id))).wasAcknowledged();
     }
 
@@ -61,21 +63,24 @@ public class DBManager {
         return this.db;
     }
 
-    public Document retrieveDocumentByID(String field, int id, String collectionName) {
+    public Document retrieveDocumentByID(String field, String id, String collectionName) {
         return db.getCollection(collectionName).find(Filters.eq(field, String.valueOf(id))).first();
     }
 
-    public UpdateResult updateDocument(int id, Document document, String collectionName) {
+    public UpdateResult updateDocument(String id, Document document, String collectionName) {
         return this.db.getCollection(collectionName).replaceOne(Filters.eq("_id", String.valueOf(id)), document);
     }
 
-    public Lobby getLobbyById(int id) {
+    public Lobby getLobbyById(String id) {
         Document lobbyDocument = db.getCollection("lobbies")
-                            .find(Filters.eq("_id", id))
+                            .find(Filters.eq("_id",new ObjectId(id)))
                             .first();
         if (lobbyDocument != null) {
+            ObjectId lobbyID = (ObjectId) lobbyDocument.get("_id");
+            lobbyDocument.remove("_id");
             String lobbyJson = lobbyDocument.toJson();
             Lobby.Builder lobby = Lobby.newBuilder();
+            lobby.setId(ObjectId.get().toHexString());
             try {
                 JsonFormat.parser().ignoringUnknownFields().merge(lobbyJson, lobby);
             } catch (InvalidProtocolBufferException e) {
@@ -87,14 +92,14 @@ public class DBManager {
         }
     }
 
-    public boolean removeLobbyPlayer(Player player, int lobbyId) {
+    public boolean removeLobbyPlayer(Player player, String lobbyId) {
         Bson lobbyFilter = Filters.eq("_id", String.valueOf(lobbyId));
         Bson removedPlayer = Updates.pull("players", new Document("_id", player.getId()));
         return this.db.getCollection("lobbies")
                 .updateOne(lobbyFilter, removedPlayer).wasAcknowledged();
     }
 
-    public boolean updateLobbyPlayers(Player playerJoined, int joinLobbyId) {
+    public boolean updateLobbyPlayers(Player playerJoined, String joinLobbyId) {
         Bson lobbyFilter = Filters.eq("_id", String.valueOf(joinLobbyId));
         Bson updatedPlayer = Updates.push("players", new Document("_id", playerJoined.getId())
                         .append("nickname", playerJoined.getNickname()));

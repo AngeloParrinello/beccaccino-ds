@@ -7,7 +7,7 @@ option java_outer_classname = "MiddlewareProto";
 package beccacino;
 
 message Lobby {
-  int32 _id = 1;
+  string _id = 1;
   int32 room_capacity = 2;
   int32 target_score = 3; // not all game has target score
   repeated Player players = 4;
@@ -15,12 +15,12 @@ message Lobby {
 }
 
 message Player {
-  int32 _id = 1;
+  string _id = 1;
   string nickname = 2;
 }
 
 message Game {
-  int32 _id = 1;
+  string _id = 1;
   Player current_player = 2;
   repeated Player players = 3;
   PublicData public_data = 4;
@@ -72,7 +72,7 @@ enum Value {
 }
 
 message Request {
-  int32 lobby_id = 1;
+  string lobby_id = 1;
   string lobby_message = 2;
   Player requesting_player = 3;
 }
