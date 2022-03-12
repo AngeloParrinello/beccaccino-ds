@@ -58,10 +58,10 @@ public class LobbyManagerImpl implements LobbyManager {
     private void joinLobbyRequestHandler(Request joinLobbyRequest) {
         String joinLobbyId = joinLobbyRequest.getLobbyId();
         Player playerJoined = joinLobbyRequest.getRequestingPlayer();
-
         if (this.doesLobbyExist(joinLobbyId) && this.getLobbySize(joinLobbyId) < ROOM_CAPACITY) {
             boolean statusRequest = this.dbManager.updateLobbyPlayers(playerJoined, joinLobbyId);
             Lobby lobbyUpdated = this.getLobbyUpdate(joinLobbyId);
+            System.out.println(statusRequest);
             if(statusRequest) {
                 this.lobbiesStub.sendLobbyResponse(lobbyUpdated, LOBBY_OK);
             } else {
@@ -96,11 +96,12 @@ public class LobbyManagerImpl implements LobbyManager {
     }
 
     private int getLobbySize(String lobbyId) {
-        return this.dbManager.getLobbyById(lobbyId).getPlayersCount();
+        return this.dbManager.getLobbyById(lobbyId).getPlayersList().size();
     }
 
     private boolean doesLobbyExist(String lobbyId) {
-        return (this.dbManager.getLobbyById(lobbyId)!=null);
+        Lobby lobbyToJoin = this.dbManager.getLobbyById(lobbyId);
+        return !lobbyToJoin.getId().equals("");
     }
 
     private BsonValue createNewLobby(String playerCreatorId, String nicknamePlayerCreator) {

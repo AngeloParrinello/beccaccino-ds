@@ -80,7 +80,7 @@ public class DBManager {
             lobbyDocument.remove("_id");
             String lobbyJson = lobbyDocument.toJson();
             Lobby.Builder lobby = Lobby.newBuilder();
-            lobby.setId(ObjectId.get().toHexString());
+            lobby.setId(lobbyID.toString());
             try {
                 JsonFormat.parser().ignoringUnknownFields().merge(lobbyJson, lobby);
             } catch (InvalidProtocolBufferException e) {
@@ -100,7 +100,7 @@ public class DBManager {
     }
 
     public boolean updateLobbyPlayers(Player playerJoined, String joinLobbyId) {
-        Bson lobbyFilter = Filters.eq("_id", String.valueOf(joinLobbyId));
+        Bson lobbyFilter = Filters.eq("_id", new ObjectId(joinLobbyId));
         Bson updatedPlayer = Updates.push("players", new Document("_id", playerJoined.getId())
                         .append("nickname", playerJoined.getNickname()));
         return this.db.getCollection("lobbies")
