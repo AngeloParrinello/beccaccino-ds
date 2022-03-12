@@ -8,18 +8,23 @@ import it.unibo.sd.beccacino.controller.lobby.LobbyManager;
 import it.unibo.sd.beccacino.controller.lobby.LobbyManagerImpl;
 import org.junit.jupiter.api.*;
 
-import java.util.Arrays;
-
 public class LobbyManagerTest {
     private final LobbiesStub lobbiesStub = new LobbiesStub();
     private final LobbyManager lobbyManager = new LobbyManagerImpl(lobbiesStub);
     private Player player;
     private Player player2;
+    private Player player3;
+    private Player player4;
+    private Player player5;
+
 
     @BeforeEach
     void setUp(){
-        this.player = Player.newBuilder().setId("1").setNickname("my_player").build();
-        this.player2 = Player.newBuilder().setId("2").setNickname("joined_player").build();
+        this.player = Player.newBuilder().setId("1").setNickname("first_player").build();
+        this.player2 = Player.newBuilder().setId("2").setNickname("second_player").build();
+        this.player3 = Player.newBuilder().setId("3").setNickname("third_player").build();
+        this.player4 = Player.newBuilder().setId("4").setNickname("fourth_player").build();
+        this.player5 = Player.newBuilder().setId("5").setNickname("fifth_player").build();
     }
 
     @Test
@@ -45,5 +50,40 @@ public class LobbyManagerTest {
                                                 .setLobbyId(lobbyID)
                                                 .build());
         System.out.println("LOBBY UPDATED:" + this.lobbiesStub.getLastOperation());
+    }
+
+    @Test
+    void testJoinLobbyFail() {
+        this.lobbyManager.handleRequest(Request.newBuilder()
+                .setLobbyMessage("create")
+                .setRequestingPlayer(this.player)
+                .build());
+        System.out.println("[TEST] room created:" + this.lobbiesStub.getLastOperation());
+        String lobbyID = this.lobbiesStub.getLastOperation().getId();
+        this.lobbyManager.handleRequest(Request.newBuilder()
+                .setLobbyMessage("join")
+                .setRequestingPlayer(this.player2)
+                .setLobbyId(lobbyID)
+                .build());
+        System.out.println("[TEST] second player join:" + this.lobbiesStub.getLastOperation());
+        this.lobbyManager.handleRequest(Request.newBuilder()
+                .setLobbyMessage("join")
+                .setRequestingPlayer(this.player3)
+                .setLobbyId(lobbyID)
+                .build());
+        System.out.println("[TEST] third player join:" + this.lobbiesStub.getLastOperation());
+        this.lobbyManager.handleRequest(Request.newBuilder()
+                .setLobbyMessage("join")
+                .setRequestingPlayer(this.player4)
+                .setLobbyId(lobbyID)
+                .build());
+        System.out.println("[TEST] fourth join:" + this.lobbiesStub.getLastOperation());
+        this.lobbyManager.handleRequest(Request.newBuilder()
+                .setLobbyMessage("join")
+                .setRequestingPlayer(this.player5)
+                .setLobbyId(lobbyID)
+                .build());
+        System.out.println("[TEST] fifth join:\n" + this.lobbiesStub.getLastOperation());
+        System.out.println(this.lobbiesStub.getLastResponseCode());
     }
 }

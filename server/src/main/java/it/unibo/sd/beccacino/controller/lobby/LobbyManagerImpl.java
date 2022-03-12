@@ -61,7 +61,6 @@ public class LobbyManagerImpl implements LobbyManager {
         if (this.doesLobbyExist(joinLobbyId) && this.getLobbySize(joinLobbyId) < ROOM_CAPACITY) {
             boolean statusRequest = this.dbManager.updateLobbyPlayers(playerJoined, joinLobbyId);
             Lobby lobbyUpdated = this.getLobbyUpdate(joinLobbyId);
-            System.out.println(statusRequest);
             if(statusRequest) {
                 this.lobbiesStub.sendLobbyResponse(lobbyUpdated, LOBBY_OK);
             } else {
