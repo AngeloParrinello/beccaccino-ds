@@ -56,7 +56,7 @@ public class DBManager {
     }
 
     public boolean removeDocument(String field, String id, String collectionName) {
-        return this.db.getCollection(collectionName).deleteOne(Filters.eq(field, String.valueOf(id))).wasAcknowledged();
+        return this.db.getCollection(collectionName).deleteOne(Filters.eq(field, new ObjectId(id))).wasAcknowledged();
     }
 
     public MongoDatabase getDB() {
@@ -93,7 +93,7 @@ public class DBManager {
     }
 
     public boolean removeLobbyPlayer(Player player, String lobbyId) {
-        Bson lobbyFilter = Filters.eq("_id", String.valueOf(lobbyId));
+        Bson lobbyFilter = Filters.eq("_id", new ObjectId(lobbyId));
         Bson removedPlayer = Updates.pull("players", new Document("_id", player.getId()));
         return this.db.getCollection("lobbies")
                 .updateOne(lobbyFilter, removedPlayer).wasAcknowledged();

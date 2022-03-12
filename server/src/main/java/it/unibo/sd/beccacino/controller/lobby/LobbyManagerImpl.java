@@ -80,7 +80,9 @@ public class LobbyManagerImpl implements LobbyManager {
 
         if (statusRequest) {
             this.lobbiesStub.sendLobbyResponse(lobbyUpdated, LOBBY_OK);
-            if (this.getLobbySize(lobbyId) > 0) this.deleteLobby(lobbyId);
+            if (this.getLobbySize(lobbyId) == 0) {
+                this.deleteLobby(lobbyId);
+            }
         } else {
             this.lobbiesStub.sendLobbyResponse(lobbyUpdated, LOBBY_LEAVE_ERROR);
         }

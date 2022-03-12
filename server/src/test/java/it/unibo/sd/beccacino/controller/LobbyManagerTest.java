@@ -1,5 +1,6 @@
 package it.unibo.sd.beccacino.controller;
 
+import it.unibo.sd.beccacino.DBManager;
 import it.unibo.sd.beccacino.Lobby;
 import it.unibo.sd.beccacino.Player;
 import it.unibo.sd.beccacino.Request;
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.*;
 public class LobbyManagerTest {
     private final LobbiesStub lobbiesStub = new LobbiesStub();
     private final LobbyManager lobbyManager = new LobbyManagerImpl(lobbiesStub);
+    private final DBManager dbManager = new DBManager();
     private Player player;
     private Player player2;
     private Player player3;
@@ -85,5 +87,43 @@ public class LobbyManagerTest {
                 .build());
         System.out.println("[TEST] fifth join:\n" + this.lobbiesStub.getLastOperation());
         System.out.println(this.lobbiesStub.getLastResponseCode());
+    }
+
+    @Test
+    void testLeaveLobby() {
+        this.lobbyManager.handleRequest(Request.newBuilder()
+                .setLobbyMessage("create")
+                .setRequestingPlayer(this.player)
+                .build());
+        System.out.println("[TEST] room created:" + this.lobbiesStub.getLastOperation());
+        String lobbyID = this.lobbiesStub.getLastOperation().getId();
+        this.lobbyManager.handleRequest(Request.newBuilder()
+                .setLobbyMessage("join")
+                .setRequestingPlayer(this.player2)
+                .setLobbyId(lobbyID)
+                .build());
+        this.lobbyManager.handleRequest(Request.newBuilder()
+                .setLobbyMessage("leave")
+                .setRequestingPlayer(this.player2)
+                .setLobbyId(lobbyID)
+                .build());
+        System.out.println("[TEST] Lobby after leave:\n" + this.lobbiesStub.getLastOperation());
+        System.out.println(this.lobbiesStub.getLastResponseCode());
+    }
+
+    @Test
+    void testLastPlayerLeavesLobby() {
+        this.lobbyManager.handleRequest(Request.newBuilder()
+                .setLobbyMessage("create")
+                .setRequestingPlayer(this.player)
+                .build());
+        System.out.println("[TEST] room created:" + this.lobbiesStub.getLastOperation());
+        String lobbyID = this.lobbiesStub.getLastOperation().getId();
+        this.lobbyManager.handleRequest(Request.newBuilder()
+                .setLobbyMessage("leave")
+                .setRequestingPlayer(this.player)
+                .setLobbyId(lobbyID)
+                .build());
+        System.out.println("[TEST] lobby null: \n" + this.dbManager.getLobbyById(lobbyID));
     }
 }
