@@ -41,7 +41,6 @@ message PublicData {
 message PrivateData {
   Player player = 1;
   repeated Card my_cards = 2;
-
 }
 
 message Card {
@@ -93,10 +92,4 @@ message Request {
 message Response {
   Lobby lobby = 1;
   int32 response_code = 2;
-}
-
-
-message CreateLobbyRequest {
-  oneof inner{Request request = 1;}
-  int32 code = 2;
 }
