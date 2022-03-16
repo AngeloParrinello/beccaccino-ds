@@ -1,7 +1,6 @@
 package it.unibo.sd.beccacino.controller;
 
 import it.unibo.sd.beccacino.DBManager;
-import it.unibo.sd.beccacino.Lobby;
 import it.unibo.sd.beccacino.Player;
 import it.unibo.sd.beccacino.Request;
 import it.unibo.sd.beccacino.controller.lobby.LobbiesStub;
@@ -9,7 +8,7 @@ import it.unibo.sd.beccacino.controller.lobby.LobbyManager;
 import it.unibo.sd.beccacino.controller.lobby.LobbyManagerImpl;
 import org.junit.jupiter.api.*;
 
-public class LobbyManagerTest {
+class LobbyManagerTest {
     private final LobbiesStub lobbiesStub = new LobbiesStub();
     private final LobbyManager lobbyManager = new LobbyManagerImpl(lobbiesStub);
     private final DBManager dbManager = new DBManager();

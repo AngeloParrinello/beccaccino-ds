@@ -1,36 +1,33 @@
 package it.unibo.sd.beccacino;
 
-// imports to use when running server locally.
-// imports to use when running server using docker.
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.TypeRegistry;
 import com.google.protobuf.util.JsonFormat;
-//import com.mongodb.client.MongoClient;
-//import com.mongodb.client.MongoClients;
+// import com.mongodb.client.MongoClient;
+// import com.mongodb.client.MongoClients;
 
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.internal.MongoClientImpl;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
 import com.mongodb.client.result.UpdateResult;
-import com.mongodb.client.result.InsertOneResult;
 import org.bson.BsonValue;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class DBManager {
+    private static final String LOBBIES_COLLECTION = "lobbies";
     private final MongoDatabase db;
-    
+
     public DBManager() {
         // Use this when running server using docker.
-        //MongoClient client = MongoClients.create(System.getenv("MONGODB"));
+        // MongoClient client = MongoClients.create(System.getenv("MONGODB"));
         // Use this when running server locally.
         //MongoClient client = new MongoClient(new MongoClientURI("mongodb://localhost:27017"));
         // Replace the uri string with your MongoDB deployment's connection string
@@ -46,9 +43,9 @@ public class DBManager {
         return db.getCollection(collectionName).insertOne(document).getInsertedId();
     }
 
-    public ArrayList<Document> retrieveAllDocuments(String collectionName) {
+    public List<Document> retrieveAllDocuments(String collectionName) {
         Iterable<Document> documentsIterable = this.db.getCollection(collectionName).find();
-        ArrayList<Document> documentsList = new ArrayList<>();
+        List<Document> documentsList = new ArrayList<>();
         for (Document doc: documentsIterable) {
             documentsList.add(doc);
         }
@@ -71,9 +68,29 @@ public class DBManager {
         return this.db.getCollection(collectionName).replaceOne(Filters.eq("_id", String.valueOf(id)), document);
     }
 
+    public Game getGameById(String id) {
+        Document gameDocument = db.getCollection("games")
+                .find(Filters.eq("_id", new ObjectId(id)))
+                .first();
+        if (gameDocument != null) {
+            ObjectId gameID = (ObjectId) gameDocument.get("_id");
+            gameDocument.remove("_id");
+            String gameJson = gameDocument.toJson();
+            Game.Builder gameBuilder = Game.newBuilder();
+            gameBuilder.setId(gameID.toString());
+            try {
+                JsonFormat.parser().ignoringUnknownFields().merge(gameJson, gameBuilder);
+            } catch (InvalidProtocolBufferException e) {
+                e.printStackTrace();
+            }
+            return gameBuilder.build();
+        }
+        return null;
+    }
+
     public Lobby getLobbyById(String id) {
-        Document lobbyDocument = db.getCollection("lobbies")
-                            .find(Filters.eq("_id",new ObjectId(id)))
+        Document lobbyDocument = db.getCollection(LOBBIES_COLLECTION)
+                            .find(Filters.eq("_id", new ObjectId(id)))
                             .first();
         if (lobbyDocument != null) {
             ObjectId lobbyID = (ObjectId) lobbyDocument.get("_id");
@@ -95,7 +112,7 @@ public class DBManager {
     public boolean removeLobbyPlayer(Player player, String lobbyId) {
         Bson lobbyFilter = Filters.eq("_id", new ObjectId(lobbyId));
         Bson removedPlayer = Updates.pull("players", new Document("_id", player.getId()));
-        return this.db.getCollection("lobbies")
+        return this.db.getCollection(LOBBIES_COLLECTION)
                 .updateOne(lobbyFilter, removedPlayer).wasAcknowledged();
     }
 
@@ -103,7 +120,7 @@ public class DBManager {
         Bson lobbyFilter = Filters.eq("_id", new ObjectId(joinLobbyId));
         Bson updatedPlayer = Updates.push("players", new Document("_id", playerJoined.getId())
                         .append("nickname", playerJoined.getNickname()));
-        return this.db.getCollection("lobbies")
+        return this.db.getCollection(LOBBIES_COLLECTION)
                 .updateOne(lobbyFilter, updatedPlayer).wasAcknowledged();
     }
 }

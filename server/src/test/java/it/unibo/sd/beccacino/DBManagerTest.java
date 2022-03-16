@@ -50,7 +50,7 @@ class DBManagerTest {
         this.dbManager.insertDocument(firstDocument, TEST_COLLECTION_NAME);
         this.dbManager.insertDocument(secondDocument, TEST_COLLECTION_NAME);
         this.dbManager.insertDocument(thirdDocument, TEST_COLLECTION_NAME);
-        ArrayList<Document> documentRetrieved = this.dbManager.retrieveAllDocuments(TEST_COLLECTION_NAME);
+        List<Document> documentRetrieved = this.dbManager.retrieveAllDocuments(TEST_COLLECTION_NAME);
         assertEquals(3, documentRetrieved.size());
     }
 

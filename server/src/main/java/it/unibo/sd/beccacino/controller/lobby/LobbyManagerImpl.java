@@ -31,24 +31,18 @@ public class LobbyManagerImpl implements LobbyManager {
     @Override
     public void handleRequest(Request request) {
         switch (request.getLobbyMessage()) {
-            case ("create"):
-                this.createLobbyRequestHandler(request);
-                break;
-            case ("join"):
-                this.joinLobbyRequestHandler(request);
-                break;
-            case ("leave"):
-                this.leaveLobbyRequestHandler(request);
-                break;
+            case ("create") -> this.createLobbyRequestHandler(request);
+            case ("join") -> this.joinLobbyRequestHandler(request);
+            case ("leave") -> this.leaveLobbyRequestHandler(request);
+            default -> {} // TODO: Log illegal request received.
         }
     }
 
     private void createLobbyRequestHandler(Request createLobbyRequest) {
-        String playerCreatorId = createLobbyRequest.getRequestingPlayer().getId();
-        String nicknamePlayerCreator = createLobbyRequest.getRequestingPlayer().getNickname();
-        String roomID = this.createNewLobby(playerCreatorId, nicknamePlayerCreator).asObjectId().getValue().toString();
-        if(!Objects.equals(roomID, "")){
-            Lobby lobbyUpdated = this.getLobbyUpdate(roomID);
+        Player requestingPlayer = createLobbyRequest.getRequestingPlayer();
+        String roomID = this.createNewLobby(requestingPlayer).asObjectId().getValue().toString();
+        if(!Objects.equals(roomID, "")) {
+            Lobby lobbyUpdated = this.getLobby(roomID);
             this.lobbiesStub.sendLobbyResponse(lobbyUpdated, LOBBY_OK);
         } else {
             this.lobbiesStub.sendLobbyResponse(null, LOBBY_EXIST_ERROR);
@@ -60,7 +54,7 @@ public class LobbyManagerImpl implements LobbyManager {
         Player playerJoined = joinLobbyRequest.getRequestingPlayer();
         if (this.doesLobbyExist(joinLobbyId) && this.getLobbySize(joinLobbyId) < ROOM_CAPACITY) {
             boolean statusRequest = this.dbManager.updateLobbyPlayers(playerJoined, joinLobbyId);
-            Lobby lobbyUpdated = this.getLobbyUpdate(joinLobbyId);
+            Lobby lobbyUpdated = this.getLobby(joinLobbyId);
             if(statusRequest) {
                 this.lobbiesStub.sendLobbyResponse(lobbyUpdated, LOBBY_OK);
             } else {
@@ -76,7 +70,7 @@ public class LobbyManagerImpl implements LobbyManager {
         String lobbyId = leaveLobbyRequest.getLobbyId();
 
         boolean statusRequest = this.dbManager.removeLobbyPlayer(removedPlayer, lobbyId);
-        Lobby lobbyUpdated = this.getLobbyUpdate(lobbyId);
+        Lobby lobbyUpdated = this.getLobby(lobbyId);
 
         if (statusRequest) {
             this.lobbiesStub.sendLobbyResponse(lobbyUpdated, LOBBY_OK);
@@ -88,27 +82,29 @@ public class LobbyManagerImpl implements LobbyManager {
         }
     }
 
-    private Lobby getLobbyUpdate(String lobbyId) {
-        return this.dbManager.getLobbyById(lobbyId);
+    private Lobby getLobby(String id) {
+        return this.dbManager.getLobbyById(id);
     }
 
-    private void deleteLobby(String lobbyId) {
-        this.dbManager.removeDocument("_id", lobbyId, "lobbies");
+    private void deleteLobby(String id) {
+        this.dbManager.removeDocument("_id", id, "lobbies");
     }
 
-    private int getLobbySize(String lobbyId) {
-        return this.dbManager.getLobbyById(lobbyId).getPlayersList().size();
+    private int getLobbySize(String id) {
+        return this.getLobby(id).getPlayersList().size();
     }
 
-    private boolean doesLobbyExist(String lobbyId) {
-        Lobby lobbyToJoin = this.dbManager.getLobbyById(lobbyId);
-        return !lobbyToJoin.getId().equals("");
+    private boolean doesLobbyExist(String id) {
+        return !this.dbManager.getLobbyById(id).getId().equals("");
     }
 
-    private BsonValue createNewLobby(String playerCreatorId, String nicknamePlayerCreator) {
+    private BsonValue createNewLobby(Player requestingPlayer) {
+        // TODO use proto and parser class of protobuf to create proto-message and then convert in Json/Document
+        // to push on DB
         Document newLobby = new Document("room_capacity", ROOM_CAPACITY)
                 .append("target_score", TARGET_SCORE)
-                .append("players", List.of(new Document("_id", playerCreatorId).append("nickname", nicknamePlayerCreator)));
+                .append("players", List.of(new Document("_id", requestingPlayer.getId())
+                                    .append("nickname", requestingPlayer.getNickname())));
         return this.dbManager.insertDocument(newLobby, "lobbies");
     }
 }
