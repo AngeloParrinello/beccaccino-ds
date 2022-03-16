@@ -5,6 +5,7 @@ import com.google.protobuf.util.JsonFormat;
 import it.unibo.sd.beccacino.*;
 import org.bson.BsonValue;
 import org.bson.Document;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -24,7 +25,8 @@ public class GameManagerImpl implements GameManager {
         switch (request.getRequestType()) {
             case ("start") -> this.startGameRequestHandler(request);
             case ("set_briscola") -> this.setBriscolaRequestHandler(request);
-            default -> {} // TODO: Log illegal request received.
+            default -> {
+            } // TODO: Log illegal request received.
         }
     }
 
