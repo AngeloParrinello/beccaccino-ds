@@ -4,6 +4,8 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.rabbitmq.client.*;
 import it.unibo.sd.beccacino.Lobby;
 import it.unibo.sd.beccacino.Request;
+import it.unibo.sd.beccacino.Response;
+import it.unibo.sd.beccacino.ResponseCode;
 import it.unibo.sd.beccacino.rabbitmq.RabbitMQManager;
 
 import java.io.IOException;
@@ -13,31 +15,27 @@ public class LobbiesStub {
 
     private final RabbitMQManager rabbitMQManager;
     private final LobbyManager lobbyManager;
-
-    public Lobby getLastOperation() {
-        return lastOperation;
-    }
-
-    public int getLastResponseCode() {
-        return lastResponseCode;
-    }
+    private Channel channel;
+    private Connection connection;
 
     private Lobby lastOperation;
-    private int lastResponseCode;
+    private ResponseCode lastResponseCode;
+
+    String todoQueue = "todoQueueLobbies";
+    String resultsQueue = "resultsQueueLobbies";
 
     public LobbiesStub() {
         this.rabbitMQManager = new RabbitMQManager();
         this.lobbyManager = new LobbyManagerImpl(this);
+        try {
+            this.connection = this.rabbitMQManager.createConnection();
+            this.channel = connection.createChannel();
+        } catch (IOException | TimeoutException e) {
+            e.printStackTrace();
+        }
     }
 
-    public void run() throws IOException, TimeoutException {
-
-        Connection connection = this.rabbitMQManager.createConnection();
-
-        Channel channel = connection.createChannel();
-
-        String todoQueue = "todoQueue";
-        String resultsQueue = "resultsQueue";
+    public void run() throws IOException {
 
         this.rabbitMQManager.getQueueBuilder()
                 .getInstanceOfQueueBuilder()
@@ -56,7 +54,8 @@ public class LobbiesStub {
 
         channel.basicConsume(resultsQueue, new DefaultConsumer(channel) {
             @Override
-            public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws InvalidProtocolBufferException {
+            public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties,
+                                       byte[] body) throws InvalidProtocolBufferException {
 
                 System.out.println("LobbiesStub received file!");
 
@@ -66,13 +65,6 @@ public class LobbiesStub {
 
                 lobbyManager.handleRequest(request);
 
-                /*try {
-                    channel.close();
-                    connection.close();
-                } catch (IOException | TimeoutException e) {
-                    e.printStackTrace();
-                }*/
-
                 System.out.println("LobbiesStub send file to manager!");
 
             }
@@ -80,10 +72,35 @@ public class LobbiesStub {
 
     }
 
-    public void sendLobbyResponse(Lobby lobbyUpdated, int responseCode) {
-        //TODO control if the lobby!=null and response code is 200
-        this.lastOperation = lobbyUpdated;
-        this.lastResponseCode = responseCode;
+    public void sendLobbyResponse(Lobby lobbyUpdated, ResponseCode responseCode) {
+        Response response = Response.newBuilder()
+                .setLobby(lobbyUpdated)
+                .setResponseCode(responseCode.getCode())
+                .build();
+        try {
+            channel.basicPublish(todoQueue, "", null, response.toByteArray());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
+
+    public Lobby getLastOperation() {
+        return lastOperation;
+    }
+
+    public ResponseCode getLastResponseCode() {
+        return lastResponseCode;
+    }
+
+    private void shutdownStub() {
+        try {
+            channel.close();
+            connection.close();
+        } catch (IOException | TimeoutException e) {
+            e.printStackTrace();
+
+        }
+    }
+
 
 }

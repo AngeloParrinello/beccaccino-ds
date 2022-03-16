@@ -1,9 +1,6 @@
 package it.unibo.sd.beccacino.controller.lobby;
 
-import it.unibo.sd.beccacino.DBManager;
-import it.unibo.sd.beccacino.Lobby;
-import it.unibo.sd.beccacino.Player;
-import it.unibo.sd.beccacino.Request;
+import it.unibo.sd.beccacino.*;
 import org.bson.BsonValue;
 import org.bson.Document;
 
@@ -18,11 +15,6 @@ public class LobbyManagerImpl implements LobbyManager {
     private static final int ROOM_CAPACITY = 4;
     private static final int TARGET_SCORE = 31;
 
-    private static final int LOBBY_EXIST_ERROR = 400;
-    private static final int LOBBY_LEAVE_ERROR = 401;
-    private static final int LOBBY_JOIN_ERROR = 402;
-    private static final int LOBBY_OK = 200;
-
     public LobbyManagerImpl(LobbiesStub lobbiesStub) {
         this.dbManager = new DBManager();
         this.lobbiesStub = lobbiesStub;
@@ -34,18 +26,19 @@ public class LobbyManagerImpl implements LobbyManager {
             case ("create") -> this.createLobbyRequestHandler(request);
             case ("join") -> this.joinLobbyRequestHandler(request);
             case ("leave") -> this.leaveLobbyRequestHandler(request);
-            default -> {} // TODO: Log illegal request received.
+            default -> {
+            } // TODO: Log illegal request received.
         }
     }
 
     private void createLobbyRequestHandler(Request createLobbyRequest) {
         Player requestingPlayer = createLobbyRequest.getRequestingPlayer();
         String roomID = this.createNewLobby(requestingPlayer).asObjectId().getValue().toString();
-        if(!Objects.equals(roomID, "")) {
+        if (!Objects.equals(roomID, "")) {
             Lobby lobbyUpdated = this.getLobby(roomID);
-            this.lobbiesStub.sendLobbyResponse(lobbyUpdated, LOBBY_OK);
+            this.lobbiesStub.sendLobbyResponse(lobbyUpdated, ResponseCode.OK);
         } else {
-            this.lobbiesStub.sendLobbyResponse(null, LOBBY_EXIST_ERROR);
+            this.lobbiesStub.sendLobbyResponse(null, ResponseCode.CREATE);
         }
     }
 
@@ -55,13 +48,13 @@ public class LobbyManagerImpl implements LobbyManager {
         if (this.doesLobbyExist(joinLobbyId) && this.getLobbySize(joinLobbyId) < ROOM_CAPACITY) {
             boolean statusRequest = this.dbManager.updateLobbyPlayers(playerJoined, joinLobbyId);
             Lobby lobbyUpdated = this.getLobby(joinLobbyId);
-            if(statusRequest) {
-                this.lobbiesStub.sendLobbyResponse(lobbyUpdated, LOBBY_OK);
+            if (statusRequest) {
+                this.lobbiesStub.sendLobbyResponse(lobbyUpdated, ResponseCode.OK);
             } else {
-                this.lobbiesStub.sendLobbyResponse(lobbyUpdated, LOBBY_JOIN_ERROR);
+                this.lobbiesStub.sendLobbyResponse(lobbyUpdated, ResponseCode.JOIN);
             }
         } else {
-            this.lobbiesStub.sendLobbyResponse(null, LOBBY_EXIST_ERROR);
+            this.lobbiesStub.sendLobbyResponse(null, ResponseCode.CREATE);
         }
     }
 
@@ -73,12 +66,12 @@ public class LobbyManagerImpl implements LobbyManager {
         Lobby lobbyUpdated = this.getLobby(lobbyId);
 
         if (statusRequest) {
-            this.lobbiesStub.sendLobbyResponse(lobbyUpdated, LOBBY_OK);
+            this.lobbiesStub.sendLobbyResponse(lobbyUpdated, ResponseCode.OK);
             if (this.getLobbySize(lobbyId) == 0) {
                 this.deleteLobby(lobbyId);
             }
         } else {
-            this.lobbiesStub.sendLobbyResponse(lobbyUpdated, LOBBY_LEAVE_ERROR);
+            this.lobbiesStub.sendLobbyResponse(lobbyUpdated, ResponseCode.LEAVE);
         }
     }
 
@@ -104,7 +97,7 @@ public class LobbyManagerImpl implements LobbyManager {
         Document newLobby = new Document("room_capacity", ROOM_CAPACITY)
                 .append("target_score", TARGET_SCORE)
                 .append("players", List.of(new Document("_id", requestingPlayer.getId())
-                                    .append("nickname", requestingPlayer.getNickname())));
+                        .append("nickname", requestingPlayer.getNickname())));
         return this.dbManager.insertDocument(newLobby, "lobbies");
     }
 }
