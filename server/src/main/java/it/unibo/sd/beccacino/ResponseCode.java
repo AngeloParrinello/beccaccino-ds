@@ -11,7 +11,7 @@ public enum ResponseCode {
     private final int code;
     private final String message;
     
-    public int toInteger(ResponseCode responseCode) {
+    public int getCode() {
         return this.code;
     }
 
