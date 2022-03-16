@@ -5,17 +5,17 @@ import com.google.protobuf.util.JsonFormat;
 import it.unibo.sd.beccacino.*;
 import org.bson.BsonValue;
 import org.bson.Document;
-
-import javax.print.Doc;
 import java.util.List;
 import java.util.Optional;
 
 public class GameManagerImpl implements GameManager {
 
     private final DBManager dbManager;
+    private final GameStub gameStub;
 
-    public GameManagerImpl(DBManager dbManager) {
-        this.dbManager = dbManager;
+    public GameManagerImpl(GameStub gameStub) {
+        this.dbManager = new DBManager();
+        this.gameStub = gameStub;
     }
 
 
@@ -23,8 +23,12 @@ public class GameManagerImpl implements GameManager {
     public void handleRequest(GameRequest request) {
         switch (request.getRequestType()) {
             case ("start") -> this.startGameRequestHandler(request);
+            case ("set_briscola") -> this.setBriscolaRequestHandler(request);
             default -> {} // TODO: Log illegal request received.
         }
+    }
+
+    private void setBriscolaRequestHandler(GameRequest request) {
     }
 
     private void startGameRequestHandler(GameRequest request) {
@@ -32,9 +36,9 @@ public class GameManagerImpl implements GameManager {
     }
 
     private void createGame(GameRequest request) {
-        if(this.checkRequestingPlayer(request)) {
+        if (this.checkRequestingPlayer(request)) {
             Document emptyGameDocument = this.createEmptyGame(request);
-            BsonValue insertResponse =this.dbManager.insertDocument(emptyGameDocument, "games");
+            BsonValue insertResponse = this.dbManager.insertDocument(emptyGameDocument, "games");
             String createdGameID = insertResponse.asObjectId().getValue().toString();
             if (!createdGameID.equals("")) {
                 Game createdGame = this.getGameById(createdGameID);
@@ -45,9 +49,6 @@ public class GameManagerImpl implements GameManager {
         } else {
             // TODO unauthorized player request
         }
-
-
-        Document game = new Document();
     }
 
     private boolean checkRequestingPlayer(GameRequest request) {
