@@ -54,6 +54,7 @@ public class LobbyManagerImpl implements LobbyManager {
                 this.lobbiesStub.sendLobbyResponse(lobbyUpdated, ResponseCode.JOIN);
             }
         } else {
+            // TODO could be also a join error because the lobby is full.
             this.lobbiesStub.sendLobbyResponse(null, ResponseCode.CREATE);
         }
     }

@@ -73,15 +73,20 @@ public class LobbiesStub {
     }
 
     public void sendLobbyResponse(Lobby lobbyUpdated, ResponseCode responseCode) {
-        Response response = Response.newBuilder()
-                .setLobby(lobbyUpdated)
-                .setResponseCode(responseCode.getCode())
-                .build();
-        try {
+        this.lastOperation = lobbyUpdated;
+        this.lastResponseCode = responseCode;
+        if(lobbyUpdated != null) {
+            Response response = Response.newBuilder()
+                    .setLobby(lobbyUpdated)
+                    .setResponseCode(responseCode.getCode())
+                    .build();
+        }
+        // TODO remove comments
+        /*try {
             channel.basicPublish(todoQueue, "", null, response.toByteArray());
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
     }
 
     public Lobby getLastOperation() {

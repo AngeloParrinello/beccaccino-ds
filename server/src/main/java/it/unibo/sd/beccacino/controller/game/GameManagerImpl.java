@@ -6,6 +6,8 @@ import it.unibo.sd.beccacino.*;
 import org.bson.BsonValue;
 import org.bson.Document;
 
+import javax.print.Doc;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,23 +35,21 @@ public class GameManagerImpl implements GameManager {
     private void setBriscolaRequestHandler(GameRequest request) {
     }
 
+
     private void startGameRequestHandler(GameRequest request) {
-
-    }
-
-    private void createGame(GameRequest request) {
         if (this.checkRequestingPlayer(request)) {
             Document emptyGameDocument = this.createEmptyGame(request);
             BsonValue insertResponse = this.dbManager.insertDocument(emptyGameDocument, "games");
             String createdGameID = insertResponse.asObjectId().getValue().toString();
             if (!createdGameID.equals("")) {
                 Game createdGame = this.getGameById(createdGameID);
-                // TODO stub.sendresponse(createdGame)
+                this.dbManager.removeDocument("_id", request.getLobby().getId(), "lobbies");
+                this.gameStub.sendGameResponse(createdGame, ResponseCode.OK);
             } else {
-                // TODO cannot create game
+                this.gameStub.sendGameResponse(null, ResponseCode.START);
             }
         } else {
-            // TODO unauthorized player request
+            this.gameStub.sendGameResponse(null, ResponseCode.PERMISSION_DENIED);
         }
     }
 
@@ -72,21 +72,19 @@ public class GameManagerImpl implements GameManager {
         PublicData publicData = PublicData.newBuilder()
                 .setScoreTeam1(0)
                 .setScoreTeam2(0)
+                .setMessage("")
                 .setCurrentPlayer(playerList.get(0))
                 .build();
         Game game = Game.newBuilder()
-                .setPlayers(0, playerList.get(0))
-                .setPlayers(1, playerList.get(1))
-                .setPlayers(2, playerList.get(2))
-                .setPlayers(3, playerList.get(3))
                 .setPublicData(publicData)
+                .addAllPlayers(playerList)
+                .setRound(1)
                 .build();
-        String gameJson = "";
         try {
-            JsonFormat.parser().ignoringUnknownFields().merge(gameJson, game.toBuilder());
+            return Document.parse(JsonFormat.printer().print(game.toBuilder()));
         } catch (InvalidProtocolBufferException e) {
             e.printStackTrace();
+            return null;
         }
-        return Document.parse(gameJson);
     }
 }

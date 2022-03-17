@@ -21,9 +21,10 @@ message Player {
 
 message Game {
   string _id = 1;
-  repeated Player players = 2;
-  PublicData public_data = 3;
+  repeated Player players = 3;
+  PublicData public_data = 2;
   repeated PrivateData private_data = 4;
+  int32 round = 5;
 }
 
 /*
@@ -68,6 +69,7 @@ enum Value {
     RE = 9;
 }
 
+// TODO why should i pass the entire lobby??
 message GameRequest {
   string request_type = 1;
   Lobby lobby = 2;

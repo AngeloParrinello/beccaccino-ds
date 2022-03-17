@@ -70,7 +70,9 @@ public class GameStub {
     }
 
     public void sendGameResponse(Game gameUpdated, ResponseCode responseCode) {
-        GameResponse gameResponse = GameResponse.newBuilder()
+        this.lastOperation = gameUpdated;
+        this.lastResponseCode = responseCode;
+        /*GameResponse gameResponse = GameResponse.newBuilder()
                 .setGame(gameUpdated)
                 .setResponseCode(responseCode.getCode())
                 .build();
@@ -78,7 +80,7 @@ public class GameStub {
             channel.basicPublish(todoQueue, "", null, gameResponse.toByteArray());
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
     }
 
     public Game getLastOperation() {
