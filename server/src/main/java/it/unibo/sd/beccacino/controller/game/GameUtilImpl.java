@@ -10,6 +10,7 @@ import org.bson.Document;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class GameUtilImpl implements GameUtil {
     private final DBManager dbManager;
@@ -26,6 +27,7 @@ public class GameUtilImpl implements GameUtil {
                 .setScoreTeam1(0)
                 .setScoreTeam2(0)
                 .setMessage("")
+                .setBriscola(Suit.DEFAULT_SUIT)
                 .setCurrentPlayer(playerList.get(0))
                 .build();
         Game game = Game.newBuilder()
@@ -81,5 +83,29 @@ public class GameUtilImpl implements GameUtil {
     @Override
     public boolean isLobbyFull(GameRequest request) {
         return this.dbManager.getLobbyById(request.getLobby().getId()).getPlayersCount() == 4;
+    }
+
+    @Override
+    public boolean doesLobbyExists(String id) {
+        return this.dbManager.getLobbyById(id) != null;
+    }
+
+    @Override
+    public boolean isPlayerCurrentPlayer(GameRequest request) {
+        Game game = this.getGameById(request.getGameId());
+        return game.getPublicData().getCurrentPlayer().equals(request.getRequestingPlayer());
+    }
+
+
+
+    @Override
+    public boolean isBriscolaSet(GameRequest request) {
+        Game game = this.getGameById(request.getGameId());
+        return (!Objects.equals(game.getPublicData().getBriscola(), Suit.DEFAULT_SUIT));
+    }
+
+    @Override
+    public boolean setBriscola(GameRequest request) {
+        return this.dbManager.updateBriscola(request.getBriscola(), request.getGameId());
     }
 }

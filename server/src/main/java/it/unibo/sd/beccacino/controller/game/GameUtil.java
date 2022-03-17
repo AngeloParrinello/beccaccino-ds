@@ -46,4 +46,12 @@ public interface GameUtil {
 
 
     boolean isLobbyFull(GameRequest request);
+
+    boolean doesLobbyExists(String id);
+
+    boolean isPlayerCurrentPlayer(GameRequest request);
+
+    boolean isBriscolaSet(GameRequest request);
+
+    boolean setBriscola(GameRequest request);
 }

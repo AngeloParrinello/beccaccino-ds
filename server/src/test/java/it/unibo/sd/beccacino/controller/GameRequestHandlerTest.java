@@ -37,11 +37,28 @@ public class GameRequestHandlerTest {
                 .setLobby(testLobby)
                 .setRequestingPlayer(this.player)
                 .build());
+        System.out.println(this.gameStub.getLastOperation());
         Assertions.assertNotNull(this.gameStub.getLastOperation());
     }
 
     @Test
-    void startGameWithLobbyNotFullFail() {
+    void testGameAlreadyStarted() {
+        Lobby testLobby = createLobby();
+        this.gameRequestHandler.handleRequest(GameRequest.newBuilder()
+                .setRequestType("start")
+                .setLobby(testLobby)
+                .setRequestingPlayer(this.player)
+                .build());
+        this.gameRequestHandler.handleRequest(GameRequest.newBuilder()
+                .setRequestType("start")
+                .setLobby(testLobby)
+                .setRequestingPlayer(this.player)
+                .build());
+        Assertions.assertEquals(ResponseCode.ILLEGAL_REQUEST, this.gameStub.getLastResponseCode());
+    }
+
+    @Test
+    void testStartGameWithLobbyNotFull() {
         Lobby testLobby = createLobby();
         this.lobbyManager.handleRequest(Request.newBuilder()
                 .setLobbyMessage("leave")
@@ -53,18 +70,79 @@ public class GameRequestHandlerTest {
                 .setLobby(testLobby)
                 .setRequestingPlayer(this.player)
                 .build());
-        Assertions.assertNull(this.gameStub.getLastOperation());
+        Assertions.assertEquals(ResponseCode.START, this.gameStub.getLastResponseCode());
     }
 
     @Test
-    void startGameWithoutPermissionsFail() {
+    void testStartGameWithoutPermissions() {
         Lobby testLobby = createLobby();
         this.gameRequestHandler.handleRequest(GameRequest.newBuilder()
                 .setRequestType("start")
                 .setLobby(testLobby)
                 .setRequestingPlayer(this.player2)
                 .build());
-        Assertions.assertNull(this.gameStub.getLastOperation());
+        Assertions.assertEquals(ResponseCode.PERMISSION_DENIED, this.gameStub.getLastResponseCode());
+    }
+
+    @Test
+    void testSetBriscola() {
+        Lobby testLobby = createLobby();
+        this.gameRequestHandler.handleRequest(GameRequest.newBuilder()
+                .setRequestType("start")
+                .setLobby(testLobby)
+                .setRequestingPlayer(this.player)
+                .build());
+        String gameID = this.gameStub.getLastOperation().getId();
+        this.gameRequestHandler.handleRequest(GameRequest.newBuilder()
+                .setRequestType("briscola")
+                .setBriscola(Suit.COPPE)
+                .setGameId(gameID)
+                .setRequestingPlayer(this.player)
+                .build());
+        System.out.println(this.gameStub.getLastResponseCode());
+        Assertions.assertEquals(Suit.COPPE, this.gameStub.getLastOperation().getPublicData().getBriscola());
+    }
+
+    @Test
+    void testWrongPlayerSetBriscola() {
+        Lobby testLobby = createLobby();
+        this.gameRequestHandler.handleRequest(GameRequest.newBuilder()
+                .setRequestType("start")
+                .setLobby(testLobby)
+                .setRequestingPlayer(this.player)
+                .build());
+        String gameID = this.gameStub.getLastOperation().getId();
+        this.gameRequestHandler.handleRequest(GameRequest.newBuilder()
+                .setRequestType("briscola")
+                .setBriscola(Suit.COPPE)
+                .setGameId(gameID)
+                .setRequestingPlayer(this.player3)
+                .build());
+        Assertions.assertEquals(ResponseCode.PERMISSION_DENIED, this.gameStub.getLastResponseCode());
+    }
+
+    @Test
+    void testSetBriscolaAlreadyDone() {
+        Lobby testLobby = createLobby();
+        this.gameRequestHandler.handleRequest(GameRequest.newBuilder()
+                .setRequestType("start")
+                .setLobby(testLobby)
+                .setRequestingPlayer(this.player)
+                .build());
+        String gameID = this.gameStub.getLastOperation().getId();
+        this.gameRequestHandler.handleRequest(GameRequest.newBuilder()
+                .setRequestType("briscola")
+                .setBriscola(Suit.COPPE)
+                .setGameId(gameID)
+                .setRequestingPlayer(this.player)
+                .build());
+        this.gameRequestHandler.handleRequest(GameRequest.newBuilder()
+                .setRequestType("briscola")
+                .setBriscola(Suit.BASTONI)
+                .setGameId(gameID)
+                .setRequestingPlayer(this.player)
+                .build());
+        Assertions.assertEquals(ResponseCode.ILLEGAL_REQUEST, this.gameStub.getLastResponseCode());
     }
 
     private Lobby createLobby() {

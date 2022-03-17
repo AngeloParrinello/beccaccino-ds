@@ -5,6 +5,7 @@ import com.google.protobuf.util.JsonFormat;
 // import com.mongodb.client.MongoClient;
 // import com.mongodb.client.MongoClients;
 
+import com.mongodb.BasicDBObject;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
@@ -72,6 +73,7 @@ public class DBManager {
         Document gameDocument = db.getCollection("games")
                 .find(Filters.eq("_id", new ObjectId(id)))
                 .first();
+        System.out.println(gameDocument);
         if (gameDocument != null) {
             ObjectId gameID = (ObjectId) gameDocument.get("_id");
             gameDocument.remove("_id");
@@ -122,5 +124,13 @@ public class DBManager {
                         .append("nickname", playerJoined.getNickname()));
         return this.db.getCollection(LOBBIES_COLLECTION)
                 .updateOne(lobbyFilter, updatedPlayer).wasAcknowledged();
+    }
+
+    public boolean updateBriscola(Suit briscola, String gameID) {
+        // TODO why it doesn't work???
+        BasicDBObject query = new BasicDBObject("_id", new ObjectId(gameID));
+        BasicDBObject update = new BasicDBObject("$set",
+                new BasicDBObject("publicData.$.briscola", briscola));
+        return this.db.getCollection("games").updateOne(query,update).wasAcknowledged();
     }
 }

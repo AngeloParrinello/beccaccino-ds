@@ -24,6 +24,7 @@ public class DeckImpl implements Deck{
         valueList.remove(Value.UNRECOGNIZED);
         suitList.remove(Suit.SUIT);
         valueList.remove(Value.VALUE);
+        suitList.remove(Suit.DEFAULT_SUIT);
         for (Suit suit : suitList) {
             for (Value value : valueList) {
                 Card card =  Card.newBuilder().setSuit(suit).setValue(value).build();

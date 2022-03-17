@@ -37,6 +37,7 @@ message PublicData {
   repeated Card cards_on_table = 3;
   string message = 4;
   Player current_player = 5;
+  Suit briscola = 6;
 }
 
 message PrivateData {
@@ -55,6 +56,7 @@ enum Suit {
   BASTONI = 1;
   DENARI = 2;
   SPADE = 3;
+  DEFAULT_SUIT = 5;
 }
 
 enum Value {
