@@ -1,19 +1,19 @@
 package it.unibo.sd.beccacino.controller;
 
 import it.unibo.sd.beccacino.*;
-import it.unibo.sd.beccacino.controller.game.GameManager;
-import it.unibo.sd.beccacino.controller.game.GameManagerImpl;
+import it.unibo.sd.beccacino.controller.game.GameRequestHandler;
+import it.unibo.sd.beccacino.controller.game.GameRequestHandlerImpl;
 import it.unibo.sd.beccacino.controller.game.GameStub;
 import it.unibo.sd.beccacino.controller.lobby.LobbiesStub;
 import it.unibo.sd.beccacino.controller.lobby.LobbyManager;
 import it.unibo.sd.beccacino.controller.lobby.LobbyManagerImpl;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class GameManagerTest {
+public class GameRequestHandlerTest {
     private final GameStub gameStub = new GameStub();
-    private final GameManager gameManager = new GameManagerImpl(gameStub);
-    private final DBManager dbManager = new DBManager();
+    private final GameRequestHandler gameRequestHandler = new GameRequestHandlerImpl(gameStub);
     private final LobbiesStub lobbiesStub = new LobbiesStub();
     private final LobbyManager lobbyManager = new LobbyManagerImpl(lobbiesStub);
     private Player player;
@@ -31,6 +31,43 @@ public class GameManagerTest {
 
     @Test
     void testStartGame() {
+        Lobby testLobby = createLobby();
+        this.gameRequestHandler.handleRequest(GameRequest.newBuilder()
+                .setRequestType("start")
+                .setLobby(testLobby)
+                .setRequestingPlayer(this.player)
+                .build());
+        Assertions.assertNotNull(this.gameStub.getLastOperation());
+    }
+
+    @Test
+    void startGameWithLobbyNotFullFail() {
+        Lobby testLobby = createLobby();
+        this.lobbyManager.handleRequest(Request.newBuilder()
+                .setLobbyMessage("leave")
+                .setRequestingPlayer(this.player2)
+                .setLobbyId(testLobby.getId())
+                .build());
+        this.gameRequestHandler.handleRequest(GameRequest.newBuilder()
+                .setRequestType("start")
+                .setLobby(testLobby)
+                .setRequestingPlayer(this.player)
+                .build());
+        Assertions.assertNull(this.gameStub.getLastOperation());
+    }
+
+    @Test
+    void startGameWithoutPermissionsFail() {
+        Lobby testLobby = createLobby();
+        this.gameRequestHandler.handleRequest(GameRequest.newBuilder()
+                .setRequestType("start")
+                .setLobby(testLobby)
+                .setRequestingPlayer(this.player2)
+                .build());
+        Assertions.assertNull(this.gameStub.getLastOperation());
+    }
+
+    private Lobby createLobby() {
         this.lobbyManager.handleRequest(Request.newBuilder()
                 .setLobbyMessage("create")
                 .setRequestingPlayer(this.player)
@@ -51,14 +88,7 @@ public class GameManagerTest {
                 .setRequestingPlayer(this.player4)
                 .setLobbyId(lobbyID)
                 .build());
-        Lobby testLobby = this.lobbiesStub.getLastOperation();
-        System.out.println("[TEST] room:\n" + testLobby);
-        this.gameManager.handleRequest(GameRequest.newBuilder()
-                .setRequestType("start")
-                .setLobby(testLobby)
-                .setRequestingPlayer(this.player)
-                .build());
-        System.out.println("[TEST] Game created:\n" + this.gameStub.getLastOperation());
+        return this.lobbiesStub.getLastOperation();
     }
 }
 
