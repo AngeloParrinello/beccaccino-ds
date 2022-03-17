@@ -22,6 +22,8 @@ public class DeckImpl implements Deck{
         final EnumSet<Value> valueList = EnumSet.allOf(Value.class);
         suitList.remove(Suit.UNRECOGNIZED);
         valueList.remove(Value.UNRECOGNIZED);
+        suitList.remove(Suit.SUIT);
+        valueList.remove(Value.VALUE);
         for (Suit suit : suitList) {
             for (Value value : valueList) {
                 Card card =  Card.newBuilder().setSuit(suit).setValue(value).build();

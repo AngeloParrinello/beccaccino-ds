@@ -11,7 +11,7 @@ import java.util.concurrent.TimeoutException;
 public class GameStub {
 
     private final RabbitMQManager rabbitMQManager;
-    private final GameManager gameManager;
+    private final GameRequestHandler gameRequestHandler;
     private Channel channel;
     private Connection connection;
 
@@ -23,7 +23,7 @@ public class GameStub {
 
     public GameStub() {
         this.rabbitMQManager = new RabbitMQManager();
-        this.gameManager = new GameManagerImpl(this);
+        this.gameRequestHandler = new GameRequestHandlerImpl(this);
         try {
             this.connection = this.rabbitMQManager.createConnection();
             this.channel = connection.createChannel();
@@ -60,7 +60,7 @@ public class GameStub {
 
                 System.out.println(gameRequest);
 
-                gameManager.handleRequest(gameRequest);
+                gameRequestHandler.handleRequest(gameRequest);
 
                 System.out.println("LobbiesStub send file to manager!");
 

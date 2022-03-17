@@ -50,14 +50,16 @@ message Card {
 }
 
 enum Suit {
-  COPPE = 0;
+  SUIT = 0;
+  COPPE = 4;
   BASTONI = 1;
   DENARI = 2;
   SPADE = 3;
 }
 
 enum Value {
-    ASSO = 0;
+    VALUE = 0;
+    ASSO = 10;
     DUE = 1;
     TRE = 2;
     QUATTRO = 3;
