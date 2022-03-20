@@ -30,6 +30,7 @@ public class LobbiesStub {
         try {
             this.connection = this.rabbitMQManager.createConnection();
             this.channel = connection.createChannel();
+            this.run();
         } catch (IOException | TimeoutException e) {
             e.printStackTrace();
         }
@@ -75,18 +76,26 @@ public class LobbiesStub {
     public void sendLobbyResponse(Lobby lobbyUpdated, ResponseCode responseCode) {
         this.lastOperation = lobbyUpdated;
         this.lastResponseCode = responseCode;
+        Response response;
+
         if(lobbyUpdated != null) {
-            Response response = Response.newBuilder()
+            response = Response.newBuilder()
                     .setLobby(lobbyUpdated)
                     .setResponseCode(responseCode.getCode())
+                    .setResponseMessage(responseCode.getMessage())
+                    .build();
+        } else {
+            response = Response.newBuilder()
+                    .setResponseCode(responseCode.getCode())
+                    .setResponseMessage(responseCode.getMessage())
                     .build();
         }
-        // TODO remove comments
-        /*try {
+
+        try {
             channel.basicPublish(todoQueue, "", null, response.toByteArray());
         } catch (IOException e) {
             e.printStackTrace();
-        }*/
+        }
     }
 
     public Lobby getLastOperation() {

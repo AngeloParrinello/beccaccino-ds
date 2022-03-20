@@ -27,6 +27,7 @@ public class GameStub {
         try {
             this.connection = this.rabbitMQManager.createConnection();
             this.channel = connection.createChannel();
+            this.run();
         } catch (IOException | TimeoutException e) {
             e.printStackTrace();
         }
@@ -62,7 +63,7 @@ public class GameStub {
 
                 gameRequestHandler.handleRequest(gameRequest);
 
-                System.out.println("LobbiesStub send file to manager!");
+                System.out.println("GameStub send file to manager!");
 
             }
         });
@@ -72,15 +73,26 @@ public class GameStub {
     public void sendGameResponse(Game gameUpdated, ResponseCode responseCode) {
         this.lastOperation = gameUpdated;
         this.lastResponseCode = responseCode;
-        /*GameResponse gameResponse = GameResponse.newBuilder()
-                .setGame(gameUpdated)
-                .setResponseCode(responseCode.getCode())
-                .build();
+        GameResponse gameResponse;
+
+        if (gameUpdated != null) {
+            gameResponse = GameResponse.newBuilder()
+                    .setGame(gameUpdated)
+                    .setResponseCode(responseCode.getCode())
+                    .setResponseMessage(responseCode.getMessage())
+                    .build();
+        } else {
+            gameResponse = GameResponse.newBuilder()
+                    .setResponseCode(responseCode.getCode())
+                    .setResponseMessage(responseCode.getMessage())
+                    .build();
+        }
+
         try {
             channel.basicPublish(todoQueue, "", null, gameResponse.toByteArray());
         } catch (IOException e) {
             e.printStackTrace();
-        }*/
+        }
     }
 
     public Game getLastOperation() {
