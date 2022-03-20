@@ -18,6 +18,7 @@ public class GameRequestHandlerImpl implements GameRequestHandler {
         switch (request.getRequestType()) {
             case ("start") -> this.startGameRequestHandler(request);
             case ("briscola") -> this.setBriscolaRequestHandler(request);
+            case ("play") -> this.makePlayRequestHandler(request);
             default -> this.gameStub.sendGameResponse(null, ResponseCode.PERMISSION_DENIED);
         }
     }
