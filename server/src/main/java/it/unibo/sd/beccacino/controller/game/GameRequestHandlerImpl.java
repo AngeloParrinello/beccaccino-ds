@@ -52,7 +52,6 @@ public class GameRequestHandlerImpl implements GameRequestHandler {
             if(!this.gameUtil.isBriscolaSet(request)) {
                 if(this.gameUtil.setBriscola(request)) {
                     Game updatedGame = this.gameUtil.getGameById(request.getGameId());
-                    System.out.println(updatedGame);
                     this.gameStub.sendGameResponse(updatedGame, ResponseCode.OK);
                 } else {
                     this.gameStub.sendGameResponse(null, ResponseCode.FAIL);
@@ -63,5 +62,9 @@ public class GameRequestHandlerImpl implements GameRequestHandler {
         } else {
             this.gameStub.sendGameResponse(null, ResponseCode.PERMISSION_DENIED);
         }
+    }
+
+    private void makePlayRequestHandler(GameRequest request) {
+
     }
 }

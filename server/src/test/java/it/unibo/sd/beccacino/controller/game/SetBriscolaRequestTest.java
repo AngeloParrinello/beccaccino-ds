@@ -1,9 +1,6 @@
-package it.unibo.sd.beccacino.controller;
+package it.unibo.sd.beccacino.controller.game;
 
 import it.unibo.sd.beccacino.*;
-import it.unibo.sd.beccacino.controller.game.GameRequestHandler;
-import it.unibo.sd.beccacino.controller.game.GameRequestHandlerImpl;
-import it.unibo.sd.beccacino.controller.game.GameStub;
 import it.unibo.sd.beccacino.controller.lobby.LobbiesStub;
 import it.unibo.sd.beccacino.controller.lobby.LobbyManager;
 import it.unibo.sd.beccacino.controller.lobby.LobbyManagerImpl;
@@ -11,7 +8,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class GameRequestHandlerTest {
+public class SetBriscolaRequestTest {
     private final GameStub gameStub = new GameStub();
     private final GameRequestHandler gameRequestHandler = new GameRequestHandlerImpl(gameStub);
     private final LobbiesStub lobbiesStub = new LobbiesStub();
@@ -30,61 +27,6 @@ public class GameRequestHandlerTest {
     }
 
     @Test
-    void testStartGame() {
-        Lobby testLobby = createLobby();
-        this.gameRequestHandler.handleRequest(GameRequest.newBuilder()
-                .setRequestType("start")
-                .setLobby(testLobby)
-                .setRequestingPlayer(this.player)
-                .build());
-        System.out.println(this.gameStub.getLastOperation());
-        Assertions.assertNotNull(this.gameStub.getLastOperation());
-    }
-
-    @Test
-    void testGameAlreadyStarted() {
-        Lobby testLobby = createLobby();
-        this.gameRequestHandler.handleRequest(GameRequest.newBuilder()
-                .setRequestType("start")
-                .setLobby(testLobby)
-                .setRequestingPlayer(this.player)
-                .build());
-        this.gameRequestHandler.handleRequest(GameRequest.newBuilder()
-                .setRequestType("start")
-                .setLobby(testLobby)
-                .setRequestingPlayer(this.player)
-                .build());
-        Assertions.assertEquals(ResponseCode.ILLEGAL_REQUEST, this.gameStub.getLastResponseCode());
-    }
-
-    @Test
-    void testStartGameWithLobbyNotFull() {
-        Lobby testLobby = createLobby();
-        this.lobbyManager.handleRequest(Request.newBuilder()
-                .setLobbyMessage("leave")
-                .setRequestingPlayer(this.player2)
-                .setLobbyId(testLobby.getId())
-                .build());
-        this.gameRequestHandler.handleRequest(GameRequest.newBuilder()
-                .setRequestType("start")
-                .setLobby(testLobby)
-                .setRequestingPlayer(this.player)
-                .build());
-        Assertions.assertEquals(ResponseCode.START, this.gameStub.getLastResponseCode());
-    }
-
-    @Test
-    void testStartGameWithoutPermissions() {
-        Lobby testLobby = createLobby();
-        this.gameRequestHandler.handleRequest(GameRequest.newBuilder()
-                .setRequestType("start")
-                .setLobby(testLobby)
-                .setRequestingPlayer(this.player2)
-                .build());
-        Assertions.assertEquals(ResponseCode.PERMISSION_DENIED, this.gameStub.getLastResponseCode());
-    }
-
-    @Test
     void testSetBriscola() {
         Lobby testLobby = createLobby();
         this.gameRequestHandler.handleRequest(GameRequest.newBuilder()
@@ -99,7 +41,6 @@ public class GameRequestHandlerTest {
                 .setGameId(gameID)
                 .setRequestingPlayer(this.player)
                 .build());
-        System.out.println(this.gameStub.getLastResponseCode());
         Assertions.assertEquals(Suit.COPPE, this.gameStub.getLastOperation().getPublicData().getBriscola());
     }
 
@@ -169,4 +110,3 @@ public class GameRequestHandlerTest {
         return this.lobbiesStub.getLastOperation();
     }
 }
-

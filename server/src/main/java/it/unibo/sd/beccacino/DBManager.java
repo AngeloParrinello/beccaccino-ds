@@ -47,7 +47,7 @@ public class DBManager {
     public List<Document> retrieveAllDocuments(String collectionName) {
         Iterable<Document> documentsIterable = this.db.getCollection(collectionName).find();
         List<Document> documentsList = new ArrayList<>();
-        for (Document doc: documentsIterable) {
+        for (Document doc : documentsIterable) {
             documentsList.add(doc);
         }
         return documentsList;
@@ -73,7 +73,6 @@ public class DBManager {
         Document gameDocument = db.getCollection("games")
                 .find(Filters.eq("_id", new ObjectId(id)))
                 .first();
-        System.out.println(gameDocument);
         if (gameDocument != null) {
             ObjectId gameID = (ObjectId) gameDocument.get("_id");
             gameDocument.remove("_id");
@@ -92,8 +91,8 @@ public class DBManager {
 
     public Lobby getLobbyById(String id) {
         Document lobbyDocument = db.getCollection(LOBBIES_COLLECTION)
-                            .find(Filters.eq("_id", new ObjectId(id)))
-                            .first();
+                .find(Filters.eq("_id", new ObjectId(id)))
+                .first();
         if (lobbyDocument != null) {
             ObjectId lobbyID = (ObjectId) lobbyDocument.get("_id");
             lobbyDocument.remove("_id");
@@ -121,16 +120,16 @@ public class DBManager {
     public boolean updateLobbyPlayers(Player playerJoined, String joinLobbyId) {
         Bson lobbyFilter = Filters.eq("_id", new ObjectId(joinLobbyId));
         Bson updatedPlayer = Updates.push("players", new Document("_id", playerJoined.getId())
-                        .append("nickname", playerJoined.getNickname()));
+                .append("nickname", playerJoined.getNickname()));
         return this.db.getCollection(LOBBIES_COLLECTION)
                 .updateOne(lobbyFilter, updatedPlayer).wasAcknowledged();
     }
 
     public boolean updateBriscola(Suit briscola, String gameID) {
-        // TODO why it doesn't work???
-        BasicDBObject query = new BasicDBObject("_id", new ObjectId(gameID));
-        BasicDBObject update = new BasicDBObject("$set",
-                new BasicDBObject("publicData.$.briscola", briscola));
-        return this.db.getCollection("games").updateOne(query,update).wasAcknowledged();
+        Bson filter = Filters.eq("_id", new ObjectId(gameID));
+        Bson update = Updates.set("publicData.briscola", briscola);
+        return this.db.getCollection("games")
+                .updateOne(filter, update)
+                .wasAcknowledged();
     }
 }
