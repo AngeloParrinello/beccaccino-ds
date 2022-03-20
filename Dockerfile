@@ -1,7 +1,7 @@
 # Alpine Linux , latest version
 FROM alpine:latest
 # Install OpenJDK 11
-RUN apk update ; apk add openjdk11
+RUN apk update ; apk add openjdk16
 # Create environment variable for container working dir path
 ENV WORKINGDIR=/home/gradle/src
 # Change working dir
