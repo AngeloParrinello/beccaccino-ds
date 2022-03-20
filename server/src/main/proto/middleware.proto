@@ -87,6 +87,7 @@ message GameRequest {
 message GameResponse {
   Game game = 1;
   int32 response_code = 2;
+  string response_message = 3;
 }
 
 message Request {
@@ -98,4 +99,5 @@ message Request {
 message Response {
   Lobby lobby = 1;
   int32 response_code = 2;
+  string response_message = 3;
 }
