@@ -40,14 +40,14 @@ public class LobbiesStub {
 
         this.rabbitMQManager.getQueueBuilder()
                 .getInstanceOfQueueBuilder()
-                .setNameQueue(todoQueue)
-                .setExchangeName(todoQueue)
+                .setNameQueue(resultsQueue)
+                .setExchangeName(resultsQueue)
                 .setChannel(channel)
                 .createQueueForSend();
 
         this.rabbitMQManager.getQueueBuilder()
                 .getInstanceOfQueueBuilder()
-                .setNameQueue(resultsQueue)
+                .setNameQueue(todoQueue)
                 .setChannel(channel)
                 .createQueueForReceive();
 
@@ -58,13 +58,7 @@ public class LobbiesStub {
             public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties,
                                        byte[] body) throws InvalidProtocolBufferException {
 
-                System.out.println("LobbiesStub received file!");
-
                 Request request = Request.parseFrom(body);
-
-                System.out.println(request);
-
-                System.out.println("LobbiesStub send file to manager!");
 
                 lobbyManager.handleRequest(request);
             }

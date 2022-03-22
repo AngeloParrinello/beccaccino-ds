@@ -2,11 +2,14 @@ package it.unibo.sd.beccacino.controller.game;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.rabbitmq.client.*;
+import it.unibo.sd.beccacino.DBManager;
 import it.unibo.sd.beccacino.Player;
 import it.unibo.sd.beccacino.Request;
 import it.unibo.sd.beccacino.Response;
 import it.unibo.sd.beccacino.controller.lobby.LobbiesStub;
 import it.unibo.sd.beccacino.rabbitmq.RabbitMQManager;
+import org.bson.Document;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -14,28 +17,20 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.TimeoutException;
 
 public class RealStartGameRequestWithClient {
 
-    LobbiesStub lobbiesStub;
-    FakeClient client;
-
-    @BeforeEach
-    void beforEach() {
-
-    }
-
-    @Test
-    void testClientCreatelobbyRequest() {
-        lobbiesStub = new LobbiesStub();
+    public static void main(String[] args) {
+        LobbiesStub lobbiesStub = new LobbiesStub();
+        FakeClient client;
         client = new FakeClient(new RabbitMQManager());
         try {
             client.simpleLobbyPublish();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        assertEquals(200, this.lobbiesStub.getLastResponseCode().getCode());
     }
 
     private static class FakeClient {

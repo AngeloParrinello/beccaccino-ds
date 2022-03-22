@@ -42,10 +42,7 @@ public class DBManager {
     }
 
     public BsonValue insertDocument(Document document, String collectionName) {
-        System.out.println("Inserting document...");
-        BsonValue bsonValue = db.getCollection(collectionName).insertOne(document).getInsertedId();
-        System.out.println("BSON Value: "+bsonValue);
-        return bsonValue;
+        return db.getCollection(collectionName).insertOne(document).getInsertedId();
     }
 
     public List<Document> retrieveAllDocuments(String collectionName) {
