@@ -21,8 +21,8 @@ public class LobbiesStub {
     private Lobby lastOperation;
     private ResponseCode lastResponseCode;
 
-    String todoQueue = "todoQueueLobbies";
-    String resultsQueue = "resultsQueueLobbies";
+    private final String todoQueue = "todoQueueLobbies";
+    private final String resultsQueue = "resultsQueueLobbies";
 
     public LobbiesStub() {
         this.rabbitMQManager = new RabbitMQManager();
@@ -53,7 +53,7 @@ public class LobbiesStub {
 
         System.out.println("LobbiesStub Intialized Queue!");
 
-        channel.basicConsume(resultsQueue, new DefaultConsumer(channel) {
+        channel.basicConsume(todoQueue, new DefaultConsumer(channel) {
             @Override
             public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties,
                                        byte[] body) throws InvalidProtocolBufferException {
@@ -64,10 +64,9 @@ public class LobbiesStub {
 
                 System.out.println(request);
 
-                lobbyManager.handleRequest(request);
-
                 System.out.println("LobbiesStub send file to manager!");
 
+                lobbyManager.handleRequest(request);
             }
         });
 
@@ -92,7 +91,7 @@ public class LobbiesStub {
         }
 
         try {
-            channel.basicPublish(todoQueue, "", null, response.toByteArray());
+            channel.basicPublish(resultsQueue, "", null, response.toByteArray());
         } catch (IOException e) {
             e.printStackTrace();
         }

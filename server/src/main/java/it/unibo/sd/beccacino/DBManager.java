@@ -21,6 +21,7 @@ import org.bson.types.ObjectId;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public class DBManager {
     private static final String LOBBIES_COLLECTION = "lobbies";
@@ -41,7 +42,10 @@ public class DBManager {
     }
 
     public BsonValue insertDocument(Document document, String collectionName) {
-        return db.getCollection(collectionName).insertOne(document).getInsertedId();
+        System.out.println("Inserting document...");
+        BsonValue bsonValue = db.getCollection(collectionName).insertOne(document).getInsertedId();
+        System.out.println("BSON Value: "+bsonValue);
+        return bsonValue;
     }
 
     public List<Document> retrieveAllDocuments(String collectionName) {

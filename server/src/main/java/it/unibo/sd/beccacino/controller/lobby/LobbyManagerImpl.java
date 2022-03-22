@@ -32,8 +32,11 @@ public class LobbyManagerImpl implements LobbyManager {
     }
 
     private void createLobbyRequestHandler(Request createLobbyRequest) {
+        System.out.println("Handler create starting create response...");
         Player requestingPlayer = createLobbyRequest.getRequestingPlayer();
+        System.out.println("Handler create received Player :" + requestingPlayer);
         String roomID = this.createNewLobby(requestingPlayer).asObjectId().getValue().toString();
+        System.out.println("Room id =" + roomID);
         if (!Objects.equals(roomID, "")) {
             Lobby lobbyUpdated = this.getLobby(roomID);
             this.lobbiesStub.sendLobbyResponse(lobbyUpdated, ResponseCode.OK);
@@ -93,12 +96,12 @@ public class LobbyManagerImpl implements LobbyManager {
     }
 
     private BsonValue createNewLobby(Player requestingPlayer) {
-        // TODO use proto and parser class of protobuf to create proto-message and then convert in Json/Document
-        // to push on DB
+        System.out.println("Creating lobby");
         Document newLobby = new Document("room_capacity", ROOM_CAPACITY)
                 .append("target_score", TARGET_SCORE)
                 .append("players", List.of(new Document("_id", requestingPlayer.getId())
                         .append("nickname", requestingPlayer.getNickname())));
+        System.out.println("Lobby ok: " + newLobby);
         return this.dbManager.insertDocument(newLobby, "lobbies");
     }
 }
