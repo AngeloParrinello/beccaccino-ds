@@ -3,26 +3,27 @@ package it.unibo.sd.beccacino.controller.game;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import it.unibo.sd.beccacino.*;
-import it.unibo.sd.beccacino.model.Deck;
-import it.unibo.sd.beccacino.model.DeckImpl;
+import it.unibo.sd.beccacino.model.BeccacinoGame;
+import it.unibo.sd.beccacino.model.BeccacinoGameImpl;
 import org.bson.BsonValue;
 import org.bson.Document;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 public class GameUtilImpl implements GameUtil {
     private final DBManager dbManager;
+    private final BeccacinoGame game;
 
     public GameUtilImpl() {
         this.dbManager = new DBManager();
+        this.game = new BeccacinoGameImpl();
     }
 
     @Override
     public Document createNewGame(GameRequest request) {
         List<Player> playerList = request.getLobby().getPlayersList();
-        List<PrivateData> privateDataList = this.dealCards(playerList);
+        List<PrivateData> privateDataList = game.dealCards(playerList);
         PublicData publicData = PublicData.newBuilder()
                 .setScoreTeam1(0)
                 .setScoreTeam2(0)
@@ -42,22 +43,6 @@ public class GameUtilImpl implements GameUtil {
             e.printStackTrace();
             return null;
         }
-    }
-
-    private List<PrivateData> dealCards(List<Player> playerList) {
-        Deck deck = new DeckImpl(42);
-        List<PrivateData> privateDataList = new ArrayList<>();
-        for (Player p : playerList) {
-            List<Card> cardList = new ArrayList<>();
-            for(int i=0; i < 10; i++) {
-                cardList.add(deck.drawCard());
-            }
-            privateDataList.add(PrivateData.newBuilder()
-                    .setPlayer(p)
-                    .addAllMyCards(cardList)
-                    .build());
-        }
-        return privateDataList;
     }
 
     @Override
