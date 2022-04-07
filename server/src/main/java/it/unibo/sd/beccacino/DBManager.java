@@ -133,4 +133,21 @@ public class DBManager {
                 .updateOne(filter, update)
                 .wasAcknowledged();
     }
+
+    public boolean registerPlay(Card cardPlayed, String gameId) {
+        Bson filter = Filters.eq("_id", new ObjectId(gameId));
+        Bson update = Updates.push("publicData.cards_on_table", new Document("value", cardPlayed.getValue())
+                .append("suit", cardPlayed.getSuit()));
+        return this.db.getCollection("games")
+                .updateOne(filter, update)
+                .wasAcknowledged();
+    }
+
+    public boolean setMessage(String cardMessage, String gameId) {
+        Bson filter = Filters.eq("_id", new ObjectId(gameId));
+        Bson update = Updates.set("publicData.message", cardMessage);
+        return this.db.getCollection("games")
+                .updateOne(filter, update)
+                .wasAcknowledged();
+    }
 }

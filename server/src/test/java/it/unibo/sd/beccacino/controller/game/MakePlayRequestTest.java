@@ -36,12 +36,8 @@ public class MakePlayRequestTest {
                 .setCardPlayed(testCard)
                 .setRequestingPlayer(this.player1)
                 .build());
-        if (this.gameStub.getLastOperation() != null) {
-            Card cardOnTable = this.gameStub.getLastOperation().getPublicData().getCardsOnTable(0);
-            Assertions.assertEquals(testCard, cardOnTable);
-        } else {
-            Assertions.assertNotEquals(null, this.gameStub.getLastOperation());
-        }
+        Card cardOnTable = this.gameStub.getLastOperation().getPublicData().getCardsOnTable(0);
+        Assertions.assertEquals(testCard, cardOnTable);
     }
 
     @Test

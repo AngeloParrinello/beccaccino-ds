@@ -69,7 +69,12 @@ public class GameRequestHandlerImpl implements GameRequestHandler {
         if (this.gameUtil.isPlayerCurrentPlayer(request)) {
             if (this.gameUtil.isBriscolaSet(request)) {
                 if (this.gameUtil.isCardPlayable(request)) {
-                    this.gameStub.sendGameResponse(null, ResponseCode.OK);
+                    if(this.gameUtil.makePlay(request)) {
+                        Game updatedGame = this.gameUtil.getGameById(request.getGameId());
+                        this.gameStub.sendGameResponse(updatedGame, ResponseCode.OK);
+                    } else {
+                        this.gameStub.sendGameResponse(null, ResponseCode.FAIL);
+                    }
                 } else {
                     this.gameStub.sendGameResponse(null, ResponseCode.ILLEGAL_REQUEST);
                 }

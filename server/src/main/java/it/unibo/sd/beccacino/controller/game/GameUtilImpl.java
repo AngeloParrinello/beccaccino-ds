@@ -99,4 +99,13 @@ public class GameUtilImpl implements GameUtil {
         List<Card> playableCards = requestingPlayerData.getMyCardsList();
         return playableCards.contains(request.getCardPlayed());
     }
+
+    @Override
+    public boolean makePlay(GameRequest request) {
+        if (this.dbManager.setMessage(request.getCardMessage(), request.getGameId())) {
+            return this.dbManager.registerPlay(request.getCardPlayed(), request.getGameId());
+        } else {
+            return false;
+        }
+    }
 }
