@@ -54,4 +54,6 @@ public interface GameUtil {
     boolean isBriscolaSet(GameRequest request);
 
     boolean setBriscola(GameRequest request);
+
+    boolean isCardPlayable(GameRequest request);
 }

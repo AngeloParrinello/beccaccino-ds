@@ -81,8 +81,6 @@ public class GameUtilImpl implements GameUtil {
         return game.getPublicData().getCurrentPlayer().equals(request.getRequestingPlayer());
     }
 
-
-
     @Override
     public boolean isBriscolaSet(GameRequest request) {
         Game game = this.getGameById(request.getGameId());
@@ -92,5 +90,13 @@ public class GameUtilImpl implements GameUtil {
     @Override
     public boolean setBriscola(GameRequest request) {
         return this.dbManager.updateBriscola(request.getBriscola(), request.getGameId());
+    }
+
+    @Override
+    public boolean isCardPlayable(GameRequest request) {
+        Game game = this.getGameById(request.getGameId());
+        PrivateData requestingPlayerData = game.getPrivateData(game.getPlayersList().indexOf(request.getRequestingPlayer()));
+        List<Card> playableCards = requestingPlayerData.getMyCardsList();
+        return playableCards.contains(request.getCardPlayed());
     }
 }

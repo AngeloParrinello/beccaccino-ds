@@ -49,9 +49,9 @@ public class GameRequestHandlerImpl implements GameRequestHandler {
     }
 
     private void setBriscolaRequestHandler(GameRequest request) {
-        if(this.gameUtil.isPlayerCurrentPlayer(request)) {
-            if(!this.gameUtil.isBriscolaSet(request)) {
-                if(this.gameUtil.setBriscola(request)) {
+        if (this.gameUtil.isPlayerCurrentPlayer(request)) {
+            if (!this.gameUtil.isBriscolaSet(request)) {
+                if (this.gameUtil.setBriscola(request)) {
                     Game updatedGame = this.gameUtil.getGameById(request.getGameId());
                     this.gameStub.sendGameResponse(updatedGame, ResponseCode.OK);
                 } else {
@@ -66,6 +66,18 @@ public class GameRequestHandlerImpl implements GameRequestHandler {
     }
 
     private void makePlayRequestHandler(GameRequest request) {
-
+        if (this.gameUtil.isPlayerCurrentPlayer(request)) {
+            if (this.gameUtil.isBriscolaSet(request)) {
+                if (this.gameUtil.isCardPlayable(request)) {
+                    this.gameStub.sendGameResponse(null, ResponseCode.OK);
+                } else {
+                    this.gameStub.sendGameResponse(null, ResponseCode.ILLEGAL_REQUEST);
+                }
+            } else {
+                this.gameStub.sendGameResponse(null, ResponseCode.ILLEGAL_REQUEST);
+            }
+        } else {
+            this.gameStub.sendGameResponse(null, ResponseCode.PERMISSION_DENIED);
+        }
     }
 }
