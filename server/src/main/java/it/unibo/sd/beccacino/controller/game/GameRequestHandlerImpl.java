@@ -65,6 +65,8 @@ public class GameRequestHandlerImpl implements GameRequestHandler {
         }
     }
 
+    // TODO: if its the 4th play of a round we need to reset.
+    // TODO: we're only checking if the card is in the player's hand, not if its a right response to another play.
     private void makePlayRequestHandler(GameRequest request) {
         if (this.gameUtil.isPlayerCurrentPlayer(request)) {
             if (this.gameUtil.isBriscolaSet(request)) {
