@@ -36,8 +36,12 @@ public class MakePlayRequestTest {
                 .setCardPlayed(testCard)
                 .setRequestingPlayer(this.player1)
                 .build());
-        Card cardOnTable = this.gameStub.getLastOperation().getPublicData().getCardsOnTable(0);
-        Assertions.assertEquals(testCard, cardOnTable);
+        if (this.gameStub.getLastOperation() != null) {
+            Card cardOnTable = this.gameStub.getLastOperation().getPublicData().getCardsOnTable(0);
+            Assertions.assertEquals(testCard, cardOnTable);
+        } else {
+            Assertions.assertNotEquals(null, this.gameStub.getLastOperation());
+        }
     }
 
     @Test
@@ -52,8 +56,12 @@ public class MakePlayRequestTest {
                 .setCardMessage(testMessage)
                 .setRequestingPlayer(this.player1)
                 .build());
-        String returnedMessage = this.gameStub.getLastOperation().getPublicData().getMessage();
-        Assertions.assertEquals(testMessage, returnedMessage);
+        if (this.gameStub.getLastOperation() != null) {
+            String returnedMessage = this.gameStub.getLastOperation().getPublicData().getMessage();
+            Assertions.assertEquals(testMessage, returnedMessage);
+        } else {
+            Assertions.assertNotEquals(null, this.gameStub.getLastOperation());
+        }
     }
 
     @Test
