@@ -16,10 +16,11 @@ public interface Round {
      * Adds a play to this round, thus passing the turn to the next player (if
      * the round isn't finished yet).
      *
-     * @param play - the play to be added to this round
+     * @param cardPlayed - the card to be added to this round.
+     * @param message - the message to be added to this round.
      * @throws IllegalStateException if the round is over.
      */
-    void addPlay(Card play);
+    void addPlay(Card cardPlayed, String message);
 
     /**
      * Returns the player on the play, only if the round isn't finished yet.
