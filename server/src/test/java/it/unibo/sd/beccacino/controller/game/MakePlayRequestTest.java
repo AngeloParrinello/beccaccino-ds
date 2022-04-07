@@ -82,8 +82,24 @@ public class MakePlayRequestTest {
         Assertions.assertEquals(ResponseCode.ILLEGAL_REQUEST, this.gameStub.getLastResponseCode());
     }
 
-    @Test
-    void testPlayWrongSuitCard() {}
+    /*@Test
+    void testPlayWrongSuitCard() {
+        Game testGame = this.startGame();
+        Card firstCard = testGame.getPrivateData(0).getMyCards(0);
+        this.gameRequestHandler.handleRequest(GameRequest.newBuilder()
+                .setRequestType("play")
+                .setGameId(testGame.getId())
+                .setCardPlayed(firstCard)
+                .setRequestingPlayer(this.player1)
+                .build());
+        this.gameRequestHandler.handleRequest(GameRequest.newBuilder()
+                .setRequestType("play")
+                .setGameId(testGame.getId())
+                .setCardPlayed()
+                .setRequestingPlayer(this.player2)
+                .build());
+        Assertions.assertEquals(ResponseCode.ILLEGAL_REQUEST, this.gameStub.getLastResponseCode());
+    }*/
 
     private Game startGame() {
         this.lobbyManager.handleRequest(Request.newBuilder()
