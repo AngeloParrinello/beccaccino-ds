@@ -26,6 +26,9 @@ public class MakePlayRequestTest {
         this.player4 = Player.newBuilder().setId("4").setNickname("fourth_player").build();
     }
 
+    /**
+     * Test if the system correctly register a legal play made by a player.
+     */
     @Test
     void testMakePlay() {
         Game testGame = this.startGame();
@@ -40,6 +43,9 @@ public class MakePlayRequestTest {
         Assertions.assertEquals(testCard, cardOnTable);
     }
 
+    /**
+     * Test if the message sent when making the play is correctly registered.
+     */
     @Test
     void testMakePlayWithMessage() {
         Game testGame = this.startGame();
@@ -60,6 +66,10 @@ public class MakePlayRequestTest {
         }
     }
 
+    /**
+     * Test the behaviour of the system if the play is made by the wrong player.
+     * This should not happen in normal conditions as the client won't allow it.
+     */
     @Test
     void testWrongPlayerMakePlay() {
         Game testGame = this.startGame();
@@ -73,6 +83,10 @@ public class MakePlayRequestTest {
         Assertions.assertEquals(ResponseCode.PERMISSION_DENIED, this.gameStub.getLastResponseCode());
     }
 
+    /**
+     * Test the system's behaviour if a player plays a card that is not in his hand.
+     * This should not happen in normal condition as the client won't allow it.
+     */
     @Test
     void testPlayNotInHandCard() {
         Game testGame = this.startGame();
@@ -85,6 +99,34 @@ public class MakePlayRequestTest {
                 .build());
         Assertions.assertEquals(ResponseCode.ILLEGAL_REQUEST, this.gameStub.getLastResponseCode());
     }
+
+    /**
+     * Test if the system correctly save the dominant suit for the turn.
+     * The dominant suit is the suit of the first card played.
+     */
+    @Test
+    void testDominantSuit() {
+        Game testGame = this.startGame();
+        Card testCard = testGame.getPrivateData(2).getMyCards(0);
+        Suit testSuit = testCard.getSuit();
+        this.gameRequestHandler.handleRequest(GameRequest.newBuilder()
+                .setRequestType("play")
+                .setGameId(testGame.getId())
+                .setCardPlayed(testCard)
+                .setRequestingPlayer(this.player1)
+                .build());
+        if (this.gameStub.getLastOperation() != null) {
+            Suit returnedSuit = this.gameStub.getLastOperation().getPublicData().getDominantSuit();
+            Assertions.assertEquals(testSuit, returnedSuit);
+        } else {
+            Assertions.assertNotEquals(null, this.gameStub.getLastOperation());
+        }
+    }
+
+    /**
+     * Test the system's behaviour if a player plays a card that is in his hand but that can't be played.
+     * This should not happen in normal condition as the client won't allow it.
+     */
 
     /*@Test
     void testPlayWrongSuitCard() {
@@ -103,6 +145,14 @@ public class MakePlayRequestTest {
                 .setRequestingPlayer(this.player2)
                 .build());
         Assertions.assertEquals(ResponseCode.ILLEGAL_REQUEST, this.gameStub.getLastResponseCode());
+    }*/
+    /**
+     * Test if the system correctly clean the table after the 4th play is made.
+     */
+
+    /*@Test
+    void testTableCleaning() {
+        Game testGame = this.startGame();
     }*/
 
     private Game startGame() {
