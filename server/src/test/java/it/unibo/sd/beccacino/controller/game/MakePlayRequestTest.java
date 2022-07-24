@@ -105,9 +105,9 @@ public class MakePlayRequestTest {
      * The dominant suit is the suit of the first card played.
      */
     @Test
-    void testDominantSuit() {
+    void testDominantSuitSetup() {
         Game testGame = this.startGame();
-        Card testCard = testGame.getPrivateData(2).getMyCards(0);
+        Card testCard = testGame.getPrivateData(0).getMyCards(0);
         Suit testSuit = testCard.getSuit();
         this.gameRequestHandler.handleRequest(GameRequest.newBuilder()
                 .setRequestType("play")

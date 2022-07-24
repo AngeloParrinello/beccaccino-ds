@@ -51,8 +51,6 @@ public class LobbiesStub {
                 .setChannel(channel)
                 .createQueueForReceive();
 
-        System.out.println("LobbiesStub Intialized Queue!");
-
         channel.basicConsume(todoQueue, new DefaultConsumer(channel) {
             @Override
             public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties,

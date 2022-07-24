@@ -97,15 +97,30 @@ public class GameUtilImpl implements GameUtil {
         Game game = this.getGameById(request.getGameId());
         PrivateData requestingPlayerData = game.getPrivateData(game.getPlayersList().indexOf(request.getRequestingPlayer()));
         List<Card> playableCards = requestingPlayerData.getMyCardsList();
-        return playableCards.contains(request.getCardPlayed());
+        boolean isCardInPlayerHand = playableCards.contains(request.getCardPlayed());
+        boolean isCardDominantSuit = request.getCardPlayed().getSuit() == (game.getPublicData().getDominantSuit());
+        boolean isCardBriscola = request.getCardPlayed().getSuit() == (game.getPublicData().getBriscola());
+        if (game.getPublicData().getCardsOnTableCount() == 0) {
+            return isCardInPlayerHand;
+        } else {
+            return isCardInPlayerHand && (isCardBriscola || isCardDominantSuit);
+        }
     }
 
     @Override
     public boolean makePlay(GameRequest request) {
+        this.setDominantSuitIfNecessary(request);
         if (this.dbManager.setMessage(request.getCardMessage(), request.getGameId())) {
             return this.dbManager.registerPlay(request.getCardPlayed(), request.getGameId());
         } else {
             return false;
+        }
+    }
+
+    private void setDominantSuitIfNecessary(GameRequest request) {
+        Game game = this.getGameById(request.getGameId());
+        if(game.getPublicData().getCardsOnTableCount() == 0) {
+            this.dbManager.setDominantSuit(request.getCardPlayed().getSuit(), request.getGameId());
         }
     }
 }

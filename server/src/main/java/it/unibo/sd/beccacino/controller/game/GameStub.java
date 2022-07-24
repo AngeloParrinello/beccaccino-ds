@@ -48,8 +48,6 @@ public class GameStub {
                 .setChannel(channel)
                 .createQueueForReceive();
 
-        System.out.println("GameStub Intialized Queue!");
-
         channel.basicConsume(resultsQueue, new DefaultConsumer(channel) {
             @Override
             public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties,

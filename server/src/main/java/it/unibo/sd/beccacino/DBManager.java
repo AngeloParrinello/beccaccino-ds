@@ -150,4 +150,12 @@ public class DBManager {
                 .updateOne(filter, update)
                 .wasAcknowledged();
     }
+
+    public boolean setDominantSuit(Suit suit, String gameId) {
+        Bson filter = Filters.eq("_id", new ObjectId(gameId));
+        Bson update = Updates.set("publicData.dominant_suit", suit);
+        return this.db.getCollection("games")
+                .updateOne(filter, update)
+                .wasAcknowledged();
+    }
 }
