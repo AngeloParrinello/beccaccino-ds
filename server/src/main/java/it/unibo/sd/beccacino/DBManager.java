@@ -5,7 +5,6 @@ import com.google.protobuf.util.JsonFormat;
 // import com.mongodb.client.MongoClient;
 // import com.mongodb.client.MongoClients;
 
-import com.mongodb.BasicDBObject;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
@@ -21,7 +20,6 @@ import org.bson.types.ObjectId;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 public class DBManager {
     private static final String LOBBIES_COLLECTION = "lobbies";
@@ -151,11 +149,19 @@ public class DBManager {
                 .wasAcknowledged();
     }
 
-    public boolean setDominantSuit(Suit suit, String gameId) {
+    public void setDominantSuit(Suit suit, String gameId) {
         Bson filter = Filters.eq("_id", new ObjectId(gameId));
         Bson update = Updates.set("publicData.dominant_suit", suit);
-        return this.db.getCollection("games")
-                .updateOne(filter, update)
-                .wasAcknowledged();
+        this.db.getCollection("games")
+                .updateOne(filter, update).wasAcknowledged();
     }
+
+    public void setPlayerTurn(Player player, String gameID) {
+        Bson filter = Filters.eq("_id", new ObjectId(gameID));
+        Bson update = Updates.set("publicData.current_player", player);
+        this.db.getCollection("games")
+                .updateOne(filter, update).wasAcknowledged();
+    }
+
+    
 }

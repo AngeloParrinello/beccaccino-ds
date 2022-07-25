@@ -8,6 +8,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Random;
+
 public class MakePlayRequestTest {
     private final GameStub gameStub = new GameStub();
     private final GameRequestHandler gameRequestHandler = new GameRequestHandlerImpl(gameStub);
@@ -121,6 +123,35 @@ public class MakePlayRequestTest {
         } else {
             Assertions.assertNotEquals(null, this.gameStub.getLastOperation());
         }
+    }
+
+    @Test
+    void testDominantSuitNotRespected() {
+        Game testGame = this.startGame();
+        Random random = new Random();
+        boolean areCardSameSuits = true;
+        Card firstCardPlayed = null;
+        Card secondCardPlayed = null;
+        while (areCardSameSuits) {
+            firstCardPlayed = testGame.getPrivateData(0).getMyCards(random.nextInt(8));
+            secondCardPlayed = testGame.getPrivateData(1).getMyCards(random.nextInt(8));
+            if (firstCardPlayed.getSuit() != secondCardPlayed.getSuit() && secondCardPlayed.getSuit() != Suit.COPPE) {
+                areCardSameSuits = false;
+            }
+        }
+        this.gameRequestHandler.handleRequest(GameRequest.newBuilder()
+                .setRequestType("play")
+                .setGameId(testGame.getId())
+                .setCardPlayed(firstCardPlayed)
+                .setRequestingPlayer(this.player1)
+                .build());
+        this.gameRequestHandler.handleRequest(GameRequest.newBuilder()
+                .setRequestType("play")
+                .setGameId(testGame.getId())
+                .setCardPlayed(secondCardPlayed)
+                .setRequestingPlayer(this.player2)
+                .build());
+        Assertions.assertEquals(ResponseCode.ILLEGAL_REQUEST, this.gameStub.getLastResponseCode());
     }
 
     /**

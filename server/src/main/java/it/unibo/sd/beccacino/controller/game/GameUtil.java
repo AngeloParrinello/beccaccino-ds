@@ -58,4 +58,6 @@ public interface GameUtil {
     boolean isCardPlayable(GameRequest request);
 
     boolean makePlay(GameRequest request);
+
+    void updateCurrentPlayer(String GameID);
 }

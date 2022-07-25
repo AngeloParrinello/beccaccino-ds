@@ -102,9 +102,19 @@ public class GameUtilImpl implements GameUtil {
         boolean isCardBriscola = request.getCardPlayed().getSuit() == (game.getPublicData().getBriscola());
         if (game.getPublicData().getCardsOnTableCount() == 0) {
             return isCardInPlayerHand;
-        } else {
+        } else if (canPlayerAnswerToPlay(game, playableCards)) {
             return isCardInPlayerHand && (isCardBriscola || isCardDominantSuit);
+        } else {
+            return true;
         }
+    }
+
+    private boolean canPlayerAnswerToPlay(Game game, List<Card> cardsInHand) {
+        Suit briscola = game.getPublicData().getBriscola();
+        Suit dominantSuit = game.getPublicData().getDominantSuit();
+        long playableCards = cardsInHand.stream()
+                .filter((c) -> (c.getSuit() == briscola || c.getSuit() == dominantSuit)).count();
+        return playableCards > 0;
     }
 
     @Override
@@ -122,5 +132,17 @@ public class GameUtilImpl implements GameUtil {
         if(game.getPublicData().getCardsOnTableCount() == 0) {
             this.dbManager.setDominantSuit(request.getCardPlayed().getSuit(), request.getGameId());
         }
+    }
+
+    @Override
+    public void updateCurrentPlayer(String gameID) {
+        Game game = this.getGameById(gameID);
+        Player currentPlayer = game.getPublicData().getCurrentPlayer();
+        int indexOfCurrentPlayer = game.getPlayersList().indexOf(currentPlayer);
+        if(indexOfCurrentPlayer == 3) {
+            indexOfCurrentPlayer = -1;
+        }
+        Player nextPlayer = game.getPlayersList().get(indexOfCurrentPlayer + 1);
+        this.dbManager.setPlayerTurn(nextPlayer, gameID);
     }
 }
