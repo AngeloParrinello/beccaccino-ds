@@ -74,6 +74,7 @@ public class GameRequestHandlerImpl implements GameRequestHandler {
                     if(this.gameUtil.makePlay(request)) {
                         this.gameUtil.updateCurrentPlayer(request.getGameId());
                         Game updatedGame = this.gameUtil.getGameById(request.getGameId());
+                        System.out.println(updatedGame);
                         this.gameStub.sendGameResponse(updatedGame, ResponseCode.OK);
                     } else {
                         this.gameStub.sendGameResponse(null, ResponseCode.FAIL);

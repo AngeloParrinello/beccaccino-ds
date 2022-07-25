@@ -151,17 +151,16 @@ public class DBManager {
 
     public void setDominantSuit(Suit suit, String gameId) {
         Bson filter = Filters.eq("_id", new ObjectId(gameId));
-        Bson update = Updates.set("publicData.dominant_suit", suit);
+        Bson update = Updates.set("publicData.dominantSuit", suit);
         this.db.getCollection("games")
                 .updateOne(filter, update).wasAcknowledged();
     }
 
     public void setPlayerTurn(Player player, String gameID) {
         Bson filter = Filters.eq("_id", new ObjectId(gameID));
-        Bson update = Updates.set("publicData.current_player", player);
+        Bson update = Updates.set("publicData.currentPlayer", new Document("_id", player.getId())
+                .append("nickname", player.getNickname()));
         this.db.getCollection("games")
                 .updateOne(filter, update).wasAcknowledged();
     }
-
-    
 }
