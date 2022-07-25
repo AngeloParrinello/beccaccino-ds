@@ -169,4 +169,14 @@ public class DBManager {
         Bson update = Updates.set("publicData.cardsOnTable", null);
         this.db.getCollection("games").updateOne(filter, update);
     }
+
+    public void saveCardsWon(List<Card> cardsPlayed, String gameId, int i) {
+        Bson filter = Filters.eq("_id", new ObjectId(gameId));
+        cardsPlayed.forEach(card -> {
+            Bson update = Updates.push("publicData.team" + i + "_card_won", new Document("value", card.getValue())
+                    .append("suit", card.getSuit()));
+            this.db.getCollection("games")
+                    .updateOne(filter, update);
+        });
+    }
 }

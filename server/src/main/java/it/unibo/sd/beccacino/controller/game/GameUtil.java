@@ -62,4 +62,6 @@ public interface GameUtil {
     void updateCurrentPlayer(String GameID);
 
     void checkAndClearTable(String gameId);
+
+    void computeWinnerAndSetNextPlayer(String gameId);
 }

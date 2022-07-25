@@ -135,8 +135,6 @@ public class BeccacinoBunchOfCards implements BunchOfCards{
      * {@inheritDoc}
      */
     public List<Card> getHighestCards() {
-        // e' impossibile che non torni nulla, pertanto no controlli se lista e'
-        // vuota
         final BeccacinoCardComparator comparator = new BeccacinoCardComparator();
         this.listOfCards.sort(comparator);
         final int indexMax = this.listOfCards.size() - 1;

@@ -3,6 +3,7 @@ package it.unibo.sd.beccacino.controller.game;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import it.unibo.sd.beccacino.*;
+import it.unibo.sd.beccacino.model.BeccacinoBunchOfCards;
 import it.unibo.sd.beccacino.model.BeccacinoGame;
 import it.unibo.sd.beccacino.model.BeccacinoGameImpl;
 import org.bson.BsonValue;
@@ -10,6 +11,7 @@ import org.bson.Document;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public class GameUtilImpl implements GameUtil {
     private final DBManager dbManager;
@@ -119,6 +121,7 @@ public class GameUtilImpl implements GameUtil {
 
     @Override
     public boolean makePlay(GameRequest request) {
+        this.checkAndClearTable(request.getGameId());
         this.setDominantSuitIfNecessary(request);
         if (this.dbManager.setMessage(request.getCardMessage(), request.getGameId())) {
             return this.dbManager.registerPlay(request.getCardPlayed(), request.getGameId());
@@ -150,9 +153,36 @@ public class GameUtilImpl implements GameUtil {
     public void checkAndClearTable(String gameId) {
         Game game = this.getGameById(gameId);
         if(game.getPublicData().getCardsOnTableCount() == 4) {
-            System.out.println("Dentro");
-            // TODO Chi vince?
             this.dbManager.clearCardsOnTable(gameId);
+        }
+    }
+
+    @Override
+    public void computeWinnerAndSetNextPlayer(String gameId) {
+        Game game = this.getGameById(gameId);
+        if(game.getPublicData().getCardsOnTableCount() == 4) {
+            List<Card> cardsPlayed = game.getPublicData().getCardsOnTableList();
+            BeccacinoBunchOfCards cardsUtil = new BeccacinoBunchOfCards(cardsPlayed);
+            Optional<Card> winningCard = cardsUtil.getHighestCardOfSuit(game.getPublicData().getBriscola());
+            int index = 0;
+            if (winningCard.isPresent()) {
+                index = cardsPlayed.indexOf(winningCard.get());
+            } else {
+                winningCard = cardsUtil.getHighestCardOfSuit(game.getPublicData().getDominantSuit());
+                index = cardsPlayed.indexOf(winningCard.get());
+            }
+            int playerIndex = game.getPlayersList().indexOf(game.getPublicData().getCurrentPlayer());
+            for(int i=0; i<index; i++) {
+                playerIndex++;
+                if(playerIndex == 4) {
+                    playerIndex = 0;
+                }
+            }
+            this.dbManager.setPlayerTurn(game.getPlayersList().get(playerIndex), gameId);
+            switch (playerIndex) {
+             case 0, 2 -> this.dbManager.saveCardsWon(cardsPlayed, gameId, 1);
+             case 1, 3 -> this.dbManager.saveCardsWon(cardsPlayed, gameId, 2);
+            }
         }
     }
 }

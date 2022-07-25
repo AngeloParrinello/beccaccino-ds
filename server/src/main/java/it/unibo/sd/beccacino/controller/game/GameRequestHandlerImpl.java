@@ -72,10 +72,8 @@ public class GameRequestHandlerImpl implements GameRequestHandler {
                 if (this.gameUtil.isCardPlayable(request)) {
                     if(this.gameUtil.makePlay(request)) {
                         this.gameUtil.updateCurrentPlayer(request.getGameId());
-                        // TODO we need to move the method below because if we clear here other player can't see which is the 4th card played
-                        this.gameUtil.checkAndClearTable(request.getGameId());
+                        this.gameUtil.computeWinnerAndSetNextPlayer(request.getGameId());
                         Game updatedGame = this.gameUtil.getGameById(request.getGameId());
-                        System.out.println(updatedGame.getPublicData().getCardsOnTableList());
                         this.gameStub.sendGameResponse(updatedGame, ResponseCode.OK);
                     } else {
                         this.gameStub.sendGameResponse(null, ResponseCode.FAIL);
