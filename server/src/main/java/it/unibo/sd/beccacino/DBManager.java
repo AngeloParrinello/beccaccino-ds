@@ -163,4 +163,10 @@ public class DBManager {
         this.db.getCollection("games")
                 .updateOne(filter, update).wasAcknowledged();
     }
+
+    public void clearCardsOnTable(String gameId) {
+        Bson filter = Filters.eq("_id", new ObjectId(gameId));
+        Bson update = Updates.set("publicData.cardsOnTable", null);
+        this.db.getCollection("games").updateOne(filter, update);
+    }
 }

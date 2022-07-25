@@ -145,4 +145,14 @@ public class GameUtilImpl implements GameUtil {
         Player nextPlayer = game.getPlayersList().get(indexOfCurrentPlayer + 1);
         this.dbManager.setPlayerTurn(nextPlayer, gameID);
     }
+
+    @Override
+    public void checkAndClearTable(String gameId) {
+        Game game = this.getGameById(gameId);
+        if(game.getPublicData().getCardsOnTableCount() == 4) {
+            System.out.println("Dentro");
+            // TODO Chi vince?
+            this.dbManager.clearCardsOnTable(gameId);
+        }
+    }
 }

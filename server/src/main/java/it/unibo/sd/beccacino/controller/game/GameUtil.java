@@ -60,4 +60,6 @@ public interface GameUtil {
     boolean makePlay(GameRequest request);
 
     void updateCurrentPlayer(String GameID);
+
+    void checkAndClearTable(String gameId);
 }

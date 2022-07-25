@@ -1,5 +1,6 @@
 package it.unibo.sd.beccacino.controller.game;
 
+import com.google.common.base.StandardSystemProperty;
 import it.unibo.sd.beccacino.*;
 import it.unibo.sd.beccacino.controller.lobby.LobbiesStub;
 import it.unibo.sd.beccacino.controller.lobby.LobbyManager;
@@ -125,6 +126,11 @@ public class MakePlayRequestTest {
         }
     }
 
+
+    /**
+     * Test the system's behaviour if a player plays a card that is in his hand but that can't be played.
+     * This should not happen in normal condition as the client won't allow it.
+     */
     @Test
     void testDominantSuitNotRespected() {
         Game testGame = this.startGame();
@@ -154,37 +160,64 @@ public class MakePlayRequestTest {
         Assertions.assertEquals(ResponseCode.ILLEGAL_REQUEST, this.gameStub.getLastResponseCode());
     }
 
-    /**
-     * Test the system's behaviour if a player plays a card that is in his hand but that can't be played.
-     * This should not happen in normal condition as the client won't allow it.
-     */
 
-    /*@Test
-    void testPlayWrongSuitCard() {
+    /**
+     * Test if the system correctly clean the table after the 4th play is made.
+     * This is a tricky one. To test the behaviour we need to select 4 playable cards from the players' hand.
+     */
+    @Test
+    void testTableCleaning() {
         Game testGame = this.startGame();
-        Card firstCard = testGame.getPrivateData(0).getMyCards(0);
+        Random random = new Random();
+        boolean areTheSameSuit = true;
+        Card testCard1 = null;
+        Card testCard2 = null;
+        Card testCard3 = null;
+        Card testCard4 = null;
+        while(areTheSameSuit) {
+            testCard1 = testGame.getPrivateData(0).getMyCards(random.nextInt(9));
+            testCard2 = testGame.getPrivateData(1).getMyCards(random.nextInt(9));
+            testCard3 = testGame.getPrivateData(2).getMyCards(random.nextInt(9));
+            testCard4 = testGame.getPrivateData(3).getMyCards(random.nextInt(9));
+            Suit dominantSuit = testCard1.getSuit();
+            if(testCard2.getSuit() == dominantSuit &&
+                    testCard3.getSuit() == dominantSuit &&
+                    testCard4.getSuit() == dominantSuit) {
+                areTheSameSuit = false;
+            }
+        }
+        System.out.println("LISTA: " + testCard1.getSuit() + "---" + testCard2.getSuit() + "---"  +
+                testCard3.getSuit() + "---" + testCard4.getSuit());
         this.gameRequestHandler.handleRequest(GameRequest.newBuilder()
                 .setRequestType("play")
                 .setGameId(testGame.getId())
-                .setCardPlayed(firstCard)
+                .setCardPlayed(testCard1)
                 .setRequestingPlayer(this.player1)
                 .build());
         this.gameRequestHandler.handleRequest(GameRequest.newBuilder()
                 .setRequestType("play")
                 .setGameId(testGame.getId())
-                .setCardPlayed()
+                .setCardPlayed(testCard2)
                 .setRequestingPlayer(this.player2)
                 .build());
-        Assertions.assertEquals(ResponseCode.ILLEGAL_REQUEST, this.gameStub.getLastResponseCode());
-    }*/
-    /**
-     * Test if the system correctly clean the table after the 4th play is made.
-     */
-
-    /*@Test
-    void testTableCleaning() {
-        Game testGame = this.startGame();
-    }*/
+        this.gameRequestHandler.handleRequest(GameRequest.newBuilder()
+                .setRequestType("play")
+                .setGameId(testGame.getId())
+                .setCardPlayed(testCard3)
+                .setRequestingPlayer(this.player3)
+                .build());
+        this.gameRequestHandler.handleRequest(GameRequest.newBuilder()
+                .setRequestType("play")
+                .setGameId(testGame.getId())
+                .setCardPlayed(testCard4)
+                .setRequestingPlayer(this.player4)
+                .build());
+        if (this.gameStub.getLastOperation() != null) {
+            Assertions.assertEquals(0, this.gameStub.getLastOperation().getPublicData().getCardsOnTableCount());
+        } else {
+            Assertions.assertNotEquals(null, this.gameStub.getLastOperation());
+        }
+    }
 
     private Game startGame() {
         this.lobbyManager.handleRequest(Request.newBuilder()
