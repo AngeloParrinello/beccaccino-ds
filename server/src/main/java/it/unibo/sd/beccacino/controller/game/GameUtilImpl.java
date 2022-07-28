@@ -178,11 +178,33 @@ public class GameUtilImpl implements GameUtil {
                     playerIndex = 0;
                 }
             }
-            this.dbManager.setPlayerTurn(game.getPlayersList().get(playerIndex), gameId);
-            switch (playerIndex) {
-             case 0, 2 -> this.dbManager.saveCardsWon(cardsPlayed, gameId, 1);
-             case 1, 3 -> this.dbManager.saveCardsWon(cardsPlayed, gameId, 2);
+            if (isMatchOver(game)) {
+                this.computePoints(game);
+            } else {
+                this.dbManager.setPlayerTurn(game.getPlayersList().get(playerIndex), gameId);
+                switch (playerIndex) {
+                    case 0, 2 -> this.dbManager.saveCardsWon(cardsPlayed, gameId, 1);
+                    case 1, 3 -> this.dbManager.saveCardsWon(cardsPlayed, gameId, 2);
+                }
             }
         }
+    }
+
+    private void computePoints(Game game) {
+        BeccacinoBunchOfCards team1Cards = new BeccacinoBunchOfCards(game.getPublicData().getTeam1CardWonList());
+        int team1Points = team1Cards.getPoints();
+        this.dbManager.updateTeamPoints(game.getId(), team1Points, 1);
+        BeccacinoBunchOfCards team2Cards = new BeccacinoBunchOfCards(game.getPublicData().getTeam2CardWonList());
+        int team2Points = team2Cards.getPoints();
+        this.dbManager.updateTeamPoints(game.getId(), team2Points, 2);
+    }
+
+    private boolean isMatchOver(Game game) {
+        for(int i = 0; i < 4; i++) {
+            if (game.getPrivateData(i).getMyCardsCount() != 0) {
+                return false;
+            }
+        }
+        return true;
     }
 }

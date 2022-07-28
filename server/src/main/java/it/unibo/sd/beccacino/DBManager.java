@@ -180,4 +180,14 @@ public class DBManager {
                     .updateOne(filter, update);
         });
     }
+
+
+    public void updateTeamPoints(String gameID, int pointsMade, int teamNumber) {
+        Game game = this.getGameById(gameID);
+        int currentTeamScore =
+                teamNumber == 1 ? game.getPublicData().getScoreTeam1() : game.getPublicData().getScoreTeam2();
+        Bson filter = Filters.eq("_id", new ObjectId(gameID));
+        Bson update = Updates.set("publicData.scoreTeam" + teamNumber, currentTeamScore + pointsMade);
+        this.db.getCollection("games").updateOne(filter, update);
+    }
 }
