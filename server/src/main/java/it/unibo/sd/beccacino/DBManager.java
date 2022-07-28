@@ -113,7 +113,8 @@ public class DBManager {
         Bson lobbyFilter = Filters.eq("_id", new ObjectId(lobbyId));
         Bson removedPlayer = Updates.pull("players", new Document("_id", player.getId()));
         return this.db.getCollection(LOBBIES_COLLECTION)
-                .updateOne(lobbyFilter, removedPlayer).wasAcknowledged();
+                .updateOne(lobbyFilter, removedPlayer)
+                .wasAcknowledged();
     }
 
     public boolean updateLobbyPlayers(Player playerJoined, String joinLobbyId) {
