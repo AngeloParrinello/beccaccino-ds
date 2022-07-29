@@ -58,6 +58,7 @@ public class GameRequestHandlerImpl implements GameRequestHandler {
                     Game updatedGame = this.gameUtil.getGameById(request.getGameId());
                     this.gameStub.sendGameResponse(updatedGame, ResponseCode.OK);
                 } else {
+                    // TODO if something goes wrong, should we return null or the 'old' game?
                     this.gameStub.sendGameResponse(null, ResponseCode.FAIL);
                 }
             } else {
@@ -73,7 +74,8 @@ public class GameRequestHandlerImpl implements GameRequestHandler {
         if (this.gameUtil.isPlayerCurrentPlayer(game, request.getRequestingPlayer())) {
             if (this.gameUtil.isBriscolaSet(game)) {
                 if (this.gameUtil.isCardPlayable(request)) {
-                    if(this.gameUtil.makePlay(request)) {
+                    boolean operationSuccessful = this.gameUtil.makePlay(request);
+                    if(operationSuccessful) {
                         this.gameUtil.updateCurrentPlayer(request.getGameId());
                         this.gameUtil.computeWinnerAndSetNextPlayer(request.getGameId());
                         Game updatedGame = this.gameUtil.getGameById(request.getGameId());
