@@ -2,6 +2,7 @@ package it.unibo.sd.beccacino.controller.game;
 
 import it.unibo.sd.beccacino.Game;
 import it.unibo.sd.beccacino.GameRequest;
+import it.unibo.sd.beccacino.Player;
 import org.bson.BsonValue;
 import org.bson.Document;
 
@@ -60,17 +61,18 @@ public interface GameUtil {
 
     /**
      * Check if the player who made the request is the current player of the match.
-     * @param request the request sent by the client.
+     * @param game the current game.
+     * @param requestingPlayer the player who made the request.
      * @return true if the requesting player is the current player, false otherwise.
      */
-    boolean isPlayerCurrentPlayer(GameRequest request);
+    boolean isPlayerCurrentPlayer(Game game, Player requestingPlayer);
 
     /**
      * Check if the briscola has been set.
-     * @param request the request sent by the client
+     * @param game the current game.
      * @return true if the briscola has been set, false otherwise.
      */
-    boolean isBriscolaSet(GameRequest request);
+    boolean isBriscolaSet(Game game);
 
     /**
      * Set the briscola for this round.

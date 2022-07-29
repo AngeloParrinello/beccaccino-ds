@@ -69,7 +69,8 @@ public class GameUtilImpl implements GameUtil {
 
     @Override
     public boolean isLobbyFull(GameRequest request) {
-        return this.dbManager.getLobbyById(request.getLobby().getId()).getPlayersCount() == 4;
+        Lobby lobby = this.dbManager.getLobbyById(request.getLobby().getId());
+        return lobby.getPlayersCount() == 4;
     }
 
     @Override
@@ -78,14 +79,12 @@ public class GameUtilImpl implements GameUtil {
     }
 
     @Override
-    public boolean isPlayerCurrentPlayer(GameRequest request) {
-        Game game = this.getGameById(request.getGameId());
-        return game.getPublicData().getCurrentPlayer().equals(request.getRequestingPlayer());
+    public boolean isPlayerCurrentPlayer(Game game, Player requestingPlayer) {
+        return game.getPublicData().getCurrentPlayer().equals(requestingPlayer);
     }
 
     @Override
-    public boolean isBriscolaSet(GameRequest request) {
-        Game game = this.getGameById(request.getGameId());
+    public boolean isBriscolaSet(Game game) {
         return (!Objects.equals(game.getPublicData().getBriscola(), Suit.DEFAULT_SUIT));
     }
 
@@ -164,7 +163,7 @@ public class GameUtilImpl implements GameUtil {
             List<Card> cardsPlayed = game.getPublicData().getCardsOnTableList();
             BeccacinoBunchOfCards cardsUtil = new BeccacinoBunchOfCards(cardsPlayed);
             Optional<Card> winningCard = cardsUtil.getHighestCardOfSuit(game.getPublicData().getBriscola());
-            int index = 0;
+            int index;
             if (winningCard.isPresent()) {
                 index = cardsPlayed.indexOf(winningCard.get());
             } else {

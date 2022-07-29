@@ -49,9 +49,12 @@ public class GameRequestHandlerImpl implements GameRequestHandler {
     }
 
     private void setBriscolaRequestHandler(GameRequest request) {
-        if (this.gameUtil.isPlayerCurrentPlayer(request)) {
-            if (!this.gameUtil.isBriscolaSet(request)) {
-                if (this.gameUtil.setBriscola(request)) {
+        Game game = this.gameUtil.getGameById(request.getGameId());
+        Player requestingPlayer = request.getRequestingPlayer();
+        if (this.gameUtil.isPlayerCurrentPlayer(game, requestingPlayer)) {
+            if (!this.gameUtil.isBriscolaSet(game)) {
+                boolean operationSuccessful = this.gameUtil.setBriscola(request);
+                if (operationSuccessful) {
                     Game updatedGame = this.gameUtil.getGameById(request.getGameId());
                     this.gameStub.sendGameResponse(updatedGame, ResponseCode.OK);
                 } else {
@@ -66,8 +69,9 @@ public class GameRequestHandlerImpl implements GameRequestHandler {
     }
 
     private void makePlayRequestHandler(GameRequest request) {
-        if (this.gameUtil.isPlayerCurrentPlayer(request)) {
-            if (this.gameUtil.isBriscolaSet(request)) {
+        Game game = this.gameUtil.getGameById(request.getGameId());
+        if (this.gameUtil.isPlayerCurrentPlayer(game, request.getRequestingPlayer())) {
+            if (this.gameUtil.isBriscolaSet(game)) {
                 if (this.gameUtil.isCardPlayable(request)) {
                     if(this.gameUtil.makePlay(request)) {
                         this.gameUtil.updateCurrentPlayer(request.getGameId());
