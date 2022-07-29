@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "553904795260",
+    "firebase_url": "https://beccaccino-48251.firebaseio.com",
+    "project_id": "beccaccino-48251",
+    "storage_bucket": "beccaccino-48251.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:553904795260:android:29d16a504334507355e3f9",
+        "android_client_info": {
+          "package_name": "com.faventia.beccaccino"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "553904795260-ev5u7b3lfn5n9us3uhgrk9pok9jacm1m.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.faventia.beccaccino",
+            "certificate_hash": "c33fb0ccce9373c8a9cebc38b933621429b56692"
+          }
+        },
+        {
+          "client_id": "553904795260-5dhicdr1lref1ls1a3kn9vk5ls6u13lj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBeCCT3JYk_Dk3nRsDoHygunSI9TgeOCSQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "553904795260-5dhicdr1lref1ls1a3kn9vk5ls6u13lj.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

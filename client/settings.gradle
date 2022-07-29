@@ -1,0 +1,2 @@
+rootProject.name='Beccaccino'
+include ':app'
