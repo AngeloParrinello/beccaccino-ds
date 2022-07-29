@@ -181,7 +181,6 @@ public class DBManager {
         });
     }
 
-
     public void updateTeamPoints(String gameID, int pointsMade, int teamNumber) {
         Game game = this.getGameById(gameID);
         int currentTeamScore =

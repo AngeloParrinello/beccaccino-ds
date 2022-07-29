@@ -44,24 +44,71 @@ public interface GameUtil {
      */
     void removeLobby(String id);
 
-
+    /**
+     * Check if the lobby is full, thus the game can be started.
+     * @param request the game start request sent by the client.
+     * @return true if the lobby is full, false otherwise.
+     */
     boolean isLobbyFull(GameRequest request);
 
+    /**
+     * Check if the specified lobby exist.
+     * @param id the id of the lobby.
+     * @return true if the lobby exists, false otherwise.
+     */
     boolean doesLobbyExists(String id);
 
+    /**
+     * Check if the player who made the request is the current player of the match.
+     * @param request the request sent by the client.
+     * @return true if the requesting player is the current player, false otherwise.
+     */
     boolean isPlayerCurrentPlayer(GameRequest request);
 
+    /**
+     * Check if the briscola has been set.
+     * @param request the request sent by the client
+     * @return true if the briscola has been set, false otherwise.
+     */
     boolean isBriscolaSet(GameRequest request);
 
+    /**
+     * Set the briscola for this round.
+     * @param request the request sent by the client.
+     * @return true if the operation is successful, false otherwise.
+     */
     boolean setBriscola(GameRequest request);
 
+    /**
+     * Check if the player can play the card specified in the request.
+     * @param request the request made by the client.
+     * @return true if the player can play the card, false otherwise.
+     */
     boolean isCardPlayable(GameRequest request);
 
+    /**
+     * Register the play made by the player.
+     * @param request the request made by the client.
+     * @return true if the operation is successful, false otherwise.
+     */
     boolean makePlay(GameRequest request);
 
+    /**
+     * Update the current player of the round, to the next player.
+     * @param GameID the game's ID.
+     */
     void updateCurrentPlayer(String GameID);
 
+    /**
+     * Check if the 4th play is made, and eventually clear the table.
+     * This method also check is the game is ended.
+     * @param gameId the game's ID.
+     */
     void checkAndClearTable(String gameId);
 
+    /**
+     * Check which player has won the round, and set the current player to the winner.
+     * @param gameId the game's ID
+     */
     void computeWinnerAndSetNextPlayer(String gameId);
 }
