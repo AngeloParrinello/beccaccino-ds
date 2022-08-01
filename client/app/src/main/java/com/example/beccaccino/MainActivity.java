@@ -36,13 +36,27 @@ public class MainActivity extends AppCompatActivity {
 
         Button cercaPartita = findViewById(R.id.cercaPartita);
         cercaPartita.setOnClickListener(v -> {
-            // pop up per inserire la partita e attesa di risposta dal server dopo aver inserito il codice
-            Toast.makeText(MainActivity.this, "Inserire numero prima o poi...", Toast.LENGTH_LONG);
+            searchMatch(this);
         });
     }
         @Override
         protected void onStart() {
             super.onStart();
+        }
+
+        private void searchMatch(final Context context) {
+                AlertDialog.Builder alert = new AlertDialog.Builder(context);
+                final EditText matchID = new EditText(context);
+                alert.setMessage("Digita l'ID della partita");
+                alert.setTitle("MatchID");
+                alert.setView(matchID);
+                alert.setCancelable(false);
+                alert.setPositiveButton("Cerca", (dialog, whichButton) -> {
+                    String matchIDInserted = matchID.getText().toString();
+
+                    //TODO: chiamare Server con Rabbit
+                });
+                alert.show();
         }
 
         private void checkUsername() throws IOException {
