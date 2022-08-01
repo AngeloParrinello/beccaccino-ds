@@ -9,13 +9,18 @@ import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import androidx.appcompat.app.AppCompatActivity;
+import com.rabbitmq.client.*;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.TimeoutException;
 
 
 public class MainActivity extends AppCompatActivity {
     public static final String PATH_TO_USERNAME = "username_file";
+    private final String exchangeName = "exchangeName";
+    private final String queueNameSend = "queueNameSend";
+    private final String queueNameReceive = "queueNameReceive";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,8 +119,27 @@ public class MainActivity extends AppCompatActivity {
         alert.setCancelable(false);
         alert.setPositiveButton("Cerca", (dialog, whichButton) -> {
             String matchIDInserted = matchID.getText().toString();
+            try {
+                // dichiaro la coda per mandare il messaggio al server con la richiesta del matchID
+                Connection connection = Utilies.createConnection();
+                Channel channel = connection.createChannel();
+                channel.queueDeclare(queueNameSend, false, false, true, null);
+                channel.exchangeDeclare(exchangeName, BuiltinExchangeType.DIRECT);
+                channel.queueBind(queueNameSend, exchangeName, "");
+                // TODO: mandare messaggio corretto al server
+                channel.basicPublish(exchangeName, "", null, matchIDInserted.getBytes());
 
-            //TODO: chiamare Server con Rabbit
+                // gestisce la risposta
+                channel.basicConsume(queueNameReceive, new DefaultConsumer(channel) {
+                    @Override
+                    public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
+                        // TODO: gestire correttamente la risposta .. cosa deve fare quando gli arriva?
+                        // TODO: se ok cambiare activity sennò popup di errore
+                    }
+                });
+            } catch (IOException | TimeoutException e) {
+                throw new RuntimeException(e);
+            }
         });
         alert.show();
     }
