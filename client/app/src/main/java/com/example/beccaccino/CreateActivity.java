@@ -3,32 +3,19 @@ package com.example.beccaccino;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.RadioGroup;
-import android.widget.Spinner;
-import android.widget.Switch;
 import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import com.travijuu.numberpicker.library.NumberPicker;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class CreateActivity extends AppCompatActivity {
-    //private Switch criccaSetting;
     private List<TextView> usernames = new ArrayList<>();
-    private SharedPreferences sharedPreferences;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -39,36 +26,18 @@ public class CreateActivity extends AppCompatActivity {
 
         // inserire nel text apposito l'id
 
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.match_type, R.layout.spinner);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
-
-        this.sharedPreferences = getSharedPreferences("Settings", MODE_PRIVATE);
-        SharedPreferences.Editor edit = this.sharedPreferences.edit();
-        edit.remove("player2");
-        edit.remove("player3");
-        edit.remove("player4");
-        edit.commit();
-
         TextView me = findViewById(R.id.player1Name);
         me.setText(MainActivity.getUsername(this));
 
         ImageButton backButton = findViewById(R.id.backButton);
-        backButton.setOnClickListener(new Button.OnClickListener() {
-            public void onClick(View v) {
-                Intent myIntent = new Intent(CreateActivity.this, MainActivity.class);
-                CreateActivity.this.startActivity(myIntent);
-            }
+        backButton.setOnClickListener(v -> {
+            Intent myIntent = new Intent(CreateActivity.this, MainActivity.class);
+            CreateActivity.this.startActivity(myIntent);
         });
 
-        final Button startMatch = (Button) findViewById(R.id.startMatch);
+        final Button startMatch = findViewById(R.id.startMatch);
         startMatch.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
-                SharedPreferences.Editor myEdit = sharedPreferences.edit();
-                // cricca non implementata .. sempre a false
-                myEdit.putBoolean("cricca", false);
-                myEdit.putString("player1", MainActivity.getUsername(getApplicationContext()));
-                myEdit.commit();
                 if(checkNumPlayer()) {
                     Intent myIntent = new Intent(CreateActivity.this, GameActivity.class);
                     CreateActivity.this.startActivity(myIntent);
@@ -116,10 +85,6 @@ public class CreateActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        SharedPreferences.Editor myEdit = sharedPreferences.edit();
-        myEdit.putBoolean("cricca", false);
-        myEdit.apply();
-        
         MusicManager.pause();
     }
 
