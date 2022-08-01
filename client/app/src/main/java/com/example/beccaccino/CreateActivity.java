@@ -30,6 +30,8 @@ public class CreateActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create);
 
+        // controllo se le info sulla lobby son presenti ovvero son arrivato in questa activiyt da quella di joinlobby
+
         // invia richiesta al server per creare la lobby
         try {
             Connection connection = Utilies.createConnection();
