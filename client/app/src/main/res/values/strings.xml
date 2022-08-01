@@ -14,10 +14,7 @@
     <string name="profile_image_for_player_3">Profile image for player 3</string>
     <string name="profile_image_for_player_4">Profile image for player 4</string>
     <string name="match_id">Match ID</string>
-    <string name="player_1">Player 1</string>
-    <string name="player_2">Player 2</string>
-    <string name="player_3">Player 3</string>
-    <string name="player_4">Player 4</string>
+    <string name="waiting_player">In attesa</string>
     <string name="volo">Volo</string>
     <string name="striscio">Striscio</string>
     <string name="busso">Busso</string>
