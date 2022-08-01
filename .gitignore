@@ -10,3 +10,6 @@ build
 
 # Ignore IDE configuration files
 .idea
+
+# Ignore server logs
+logs
