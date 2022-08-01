@@ -11,11 +11,19 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import com.rabbitmq.client.*;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 
 public class CreateActivity extends AppCompatActivity {
     private List<TextView> usernames = new ArrayList<>();
+    private final String exchangeName = "exchangeName";
+    private final String queueNameSend = "queueNameSend";
+    private final String queueNameReceive = "queueNameReceive";
+    private String matchID;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -23,6 +31,25 @@ public class CreateActivity extends AppCompatActivity {
         setContentView(R.layout.activity_create);
 
         // invia richiesta al server per creare la lobby
+        try {
+            Connection connection = Utilies.createConnection();
+            Channel channel = connection.createChannel();
+            // creo le code per ricevere e mandare
+            Utilies.createSendQueue(channel, exchangeName, BuiltinExchangeType.DIRECT, "",
+                    queueNameSend, false, false, false, null);
+            Utilies.createReceiveQueue(channel, queueNameReceive, false, false, true, null);
+
+            // TODO: mandare messaggio corretto al server
+            channel.basicPublish(exchangeName, "", null, "TODOOOOOOOOOOOOOOOOOOOO".getBytes());
+            channel.basicConsume(queueNameReceive, new DefaultConsumer(channel) {
+                @Override
+                public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
+                    // TODO: gestire correttamente la risposta .. cosa deve fare quando gli arriva?
+                }
+            });
+        } catch (IOException | TimeoutException e) {
+            throw new RuntimeException(e);
+        }
 
         // inserire nel text apposito l'id
 
@@ -36,14 +63,12 @@ public class CreateActivity extends AppCompatActivity {
         });
 
         final Button startMatch = findViewById(R.id.startMatch);
-        startMatch.setOnClickListener(new Button.OnClickListener() {
-            public void onClick(View v) {
-                if(checkNumPlayer()) {
-                    Intent myIntent = new Intent(CreateActivity.this, GameActivity.class);
-                    CreateActivity.this.startActivity(myIntent);
-                }else{
-                    SingleToast.show(getApplicationContext(), "Seleziona tutti i giocatori prima di iniziare", 3000);
-                }
+        startMatch.setOnClickListener(v -> {
+            if(checkNumPlayer()) {
+                Intent myIntent = new Intent(CreateActivity.this, GameActivity.class);
+                CreateActivity.this.startActivity(myIntent);
+            }else{
+                SingleToast.show(getApplicationContext(), "Seleziona tutti i giocatori prima di iniziare", 3000);
             }
         });
 
@@ -60,11 +85,7 @@ public class CreateActivity extends AppCompatActivity {
         names.add(sh.getString("player2", "Scegli"));
         names.add(sh.getString("player3", "Scegli"));
         names.add(sh.getString("player4", "Scegli"));
-        if(names.contains("Scegli")) {
-            return false;
-        } else {
-            return true;
-        }
+        return !names.contains("Scegli");
     }
 
     private void saveViewElements() {

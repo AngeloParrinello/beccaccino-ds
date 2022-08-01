@@ -120,16 +120,15 @@ public class MainActivity extends AppCompatActivity {
         alert.setPositiveButton("Cerca", (dialog, whichButton) -> {
             String matchIDInserted = matchID.getText().toString();
             try {
-                // dichiaro la coda per mandare il messaggio al server con la richiesta del matchID
                 Connection connection = Utilies.createConnection();
                 Channel channel = connection.createChannel();
-                channel.queueDeclare(queueNameSend, false, false, true, null);
-                channel.exchangeDeclare(exchangeName, BuiltinExchangeType.DIRECT);
-                channel.queueBind(queueNameSend, exchangeName, "");
+                // creo le code per ricevere e mandare
+                Utilies.createSendQueue(channel, exchangeName, BuiltinExchangeType.DIRECT, "",
+                        queueNameSend, false, false, false, null);
+                Utilies.createReceiveQueue(channel, queueNameReceive, false, false, true, null);
+
                 // TODO: mandare messaggio corretto al server
                 channel.basicPublish(exchangeName, "", null, matchIDInserted.getBytes());
-
-                // gestisce la risposta
                 channel.basicConsume(queueNameReceive, new DefaultConsumer(channel) {
                     @Override
                     public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
