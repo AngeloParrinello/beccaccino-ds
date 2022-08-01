@@ -6,6 +6,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -24,6 +26,7 @@ class DBManagerTest {
     @AfterEach
     void clearCollection() {
         this.dbManager.getDB().getCollection("players").drop();
+        this.dbManager.getDB().getCollection("lobbies").drop();
     }
 
     @Test void testCreateDBManager() {
@@ -36,18 +39,11 @@ class DBManagerTest {
         assertEquals(1, dbManager.getDB().getCollection(TEST_COLLECTION_NAME).countDocuments());
     }
 
-    @Test void testRemoveDocuments() {
-        this.dbManager.insertDocument(firstDocument, TEST_COLLECTION_NAME);
-        this.dbManager.insertDocument(secondDocument, TEST_COLLECTION_NAME);
-        this.dbManager.removeDocument("_id", "2", TEST_COLLECTION_NAME);
-        assertEquals(1, dbManager.getDB().getCollection(TEST_COLLECTION_NAME).countDocuments());
-    }
-
     @Test void testRetrieveAllDocuments() {
         this.dbManager.insertDocument(firstDocument, TEST_COLLECTION_NAME);
         this.dbManager.insertDocument(secondDocument, TEST_COLLECTION_NAME);
         this.dbManager.insertDocument(thirdDocument, TEST_COLLECTION_NAME);
-        ArrayList<Document> documentRetrieved = this.dbManager.retrieveAllDocuments(TEST_COLLECTION_NAME);
+        List<Document> documentRetrieved = this.dbManager.retrieveAllDocuments(TEST_COLLECTION_NAME);
         assertEquals(3, documentRetrieved.size());
     }
 
@@ -59,7 +55,7 @@ class DBManagerTest {
     }
 
     @Test void testUpdateDocument() {
-        this.dbManager.insertDocument(firstDocument.append("Nickname", "Pippo"), TEST_COLLECTION_NAME);
+        this.dbManager.insertDocument(firstDocument.append("Nickname", "Pippo").append("Gender", "Male"), TEST_COLLECTION_NAME);
         Document testDocument = firstDocument.append("Nickname", "Pluto");
         this.dbManager.updateDocument("1", testDocument, TEST_COLLECTION_NAME);
         assertEquals(testDocument, this.dbManager.retrieveDocumentByID("_id", "1", TEST_COLLECTION_NAME));

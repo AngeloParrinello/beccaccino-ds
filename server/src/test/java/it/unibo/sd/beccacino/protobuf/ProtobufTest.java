@@ -62,7 +62,7 @@ public class ProtobufTest {
 
             System.out.println("Client Intialized Queue!");
 
-            Player player = Player.newBuilder().setId(1).setNickname("prova").build();
+            Player player = Player.newBuilder().setId("1").setNickname("prova").build();
 
             System.out.println(player);
 
