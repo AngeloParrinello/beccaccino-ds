@@ -41,7 +41,6 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     private static final int RC_SIGN_IN = 111;
-    private FirebaseAuth mAuth;
     private static boolean _running = true;
     public static final String PATH_TO_USERNAME = "username_file";
 
@@ -51,86 +50,36 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        mAuth = FirebaseAuth.getInstance();
         try {
             checkUsername();
         } catch (IOException e) {
             e.printStackTrace();
         }
-            /*
-            startActivityForResult(
-                    AuthUI.getInstance()
-                            .createSignInIntentBuilder()
-                            .setAvailableProviders(Arrays.asList(
-                                    new AuthUI.IdpConfig.GoogleBuilder().build(),
-                                    new AuthUI.IdpConfig.AnonymousBuilder().build()))
-                            .build(),
-                    RC_SIGN_IN);
-                    */
 
-        Button nuovaPartita = (Button) findViewById(R.id.nuovaPartita);
-        nuovaPartita.setOnClickListener(new Button.OnClickListener() {
-            public void onClick(View v) {
-                Intent myIntent = new Intent(MainActivity.this, CreateActivity.class);
-                MainActivity.this.startActivity(myIntent);
-                overridePendingTransition(R.anim.fragment_fade_enter, R.anim.fragment_fade_exit);
-            }
+        Button nuovaPartita = findViewById(R.id.nuovaPartita);
+        nuovaPartita.setOnClickListener(v -> {
+            Intent myIntent = new Intent(MainActivity.this, CreateActivity.class);
+            MainActivity.this.startActivity(myIntent);
+            overridePendingTransition(R.anim.fragment_fade_enter, R.anim.fragment_fade_exit);
         });
 
-        Button cercaPartita = (Button) findViewById(R.id.cercaPartita);
-        cercaPartita.setOnClickListener(new Button.OnClickListener() {
-            public void onClick(View v) {
-                // pop up per inserire la partita e attesa di risposta dal server dopo aver inserito il codice
-                Toast.makeText(MainActivity.this, "Inserire numero prima o poi...", Toast.LENGTH_LONG);
-            }
+        Button cercaPartita = findViewById(R.id.cercaPartita);
+        cercaPartita.setOnClickListener(v -> {
+            // pop up per inserire la partita e attesa di risposta dal server dopo aver inserito il codice
+            Toast.makeText(MainActivity.this, "Inserire numero prima o poi...", Toast.LENGTH_LONG);
         });
 
-        Button settings = (Button) findViewById(R.id.impostazioni);
-        settings.setOnClickListener((new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent myIntent = new Intent(MainActivity.this, SettingsActivity.class);
-                MainActivity.this.startActivity(myIntent);
-            }
+        Button settings = findViewById(R.id.impostazioni);
+        settings.setOnClickListener((v -> {
+            Intent myIntent = new Intent(MainActivity.this, SettingsActivity.class);
+            MainActivity.this.startActivity(myIntent);
         }));
 
 
     }
-
-
-
-
         @Override
         protected void onStart() {
             super.onStart();
-            FirebaseUser currentUser = mAuth.getCurrentUser();
-            updateUI(currentUser);
-            mAuth.signInAnonymously()
-                    .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                        @Override
-                        public void onComplete(@NonNull Task<AuthResult> task) {
-                            if (task.isSuccessful()) {
-                                // Sign in success, update UI with the signed-in user's information
-                                Log.d("LOGIN_ANONYMOUS", "signInAnonymously:success");
-                                FirebaseUser user = mAuth.getCurrentUser();
-                                updateUI(user);
-                            } else {
-                                // If sign in fails, display a message to the user.
-                                Log.w("LOGIN_ANONYMOUS", "signInAnonymously:failure", task.getException());
-                                Toast.makeText(MainActivity.this, "Authentication failed.",
-                                        Toast.LENGTH_SHORT).show();
-                                updateUI(null);
-                            }
-
-                            // ...
-                        }
-                    });
-        }
-
-        private void updateUI(FirebaseUser currentUser) {
-            if (currentUser != null) {
-            }
         }
 
         private void checkUsername() throws IOException {
@@ -159,15 +108,6 @@ public class MainActivity extends AppCompatActivity {
                     String username = stringBuilder.toString();
                     Log.d("MyApp",username);
                 }
-                /*
-                byte[] bytes = new byte[1024];
-                FileInputStream fis = openFileInput(PATH_TO_USERNAME);
-                fis.read(bytes);
-                fis.close();
-                String username = new String(bytes);
-                */
-
-
             } else {
                 setUsername(this);
             }
@@ -180,25 +120,23 @@ public class MainActivity extends AppCompatActivity {
             alert.setTitle("Username");
             alert.setView(userName);
             alert.setCancelable(false);
-            alert.setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int whichButton) {
-                    //What ever you want to do with the value
-                    Editable usernameChoosed = userName.getText();
+            alert.setPositiveButton("Confirm", (dialog, whichButton) -> {
+                //What ever you want to do with the value
+                Editable usernameChoosed = userName.getText();
 
 
-                    String filename = PATH_TO_USERNAME;
-                    String fileContents = usernameChoosed.toString();
+                String filename = PATH_TO_USERNAME;
+                String fileContents = usernameChoosed.toString();
 
-                    try (FileOutputStream fos = context.openFileOutput(filename, Context.MODE_PRIVATE)) {
-                        fos.write(fileContents.getBytes());
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-
+                try (FileOutputStream fos = context.openFileOutput(filename, Context.MODE_PRIVATE)) {
+                    fos.write(fileContents.getBytes());
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
+
+
             });
             alert.show();
         }
