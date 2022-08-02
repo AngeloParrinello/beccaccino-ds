@@ -24,24 +24,22 @@ class RabbitMQManagerTest {
         Connection connection = rabbitMQManager.createConnection();
         RabbitMQQueueBuilder builder = rabbitMQManager.getQueueBuilder();
         assertDoesNotThrow(() -> builder.getInstanceOfQueueBuilder().setNameQueue("test1")
+                                                                    .setExchangeName("test1")
                                                                     .setChannel(connection.createChannel())
                                                                     .setArguments(null)
                                                                     .setAutoDelete(true)
                                                                     .setDurable(true)
                                                                     .setExclusive(true)
-                                                                    .createQueueForReceive());
+                                                                    .createQueue());
 
         assertEquals("test67", builder.getInstanceOfQueueBuilder().setNameQueue("test67")
+                                                                .setExchangeName("test67")
                                                                 .setChannel(connection.createChannel())
-                                                                .createQueueForReceive());
+                                                                .createQueue());
 
-        assertThrows(NullPointerException.class, () -> {
-            builder.getInstanceOfQueueBuilder().createQueueForReceive();
-        });
+        assertThrows(NullPointerException.class, () -> builder.getInstanceOfQueueBuilder().createQueue());
 
-        assertThrows(IOException.class, () -> {
-            builder.getInstanceOfQueueBuilder().setNameQueue("test1").setChannel(connection.createChannel()).createQueueForReceive();
-        });
+        assertThrows(IOException.class, () -> builder.getInstanceOfQueueBuilder().setNameQueue("test1").setChannel(connection.createChannel()).createQueue());
 
     }
 
@@ -58,17 +56,17 @@ class RabbitMQManagerTest {
                                                                    .setAutoDelete(true)
                                                                    .setDurable(true)
                                                                    .setExclusive(true)
-                                                                   .createQueueForSend());
+                                                                   .createQueue());
 
         assertEquals("test4", builder.getInstanceOfQueueBuilder().setNameQueue("test4")
                                                                     .setExchangeName("test4")
                                                                     .setChannel(connection.createChannel())
-                                                                    .createQueueForSend());
+                                                                    .createQueue());
 
         assertThrows(IOException.class, () -> {
             builder.getInstanceOfQueueBuilder().setNameQueue("test5")
                     .setChannel(connection.createChannel())
-                    .createQueueForSend();
+                    .createQueue();
         });
 
 

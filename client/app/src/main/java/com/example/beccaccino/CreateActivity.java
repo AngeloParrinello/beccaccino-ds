@@ -4,8 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -20,7 +18,6 @@ import java.util.concurrent.TimeoutException;
 
 public class CreateActivity extends AppCompatActivity {
     private List<TextView> usernames = new ArrayList<>();
-    private final String exchangeName = "exchangeName";
     private final String queueNameSend = "queueNameSend";
     private final String queueNameReceive = "queueNameReceive";
     private String matchID;
@@ -34,15 +31,14 @@ public class CreateActivity extends AppCompatActivity {
 
         // invia richiesta al server per creare la lobby
         try {
-            Connection connection = Utilies.createConnection();
+            Connection connection = Utilities.createConnection();
             Channel channel = connection.createChannel();
             // creo le code per ricevere e mandare
-            Utilies.createSendQueue(channel, exchangeName, BuiltinExchangeType.DIRECT, "",
-                    queueNameSend, false, false, false, null);
-            Utilies.createReceiveQueue(channel, queueNameReceive, false, false, true, null);
+            Utilities.createQueue(channel, queueNameSend, BuiltinExchangeType.DIRECT, queueNameSend);
+            Utilities.createQueue(channel, queueNameReceive, BuiltinExchangeType.DIRECT, queueNameReceive);
 
             // TODO: mandare messaggio corretto al server
-            channel.basicPublish(exchangeName, "", null, "TODOOOOOOOOOOOOOOOOOOOO".getBytes());
+            channel.basicPublish(queueNameSend, "", null, "TODOOOOOOOOOOOOOOOOOOOO".getBytes());
             channel.basicConsume(queueNameReceive, new DefaultConsumer(channel) {
                 @Override
                 public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {

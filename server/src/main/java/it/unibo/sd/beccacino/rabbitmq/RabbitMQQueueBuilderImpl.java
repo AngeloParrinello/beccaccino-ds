@@ -78,17 +78,10 @@ public class RabbitMQQueueBuilderImpl implements RabbitMQQueueBuilder{
     }
 
     @Override
-    public String createQueueForReceive() throws IOException {
+    public String createQueue() throws IOException {
         this.channel.queueDeclare(this.nameQueue, this.durable, this.exclusive, this.autoDelete, this.arguments);
-        return this.nameQueue;
-    }
-
-    @Override
-    public String createQueueForSend() throws IOException {
-        this.createQueueForReceive();
         this.channel.exchangeDeclare(this.exchangeName, this.exchangeType);
         this.channel.queueBind(this.nameQueue, this.exchangeName, this.routingKey);
         return this.nameQueue;
     }
-
 }

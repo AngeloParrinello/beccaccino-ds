@@ -40,13 +40,14 @@ public class GameStub {
                 .setNameQueue(todoQueue)
                 .setExchangeName(todoQueue)
                 .setChannel(channel)
-                .createQueueForSend();
+                .createQueue();
 
         this.rabbitMQManager.getQueueBuilder()
                 .getInstanceOfQueueBuilder()
                 .setNameQueue(resultsQueue)
+                .setExchangeName(resultsQueue)
                 .setChannel(channel)
-                .createQueueForReceive();
+                .createQueue();
 
         channel.basicConsume(resultsQueue, new DefaultConsumer(channel) {
             @Override

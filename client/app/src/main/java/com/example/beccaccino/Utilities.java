@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
-public class Utilies {
+public class Utilities {
 
     public static Connection createConnection() throws IOException, TimeoutException {
         ConnectionFactory factory = new ConnectionFactory();
@@ -35,18 +35,9 @@ public class Utilies {
         }
     }
 
-    public static String createReceiveQueue(final Channel channel, final String nameQueue, final boolean durable, final boolean exclusive,
-                                            final boolean autoDelete, Map<String, Object> arguments) throws IOException {
-        channel.queueDeclare(nameQueue, durable, exclusive, autoDelete, arguments);
-        return nameQueue;
-    }
-
-    public static String createSendQueue(final Channel channel, final String exchangeName, final BuiltinExchangeType exchangeType,
-                                         final String routingKey, final String nameQueue, final boolean durable, final boolean exclusive,
-                                         final boolean autoDelete, Map<String, Object> arguments) throws IOException {
-        createReceiveQueue(channel, nameQueue, durable, exclusive, autoDelete, arguments);
+    public static String createQueue(final Channel channel, final String exchangeName, final BuiltinExchangeType exchangeType,
+                              final String nameQueue) throws IOException {
         channel.exchangeDeclare(exchangeName, exchangeType);
-        channel.queueBind(nameQueue, exchangeName, routingKey);
         return nameQueue;
     }
 

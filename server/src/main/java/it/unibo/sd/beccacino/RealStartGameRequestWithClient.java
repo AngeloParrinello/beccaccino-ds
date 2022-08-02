@@ -47,13 +47,14 @@ public class RealStartGameRequestWithClient {
                     .setNameQueue(todoQueue)
                     .setExchangeName(todoQueue)
                     .setChannel(channel)
-                    .createQueueForSend();
+                    .createQueue();
 
             this.rabbitMQManager.getQueueBuilder()
                     .getInstanceOfQueueBuilder()
                     .setNameQueue(resultsQueue)
+                    .setExchangeName(resultsQueue)
                     .setChannel(channel)
-                    .createQueueForReceive();
+                    .createQueue();
 
             System.out.println("Client Intialized Queue!");
         }

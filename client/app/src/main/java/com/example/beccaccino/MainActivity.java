@@ -67,12 +67,11 @@ public class MainActivity extends AppCompatActivity {
 
         executorService.submit(() -> {
             try {
-                Connection connection = Utilies.createConnection();
+                Connection connection = Utilities.createConnection();
                 Channel channel = connection.createChannel();
 
-                Utilies.createSendQueue(channel, todoQueue, BuiltinExchangeType.DIRECT, "", todoQueue,
-                        false, false, false, null);
-                Utilies.createReceiveQueue(channel, resultQueue, false, false, true, null);
+                Utilities.createQueue(channel, todoQueue, BuiltinExchangeType.DIRECT, todoQueue);
+                Utilities.createQueue(channel, resultQueue, BuiltinExchangeType.DIRECT, resultQueue);
 
                 channel.basicPublish(todoQueue, "", null, createLobbyRequest.toByteArray());
                 channel.basicConsume(resultQueue, new DefaultConsumer(channel) {
@@ -99,12 +98,11 @@ public class MainActivity extends AppCompatActivity {
             executorService.submit(() -> {
                 String matchIDInserted = matchID.getText().toString();
                 try {
-                    Connection connection = Utilies.createConnection();
+                    Connection connection = Utilities.createConnection();
                     Channel channel = connection.createChannel();
 
-                    Utilies.createSendQueue(channel, todoQueue, BuiltinExchangeType.DIRECT, "", todoQueue,
-                            false, false, false, null);
-                    Utilies.createReceiveQueue(channel, resultQueue, false, false, true, null);
+                    Utilities.createQueue(channel, todoQueue, BuiltinExchangeType.DIRECT, todoQueue);
+                    Utilities.createQueue(channel, resultQueue, BuiltinExchangeType.DIRECT, todoQueue);
 
                     Request searchLobbyRequest = Request.newBuilder().setLobbyId(matchIDInserted)
                             .setLobbyMessage("join")

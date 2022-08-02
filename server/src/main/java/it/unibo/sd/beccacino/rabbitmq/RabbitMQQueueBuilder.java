@@ -28,7 +28,5 @@ public interface RabbitMQQueueBuilder {
 
     RabbitMQQueueBuilder setArguments(Map<String, Object> arguments);
 
-    String createQueueForReceive() throws IOException;
-
-    String createQueueForSend() throws IOException;
+    String createQueue() throws IOException;
 }

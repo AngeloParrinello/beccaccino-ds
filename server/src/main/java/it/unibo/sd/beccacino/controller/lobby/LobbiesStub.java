@@ -7,7 +7,6 @@ import it.unibo.sd.beccacino.Request;
 import it.unibo.sd.beccacino.Response;
 import it.unibo.sd.beccacino.ResponseCode;
 import it.unibo.sd.beccacino.rabbitmq.RabbitMQManager;
-
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 
@@ -43,13 +42,14 @@ public class LobbiesStub {
                 .setNameQueue(resultsQueue)
                 .setExchangeName(resultsQueue)
                 .setChannel(channel)
-                .createQueueForSend();
+                .createQueue();
 
         this.rabbitMQManager.getQueueBuilder()
                 .getInstanceOfQueueBuilder()
                 .setNameQueue(todoQueue)
+                .setExchangeName(todoQueue)
                 .setChannel(channel)
-                .createQueueForReceive();
+                .createQueue();
 
         channel.basicConsume(todoQueue, new DefaultConsumer(channel) {
             @Override
