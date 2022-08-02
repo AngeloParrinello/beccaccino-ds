@@ -5,12 +5,12 @@ plugins {
 }
 
 android {
-    compileSdkVersion 29
+    compileSdkVersion 30
 
     defaultConfig {
         applicationId "com.faventia.beccaccino"
         minSdkVersion 24
-        targetSdkVersion 29
+        targetSdkVersion 30
         versionCode 1
         versionName "1.0"
 
@@ -29,6 +29,10 @@ android {
                 srcDirs 'src/main/res', 'src/main/res/layout/fragment_home'
             }
         }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_14
+        targetCompatibility JavaVersion.VERSION_14
     }
 
 }
