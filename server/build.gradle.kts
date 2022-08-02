@@ -43,7 +43,7 @@ protobuf {
 
 application {
     // Define the main class for the application.
-    mainClass.set("it.unibo.sd.beccacino.App")
+    mainClass.set("it.unibo.sd.beccacino.Launcher")
 }
 
 

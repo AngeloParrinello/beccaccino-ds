@@ -17,7 +17,8 @@ public class Utilies {
         factory.setVirtualHost("/");
         // not "localhost" because i'm in the container
         // factory.setHost("localhost");
-        factory.setHost(System.getenv("RABBIT_HOST"));
+        //factory.setHost(System.getenv("RABBIT_HOST"));
+        factory.setHost("rabbitmq");
         factory.setPort(5672);
         factory.setAutomaticRecoveryEnabled(true);
         while(true) {

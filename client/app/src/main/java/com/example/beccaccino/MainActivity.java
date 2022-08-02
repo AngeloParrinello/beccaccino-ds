@@ -10,10 +10,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import androidx.appcompat.app.AppCompatActivity;
 import com.rabbitmq.client.*;
-
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeoutException;
 
 
@@ -22,6 +22,7 @@ public class MainActivity extends AppCompatActivity {
     private final String todoQueue = "todoQueueLobbies";
     private final String resultQueue = "resultsQueueLobbies";
     private Player myPlayer;
+    private final ExecutorService executorService = Executors.newFixedThreadPool(4);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
         nuovaPartita.setOnClickListener(v -> createMatch());
 
         Button cercaPartita = findViewById(R.id.cercaPartita);
-        cercaPartita.setOnClickListener(v -> searchMatch());
+        cercaPartita.setOnClickListener(v -> searchMatch(MainActivity.this));
     }
 
     @Override
@@ -64,36 +65,7 @@ public class MainActivity extends AppCompatActivity {
     private void createMatch() {
         Request createLobbyRequest = Request.newBuilder().setLobbyMessage("create").setRequestingPlayer(myPlayer).build();
 
-        try {
-            Connection connection = Utilies.createConnection();
-            Channel channel = connection.createChannel();
-
-            Utilies.createSendQueue(channel, todoQueue, BuiltinExchangeType.DIRECT, "", todoQueue,
-                    false, false, false, null);
-            Utilies.createReceiveQueue(channel, resultQueue, false, false, true, null);
-
-            channel.basicPublish(todoQueue, "", null, createLobbyRequest.toByteArray());
-            channel.basicConsume(resultQueue, new DefaultConsumer(channel) {
-                @Override
-                public void handleDelivery(String consumerTag, Envelope envelope,
-                                           AMQP.BasicProperties properties, byte[] body) throws IOException {
-                    responseHandler(Response.parseFrom(body));
-                }
-            });
-        } catch (IOException | TimeoutException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void searchMatch() {
-        AlertDialog.Builder alert = new AlertDialog.Builder(getApplicationContext());
-        final EditText matchID = new EditText(getApplicationContext());
-        alert.setMessage("Digita l'ID della partita");
-        alert.setTitle("MatchID");
-        alert.setView(matchID);
-        alert.setCancelable(false);
-        alert.setPositiveButton("Cerca", (dialog, whichButton) -> {
-            String matchIDInserted = matchID.getText().toString();
+        executorService.submit(() -> {
             try {
                 Connection connection = Utilies.createConnection();
                 Channel channel = connection.createChannel();
@@ -102,12 +74,7 @@ public class MainActivity extends AppCompatActivity {
                         false, false, false, null);
                 Utilies.createReceiveQueue(channel, resultQueue, false, false, true, null);
 
-                Request searchLobbyRequest = Request.newBuilder().setLobbyId(matchIDInserted)
-                                                                 .setLobbyMessage("join")
-                                                                 .setRequestingPlayer(myPlayer)
-                                                                 .build();
-
-                channel.basicPublish(todoQueue, "", null, searchLobbyRequest.toByteArray());
+                channel.basicPublish(todoQueue, "", null, createLobbyRequest.toByteArray());
                 channel.basicConsume(resultQueue, new DefaultConsumer(channel) {
                     @Override
                     public void handleDelivery(String consumerTag, Envelope envelope,
@@ -118,6 +85,44 @@ public class MainActivity extends AppCompatActivity {
             } catch (IOException | TimeoutException e) {
                 throw new RuntimeException(e);
             }
+        });
+    }
+
+    private void searchMatch(final Context context) {
+        AlertDialog.Builder alert = new AlertDialog.Builder(context);
+        final EditText matchID = new EditText(context);
+        alert.setMessage("Digita l'ID della partita");
+        alert.setTitle("MatchID");
+        alert.setView(matchID);
+        alert.setCancelable(false);
+        alert.setPositiveButton("Cerca", (dialog, whichButton) -> {
+            executorService.submit(() -> {
+                String matchIDInserted = matchID.getText().toString();
+                try {
+                    Connection connection = Utilies.createConnection();
+                    Channel channel = connection.createChannel();
+
+                    Utilies.createSendQueue(channel, todoQueue, BuiltinExchangeType.DIRECT, "", todoQueue,
+                            false, false, false, null);
+                    Utilies.createReceiveQueue(channel, resultQueue, false, false, true, null);
+
+                    Request searchLobbyRequest = Request.newBuilder().setLobbyId(matchIDInserted)
+                            .setLobbyMessage("join")
+                            .setRequestingPlayer(myPlayer)
+                            .build();
+
+                    channel.basicPublish(todoQueue, "", null, searchLobbyRequest.toByteArray());
+                    channel.basicConsume(resultQueue, new DefaultConsumer(channel) {
+                        @Override
+                        public void handleDelivery(String consumerTag, Envelope envelope,
+                                                   AMQP.BasicProperties properties, byte[] body) throws IOException {
+                            responseHandler(Response.parseFrom(body));
+                        }
+                    });
+                } catch (IOException | TimeoutException e) {
+                    throw new RuntimeException(e);
+                }
+            });
         });
         alert.show();
     }
