@@ -13,19 +13,21 @@ import com.rabbitmq.client.*;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.concurrent.TimeoutException;
 
 
 public class MainActivity extends AppCompatActivity {
     public static final String PATH_TO_USERNAME = "username_file";
-    private final String exchangeName = "exchangeName";
-    private final String queueNameSend = "queueNameSend";
-    private final String queueNameReceive = "queueNameReceive";
+    private final String todoQueue = "todoQueueLobbies";
+    private final String resultQueue = "resultsQueueLobbies";
+    private Player myPlayer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         try {
             checkUsername();
         } catch (IOException e) {
@@ -33,16 +35,10 @@ public class MainActivity extends AppCompatActivity {
         }
 
         Button nuovaPartita = findViewById(R.id.nuovaPartita);
-        nuovaPartita.setOnClickListener(v -> {
-            Intent myIntent = new Intent(MainActivity.this, CreateActivity.class);
-            MainActivity.this.startActivity(myIntent);
-            overridePendingTransition(R.anim.fragment_fade_enter, R.anim.fragment_fade_exit);
-        });
+        nuovaPartita.setOnClickListener(v -> createMatch());
 
         Button cercaPartita = findViewById(R.id.cercaPartita);
-        cercaPartita.setOnClickListener(v -> {
-            searchMatch(this);
-        });
+        cercaPartita.setOnClickListener(v -> searchMatch());
     }
 
     @Override
@@ -65,7 +61,68 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private static void setUsername(final Context context) {
+    private void createMatch() {
+        Request createLobbyRequest = Request.newBuilder().setLobbyMessage("create").setRequestingPlayer(myPlayer).build();
+
+        try {
+            Connection connection = Utilies.createConnection();
+            Channel channel = connection.createChannel();
+
+            Utilies.createSendQueue(channel, todoQueue, BuiltinExchangeType.DIRECT, "", todoQueue,
+                    false, false, false, null);
+            Utilies.createReceiveQueue(channel, resultQueue, false, false, true, null);
+
+            channel.basicPublish(todoQueue, "", null, createLobbyRequest.toByteArray());
+            channel.basicConsume(resultQueue, new DefaultConsumer(channel) {
+                @Override
+                public void handleDelivery(String consumerTag, Envelope envelope,
+                                           AMQP.BasicProperties properties, byte[] body) throws IOException {
+                    responseHandler(Response.parseFrom(body));
+                }
+            });
+        } catch (IOException | TimeoutException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void searchMatch() {
+        AlertDialog.Builder alert = new AlertDialog.Builder(getApplicationContext());
+        final EditText matchID = new EditText(getApplicationContext());
+        alert.setMessage("Digita l'ID della partita");
+        alert.setTitle("MatchID");
+        alert.setView(matchID);
+        alert.setCancelable(false);
+        alert.setPositiveButton("Cerca", (dialog, whichButton) -> {
+            String matchIDInserted = matchID.getText().toString();
+            try {
+                Connection connection = Utilies.createConnection();
+                Channel channel = connection.createChannel();
+
+                Utilies.createSendQueue(channel, todoQueue, BuiltinExchangeType.DIRECT, "", todoQueue,
+                        false, false, false, null);
+                Utilies.createReceiveQueue(channel, resultQueue, false, false, true, null);
+
+                Request searchLobbyRequest = Request.newBuilder().setLobbyId(matchIDInserted)
+                                                                 .setLobbyMessage("join")
+                                                                 .setRequestingPlayer(myPlayer)
+                                                                 .build();
+
+                channel.basicPublish(todoQueue, "", null, searchLobbyRequest.toByteArray());
+                channel.basicConsume(resultQueue, new DefaultConsumer(channel) {
+                    @Override
+                    public void handleDelivery(String consumerTag, Envelope envelope,
+                                               AMQP.BasicProperties properties, byte[] body) throws IOException {
+                        responseHandler(Response.parseFrom(body));
+                    }
+                });
+            } catch (IOException | TimeoutException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        alert.show();
+    }
+
+    private void setUsername(final Context context) {
         AlertDialog.Builder alert = new AlertDialog.Builder(context);
         final EditText userName = new EditText(context);
         alert.setMessage("Scegli il tuo Username");
@@ -75,16 +132,20 @@ public class MainActivity extends AppCompatActivity {
         alert.setPositiveButton("Confirm", (dialog, whichButton) -> {
             //What ever you want to do with the value
             Editable usernameChoosed = userName.getText();
+            // TODO l'id è messo in automatico da Proto?
+            setPlayer(userName.getText().toString());
             String fileContents = usernameChoosed.toString();
-
             try (FileOutputStream fos = context.openFileOutput(PATH_TO_USERNAME, Context.MODE_PRIVATE)) {
                 fos.write(fileContents.getBytes());
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
         });
         alert.show();
+    }
+
+    private void setPlayer(final String nickname) {
+        myPlayer = Player.newBuilder().setNickname(nickname).build();
     }
 
     public static String getUsername(Context context) {
@@ -108,39 +169,6 @@ public class MainActivity extends AppCompatActivity {
         }
         String username = stringBuilder.toString();
         return username.substring(0, username.length() - 1);
-    }
-
-    private void searchMatch(final Context context) {
-        AlertDialog.Builder alert = new AlertDialog.Builder(context);
-        final EditText matchID = new EditText(context);
-        alert.setMessage("Digita l'ID della partita");
-        alert.setTitle("MatchID");
-        alert.setView(matchID);
-        alert.setCancelable(false);
-        alert.setPositiveButton("Cerca", (dialog, whichButton) -> {
-            String matchIDInserted = matchID.getText().toString();
-            try {
-                Connection connection = Utilies.createConnection();
-                Channel channel = connection.createChannel();
-                // creo le code per ricevere e mandare
-                Utilies.createSendQueue(channel, exchangeName, BuiltinExchangeType.DIRECT, "",
-                        queueNameSend, false, false, false, null);
-                Utilies.createReceiveQueue(channel, queueNameReceive, false, false, true, null);
-
-                // TODO: mandare messaggio corretto al server
-                channel.basicPublish(exchangeName, "", null, matchIDInserted.getBytes());
-                channel.basicConsume(queueNameReceive, new DefaultConsumer(channel) {
-                    @Override
-                    public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
-                        // TODO: gestire correttamente la risposta .. cosa deve fare quando gli arriva?
-                        // TODO: se ok cambiare activity sennò popup di errore
-                    }
-                });
-            } catch (IOException | TimeoutException e) {
-                throw new RuntimeException(e);
-            }
-        });
-        alert.show();
     }
 
     private void checkUsername() throws IOException {
@@ -169,10 +197,33 @@ public class MainActivity extends AppCompatActivity {
                 // Error occurred when opening raw file for reading.
             } finally {
                 String username = stringBuilder.toString();
+                // TODO l'id è messo in automatico da Proto?
+                setPlayer(username);
                 Log.d("MyApp", username);
             }
         } else {
             setUsername(this);
+        }
+    }
+
+    private void responseHandler(Response response) {
+        switch (response.getResponseCode()) {
+            case(200) -> {
+                Intent data = new Intent(MainActivity.this, CreateActivity.class);
+                data.putExtra("lobby", response.getLobby().toByteArray());
+                data.putExtra("player", myPlayer.toByteArray());
+                MainActivity.this.startActivity(data);
+                overridePendingTransition(R.anim.fragment_fade_enter, R.anim.fragment_fade_exit);
+            }
+            case (402) -> SingleToast.show(getApplicationContext(), "Impossibile unirsi", 3000);
+
+            case (405) -> SingleToast.show(getApplicationContext(), "Permesso negato", 3000);
+
+            case (406) -> SingleToast.show(getApplicationContext(), "Richiesta illegale", 3000);
+
+            case (407) -> SingleToast.show(getApplicationContext(), "Operazione fallita", 3000);
+
+            default -> throw new IllegalStateException();
         }
     }
 
