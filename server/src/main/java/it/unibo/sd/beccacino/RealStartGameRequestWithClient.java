@@ -11,9 +11,8 @@ import java.util.concurrent.TimeoutException;
 public class RealStartGameRequestWithClient {
 
     public static void main(String[] args) {
-        LobbiesStub lobbiesStub = new LobbiesStub();
-        FakeClient client;
-        client = new FakeClient(new RabbitMQManager());
+       new LobbiesStub();
+        FakeClient client = new FakeClient(new RabbitMQManager());
         try {
             client.simpleLobbyPublish();
         } catch (IOException e) {

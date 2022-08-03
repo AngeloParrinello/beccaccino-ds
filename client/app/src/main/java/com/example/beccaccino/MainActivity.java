@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.rabbitmq.client.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeoutException;
@@ -22,18 +23,28 @@ public class MainActivity extends AppCompatActivity {
     private final String todoQueue = "todoQueueLobbies";
     private final String resultQueue = "resultsQueueLobbies";
     private Player myPlayer;
-    private final ExecutorService executorService = Executors.newFixedThreadPool(4);
+    private Channel channel;
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        try {
-            checkUsername();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        executorService.execute(() -> {
+            try {
+                checkUsername();
+                Connection connection = Utilities.createConnection();
+                channel = connection.createChannel();
+                Utilities.createQueue(channel, todoQueue, BuiltinExchangeType.DIRECT, todoQueue,
+                        false, false, true, null, "");
+                Utilities.createQueue(channel, resultQueue, BuiltinExchangeType.DIRECT, resultQueue,
+                        false, false, true, null, "");
+                System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMain Activity Intialized Queue!");
+            } catch (IOException | TimeoutException e) {
+                e.printStackTrace();
+            }
+        });
 
         Button nuovaPartita = findViewById(R.id.nuovaPartita);
         nuovaPartita.setOnClickListener(v -> createMatch());
@@ -65,23 +76,24 @@ public class MainActivity extends AppCompatActivity {
     private void createMatch() {
         Request createLobbyRequest = Request.newBuilder().setLobbyMessage("create").setRequestingPlayer(myPlayer).build();
 
-        executorService.submit(() -> {
+        System.out.println(createLobbyRequest);
+
+        executorService.execute(() -> {
             try {
-                Connection connection = Utilities.createConnection();
-                Channel channel = connection.createChannel();
-
-                Utilities.createQueue(channel, todoQueue, BuiltinExchangeType.DIRECT, todoQueue);
-                Utilities.createQueue(channel, resultQueue, BuiltinExchangeType.DIRECT, resultQueue);
-
                 channel.basicPublish(todoQueue, "", null, createLobbyRequest.toByteArray());
+
+                System.out.println("MainActivity published Lobby create message!");
+
                 channel.basicConsume(resultQueue, new DefaultConsumer(channel) {
                     @Override
                     public void handleDelivery(String consumerTag, Envelope envelope,
                                                AMQP.BasicProperties properties, byte[] body) throws IOException {
+                        System.out.println("MainActivity received Lobby response message!");
+
                         responseHandler(Response.parseFrom(body));
                     }
                 });
-            } catch (IOException | TimeoutException e) {
+            } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         });
@@ -94,34 +106,26 @@ public class MainActivity extends AppCompatActivity {
         alert.setTitle("MatchID");
         alert.setView(matchID);
         alert.setCancelable(false);
-        alert.setPositiveButton("Cerca", (dialog, whichButton) -> {
-            executorService.submit(() -> {
-                String matchIDInserted = matchID.getText().toString();
-                try {
-                    Connection connection = Utilities.createConnection();
-                    Channel channel = connection.createChannel();
+        alert.setPositiveButton("Cerca", (dialog, whichButton) -> executorService.execute(() -> {
+            String matchIDInserted = matchID.getText().toString();
+            try {
+                Request searchLobbyRequest = Request.newBuilder().setLobbyId(matchIDInserted)
+                        .setLobbyMessage("join")
+                        .setRequestingPlayer(myPlayer)
+                        .build();
 
-                    Utilities.createQueue(channel, todoQueue, BuiltinExchangeType.DIRECT, todoQueue);
-                    Utilities.createQueue(channel, resultQueue, BuiltinExchangeType.DIRECT, todoQueue);
-
-                    Request searchLobbyRequest = Request.newBuilder().setLobbyId(matchIDInserted)
-                            .setLobbyMessage("join")
-                            .setRequestingPlayer(myPlayer)
-                            .build();
-
-                    channel.basicPublish(todoQueue, "", null, searchLobbyRequest.toByteArray());
-                    channel.basicConsume(resultQueue, new DefaultConsumer(channel) {
-                        @Override
-                        public void handleDelivery(String consumerTag, Envelope envelope,
-                                                   AMQP.BasicProperties properties, byte[] body) throws IOException {
-                            responseHandler(Response.parseFrom(body));
-                        }
-                    });
-                } catch (IOException | TimeoutException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-        });
+                channel.basicPublish(todoQueue, "", null, searchLobbyRequest.toByteArray());
+                channel.basicConsume(resultQueue, new DefaultConsumer(channel) {
+                    @Override
+                    public void handleDelivery(String consumerTag, Envelope envelope,
+                                               AMQP.BasicProperties properties, byte[] body) throws IOException {
+                        responseHandler(Response.parseFrom(body));
+                    }
+                });
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }));
         alert.show();
     }
 
@@ -148,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setPlayer(final String nickname) {
-        myPlayer = Player.newBuilder().setNickname(nickname).build();
+        myPlayer = Player.newBuilder().setId(String.valueOf(new Random().nextInt())).setNickname(nickname).build();
     }
 
     public static String getUsername(Context context) {
@@ -210,6 +214,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void responseHandler(Response response) {
+
+        System.out.println("Lobby response message: " + response);
+
         switch (response.getResponseCode()) {
             case(200) -> {
                 Intent data = new Intent(MainActivity.this, CreateActivity.class);

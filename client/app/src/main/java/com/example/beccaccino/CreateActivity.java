@@ -30,24 +30,6 @@ public class CreateActivity extends AppCompatActivity {
         // controllo se le info sulla lobby son presenti ovvero son arrivato in questa activiyt da quella di joinlobby
 
         // invia richiesta al server per creare la lobby
-        try {
-            Connection connection = Utilities.createConnection();
-            Channel channel = connection.createChannel();
-            // creo le code per ricevere e mandare
-            Utilities.createQueue(channel, queueNameSend, BuiltinExchangeType.DIRECT, queueNameSend);
-            Utilities.createQueue(channel, queueNameReceive, BuiltinExchangeType.DIRECT, queueNameReceive);
-
-            // TODO: mandare messaggio corretto al server
-            channel.basicPublish(queueNameSend, "", null, "TODOOOOOOOOOOOOOOOOOOOO".getBytes());
-            channel.basicConsume(queueNameReceive, new DefaultConsumer(channel) {
-                @Override
-                public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
-                    // TODO: gestire correttamente la risposta .. cosa deve fare quando gli arriva?
-                }
-            });
-        } catch (IOException | TimeoutException e) {
-            throw new RuntimeException(e);
-        }
 
         // inserire nel text apposito l'id
 
