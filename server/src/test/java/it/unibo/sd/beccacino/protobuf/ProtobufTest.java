@@ -52,13 +52,13 @@ public class ProtobufTest {
                     .setNameQueue(todoQueue)
                     .setExchangeName(todoQueue)
                     .setChannel(channel)
-                    .createQueueForSend();
+                    .createQueue();
 
             this.rabbitMQManager.getQueueBuilder()
                     .getInstanceOfQueueBuilder()
                     .setNameQueue(resultsQueue)
                     .setChannel(channel)
-                    .createQueueForReceive();
+                    .createQueue();
 
             System.out.println("Client Intialized Queue!");
 
@@ -117,13 +117,13 @@ public class ProtobufTest {
                     .setNameQueue(resultsQueue)
                     .setExchangeName(resultsQueue)
                     .setChannel(channel)
-                    .createQueueForSend();
+                    .createQueue();
 
             this.rabbitMQManager.getQueueBuilder()
                     .getInstanceOfQueueBuilder()
                     .setNameQueue(todoQueue)
                     .setChannel(channel)
-                    .createQueueForReceive();
+                    .createQueue();
 
             System.out.println("Server Intialized Queue!");
 

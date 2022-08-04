@@ -1,5 +1,6 @@
 package it.unibo.sd.beccacino.controller.lobby;
 
+import com.sun.jdi.event.ExceptionEvent;
 import it.unibo.sd.beccacino.*;
 import org.bson.BsonValue;
 import org.bson.Document;
@@ -22,22 +23,32 @@ public class LobbyManagerImpl implements LobbyManager {
 
     @Override
     public void handleRequest(Request request) {
+        System.out.println("Server handle a request");
         switch (request.getLobbyMessage()) {
             case ("create") -> this.createLobbyRequestHandler(request);
             case ("join") -> this.joinLobbyRequestHandler(request);
             case ("leave") -> this.leaveLobbyRequestHandler(request);
             default -> {
+                System.out.println("Server ERROR");
             } // TODO: Log illegal request received.
         }
     }
 
     private void createLobbyRequestHandler(Request createLobbyRequest) {
+        System.out.println("Server Create a Lobby");
         Player requestingPlayer = createLobbyRequest.getRequestingPlayer();
+        System.out.println("Requesting player: "+requestingPlayer);
+
         String roomID = this.createNewLobby(requestingPlayer).asObjectId().getValue().toString();
+
         if (!Objects.equals(roomID, "")) {
+            System.out.println("Server Create OK");
+            System.out.println("RoomID: "+roomID);
             Lobby lobbyUpdated = this.getLobby(roomID);
+            System.out.println("Lobby updated : "+lobbyUpdated);
             this.lobbiesStub.sendLobbyResponse(lobbyUpdated, ResponseCode.OK);
         } else {
+            System.out.println("Server Create ERROR");
             this.lobbiesStub.sendLobbyResponse(null, ResponseCode.CREATE);
         }
     }
@@ -93,10 +104,13 @@ public class LobbyManagerImpl implements LobbyManager {
     }
 
     private BsonValue createNewLobby(Player requestingPlayer) {
+        System.out.println("Requesting player in createnewlobby method: "+requestingPlayer);
         Document newLobby = new Document("room_capacity", ROOM_CAPACITY)
                 .append("target_score", TARGET_SCORE)
                 .append("players", List.of(new Document("_id", requestingPlayer.getId())
                         .append("nickname", requestingPlayer.getNickname())));
+        System.out.println("Inserting document: "+newLobby);
+        System.out.println("Inserting player: "+requestingPlayer);
         return this.dbManager.insertDocument(newLobby, "lobbies");
     }
 }

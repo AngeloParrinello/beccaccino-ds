@@ -25,7 +25,7 @@ public class LobbiesStub {
     private final String resultsQueue = "resultsQueueLobbies";
 
     public LobbiesStub() {
-        LoggerFactory.getLogger("ds-app").info("LobbiesStub created!");
+
         this.rabbitMQManager = new RabbitMQManager();
         this.lobbyManager = new LobbyManagerImpl(this);
         try {
@@ -35,6 +35,7 @@ public class LobbiesStub {
         } catch (IOException | TimeoutException e) {
             e.printStackTrace();
         }
+        System.out.println("Finish");
     }
 
     public void run() throws IOException {
@@ -58,15 +59,14 @@ public class LobbiesStub {
             public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties,
                                        byte[] body) throws InvalidProtocolBufferException {
 
-
-
                 Request request = Request.parseFrom(body);
 
-                LoggerFactory.getLogger("ds-app").info("CAZZODUROCONTROILMURO");
+                System.out.println("Server receive a request: "+ request);
 
                 lobbyManager.handleRequest(request);
             }
         });
+
 
     }
 
@@ -112,6 +112,5 @@ public class LobbiesStub {
 
         }
     }
-
 
 }

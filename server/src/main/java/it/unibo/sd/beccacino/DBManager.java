@@ -40,6 +40,8 @@ public class DBManager {
     }
 
     public BsonValue insertDocument(Document document, String collectionName) {
+        System.out.println("Document di sta minchia"+document);
+        System.out.println("collectioName di sta minchia"+collectionName);
         return db.getCollection(collectionName).insertOne(document).getInsertedId();
     }
 
