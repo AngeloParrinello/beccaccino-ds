@@ -3,11 +3,8 @@ package it.unibo.sd.beccacino;
 //import com.mongodb.MongoClientURI;
 //import com.mongodb.MongoClient;
 //import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.internal.MongoClientImpl;
+
 import com.rabbitmq.client.*;
-import org.bson.Document;
 
 import java.io.IOException;
 
@@ -16,6 +13,12 @@ public class Listener extends Agent {
 
     public Listener(String name) {
         super(name);
+    }
+
+    public static void main(String[] args) throws InterruptedException {
+        Thread listener = new Listener(args.length > 0 ? args[0] : "nobody");
+        listener.start();
+        listener.join();
     }
 
     @Override
@@ -79,16 +82,10 @@ public class Listener extends Agent {
         });
 
         // porgramma va avanti fino a che non viene chiuso lo standard input
-        while (state);
+        while (state) ;
 
         // chiudo canale e connessione
         channel.close();
         connection.close();
-    }
-
-    public static void main(String[] args) throws InterruptedException {
-        Thread listener = new Listener(args.length > 0 ? args[0] : "nobody");
-        listener.start();
-        listener.join();
     }
 }

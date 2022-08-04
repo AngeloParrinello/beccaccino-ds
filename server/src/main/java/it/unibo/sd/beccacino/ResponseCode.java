@@ -12,22 +12,22 @@ public enum ResponseCode {
 
     private final int code;
     private final String message;
-    
+
+    ResponseCode(int code, String message) {
+        this.code = code;
+        this.message = message;
+    }
+
     public int getCode() {
         return this.code;
     }
 
     public String getMessage() {
-       return this.message;
+        return this.message;
     }
 
     @Override
     public String toString() {
         return this.message;
-    }
-
-    ResponseCode(int code, String message) {
-        this.code = code;
-        this.message = message;
     }
 }

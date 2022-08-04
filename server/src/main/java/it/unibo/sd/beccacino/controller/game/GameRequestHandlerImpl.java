@@ -1,6 +1,9 @@
 package it.unibo.sd.beccacino.controller.game;
 
-import it.unibo.sd.beccacino.*;
+import it.unibo.sd.beccacino.Game;
+import it.unibo.sd.beccacino.GameRequest;
+import it.unibo.sd.beccacino.Player;
+import it.unibo.sd.beccacino.ResponseCode;
 import org.bson.BsonValue;
 import org.bson.Document;
 
@@ -75,7 +78,7 @@ public class GameRequestHandlerImpl implements GameRequestHandler {
             if (this.gameUtil.isBriscolaSet(game)) {
                 if (this.gameUtil.isCardPlayable(request)) {
                     boolean operationSuccessful = this.gameUtil.makePlay(request);
-                    if(operationSuccessful) {
+                    if (operationSuccessful) {
                         this.gameUtil.updateCurrentPlayer(request.getGameId());
                         this.gameUtil.computeWinnerAndSetNextPlayer(request.getGameId());
                         Game updatedGame = this.gameUtil.getGameById(request.getGameId());

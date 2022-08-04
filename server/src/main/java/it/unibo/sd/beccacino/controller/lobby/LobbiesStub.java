@@ -3,11 +3,11 @@ package it.unibo.sd.beccacino.controller.lobby;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.rabbitmq.client.*;
 import it.unibo.sd.beccacino.Lobby;
-import org.slf4j.LoggerFactory;
 import it.unibo.sd.beccacino.Request;
 import it.unibo.sd.beccacino.Response;
 import it.unibo.sd.beccacino.ResponseCode;
 import it.unibo.sd.beccacino.rabbitmq.RabbitMQManager;
+
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 
@@ -15,14 +15,12 @@ public class LobbiesStub {
 
     private final RabbitMQManager rabbitMQManager;
     private final LobbyManager lobbyManager;
-    private Channel channel;
-    private Connection connection;
-
-    private Lobby lastOperation;
-    private ResponseCode lastResponseCode;
-
     private final String todoQueue = "todoQueueLobbies";
     private final String resultsQueue = "resultsQueueLobbies";
+    private Channel channel;
+    private Connection connection;
+    private Lobby lastOperation;
+    private ResponseCode lastResponseCode;
 
     public LobbiesStub() {
 
@@ -35,7 +33,6 @@ public class LobbiesStub {
         } catch (IOException | TimeoutException e) {
             e.printStackTrace();
         }
-        System.out.println("Finish");
     }
 
     public void run() throws IOException {
@@ -61,8 +58,6 @@ public class LobbiesStub {
 
                 Request request = Request.parseFrom(body);
 
-                System.out.println("Server receive a request: "+ request);
-
                 lobbyManager.handleRequest(request);
             }
         });
@@ -75,7 +70,7 @@ public class LobbiesStub {
         this.lastResponseCode = responseCode;
         Response response;
 
-        if(lobbyUpdated != null) {
+        if (lobbyUpdated != null) {
             response = Response.newBuilder()
                     .setLobby(lobbyUpdated)
                     .setResponseCode(responseCode.getCode())

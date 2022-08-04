@@ -82,14 +82,10 @@ public class MainActivity extends AppCompatActivity {
             try {
                 channel.basicPublish(todoQueue, "", null, createLobbyRequest.toByteArray());
 
-                System.out.println("MainActivity published Lobby create message!" + createLobbyRequest);
-
                 channel.basicConsume(resultQueue, new DefaultConsumer(channel) {
                     @Override
                     public void handleDelivery(String consumerTag, Envelope envelope,
                                                AMQP.BasicProperties properties, byte[] body) throws IOException {
-                        System.out.println("MainActivity received Lobby response message!");
-
                         responseHandler(Response.parseFrom(body));
                     }
                 });
@@ -152,7 +148,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setPlayer(final String nickname) {
-        System.out.println("Nickname del player" + nickname);
         myPlayer = Player.newBuilder()
                             .setId(String.valueOf(new Random()
                             .nextInt())).setNickname(nickname).build();
@@ -217,9 +212,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void responseHandler(Response response) {
-
-        System.out.println("Lobby response message: " + response);
-
         switch (response.getResponseCode()) {
             case(200) -> {
                 Intent data = new Intent(MainActivity.this, CreateActivity.class);

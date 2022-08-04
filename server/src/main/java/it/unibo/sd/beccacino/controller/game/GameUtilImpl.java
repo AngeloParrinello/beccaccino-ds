@@ -131,7 +131,7 @@ public class GameUtilImpl implements GameUtil {
 
     private void setDominantSuitIfNecessary(GameRequest request) {
         Game game = this.getGameById(request.getGameId());
-        if(game.getPublicData().getCardsOnTableCount() == 0) {
+        if (game.getPublicData().getCardsOnTableCount() == 0) {
             this.dbManager.setDominantSuit(request.getCardPlayed().getSuit(), request.getGameId());
         }
     }
@@ -141,7 +141,7 @@ public class GameUtilImpl implements GameUtil {
         Game game = this.getGameById(gameID);
         Player currentPlayer = game.getPublicData().getCurrentPlayer();
         int indexOfCurrentPlayer = game.getPlayersList().indexOf(currentPlayer);
-        if(indexOfCurrentPlayer == 3) {
+        if (indexOfCurrentPlayer == 3) {
             indexOfCurrentPlayer = -1;
         }
         Player nextPlayer = game.getPlayersList().get(indexOfCurrentPlayer + 1);
@@ -151,7 +151,7 @@ public class GameUtilImpl implements GameUtil {
     @Override
     public void checkAndClearTable(String gameId) {
         Game game = this.getGameById(gameId);
-        if(game.getPublicData().getCardsOnTableCount() == 4) {
+        if (game.getPublicData().getCardsOnTableCount() == 4) {
             this.dbManager.clearCardsOnTable(gameId);
         }
     }
@@ -159,7 +159,7 @@ public class GameUtilImpl implements GameUtil {
     @Override
     public void computeWinnerAndSetNextPlayer(String gameId) {
         Game game = this.getGameById(gameId);
-        if(game.getPublicData().getCardsOnTableCount() == 4) {
+        if (game.getPublicData().getCardsOnTableCount() == 4) {
             List<Card> cardsPlayed = game.getPublicData().getCardsOnTableList();
             BeccacinoBunchOfCards cardsUtil = new BeccacinoBunchOfCards(cardsPlayed);
             Optional<Card> winningCard = cardsUtil.getHighestCardOfSuit(game.getPublicData().getBriscola());
@@ -171,9 +171,9 @@ public class GameUtilImpl implements GameUtil {
                 index = cardsPlayed.indexOf(winningCard.get());
             }
             int playerIndex = game.getPlayersList().indexOf(game.getPublicData().getCurrentPlayer());
-            for(int i=0; i<index; i++) {
+            for (int i = 0; i < index; i++) {
                 playerIndex++;
-                if(playerIndex == 4) {
+                if (playerIndex == 4) {
                     playerIndex = 0;
                 }
             }
@@ -199,7 +199,7 @@ public class GameUtilImpl implements GameUtil {
     }
 
     private boolean isMatchOver(Game game) {
-        for(int i = 0; i < 4; i++) {
+        for (int i = 0; i < 4; i++) {
             if (game.getPrivateData(i).getMyCardsCount() != 0) {
                 return false;
             }

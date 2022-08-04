@@ -6,7 +6,7 @@ import com.rabbitmq.client.Channel;
 import java.io.IOException;
 import java.util.Map;
 
-public class RabbitMQQueueBuilderImpl implements RabbitMQQueueBuilder{
+public class RabbitMQQueueBuilderImpl implements RabbitMQQueueBuilder {
 
     private String nameQueue;
     private Channel channel;
@@ -36,19 +36,19 @@ public class RabbitMQQueueBuilderImpl implements RabbitMQQueueBuilder{
     }
 
     @Override
-    public RabbitMQQueueBuilder setDurable(boolean durable){
+    public RabbitMQQueueBuilder setDurable(boolean durable) {
         this.durable = durable;
         return this;
     }
 
     @Override
-    public RabbitMQQueueBuilder setExclusive(boolean exclusive){
+    public RabbitMQQueueBuilder setExclusive(boolean exclusive) {
         this.exclusive = exclusive;
         return this;
     }
 
     @Override
-    public RabbitMQQueueBuilder setAutoDelete(boolean autoDelete){
+    public RabbitMQQueueBuilder setAutoDelete(boolean autoDelete) {
         this.autoDelete = autoDelete;
         return this;
     }
@@ -72,7 +72,7 @@ public class RabbitMQQueueBuilderImpl implements RabbitMQQueueBuilder{
     }
 
     @Override
-    public RabbitMQQueueBuilder setArguments(Map<String, Object> arguments){
+    public RabbitMQQueueBuilder setArguments(Map<String, Object> arguments) {
         this.arguments = arguments;
         return this;
     }

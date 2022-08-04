@@ -2,7 +2,10 @@ package it.unibo.sd.beccacino.controller.game;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.rabbitmq.client.*;
-import it.unibo.sd.beccacino.*;
+import it.unibo.sd.beccacino.Game;
+import it.unibo.sd.beccacino.GameRequest;
+import it.unibo.sd.beccacino.GameResponse;
+import it.unibo.sd.beccacino.ResponseCode;
 import it.unibo.sd.beccacino.rabbitmq.RabbitMQManager;
 
 import java.io.IOException;
@@ -12,14 +15,12 @@ public class GameStub {
 
     private final RabbitMQManager rabbitMQManager;
     private final GameRequestHandler gameRequestHandler;
-    private Channel channel;
-    private Connection connection;
-
-    private Game lastOperation;
-    private ResponseCode lastResponseCode;
-
     String todoQueue = "todoQueueGames";
     String resultsQueue = "resultsQueueGames";
+    private Channel channel;
+    private Connection connection;
+    private Game lastOperation;
+    private ResponseCode lastResponseCode;
 
     public GameStub() {
         this.rabbitMQManager = new RabbitMQManager();

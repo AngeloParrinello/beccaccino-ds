@@ -11,7 +11,7 @@ import java.util.concurrent.TimeoutException;
 public class RealStartGameRequestWithClient {
 
     public static void main(String[] args) {
-       new LobbiesStub();
+        new LobbiesStub();
         FakeClient client = new FakeClient(new RabbitMQManager());
         try {
             client.simpleLobbyPublish();
@@ -22,11 +22,10 @@ public class RealStartGameRequestWithClient {
 
     private static class FakeClient {
         private final RabbitMQManager rabbitMQManager;
-        private Connection connection;
-        private Channel channel;
-
         private final String todoQueue = "todoQueueLobbies";
         private final String resultsQueue = "resultsQueueLobbies";
+        private Connection connection;
+        private Channel channel;
 
         public FakeClient(RabbitMQManager rabbitMQManager) {
             this.rabbitMQManager = rabbitMQManager;

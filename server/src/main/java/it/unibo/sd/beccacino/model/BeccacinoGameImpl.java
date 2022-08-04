@@ -15,7 +15,7 @@ public class BeccacinoGameImpl implements BeccacinoGame {
         List<PrivateData> privateDataList = new ArrayList<>();
         for (Player p : playerList) {
             List<Card> cardList = new ArrayList<>();
-            for(int i=0; i < 10; i++) {
+            for (int i = 0; i < 10; i++) {
                 cardList.add(deck.drawCard());
             }
             privateDataList.add(PrivateData.newBuilder()

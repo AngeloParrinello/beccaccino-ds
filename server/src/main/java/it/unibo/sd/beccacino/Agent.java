@@ -6,7 +6,6 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 
@@ -39,7 +38,7 @@ public abstract class Agent extends Thread {
         factory.setHost(System.getenv("RABBIT_HOST"));
         factory.setPort(5672);
         factory.setAutomaticRecoveryEnabled(true);
-        while(true) {
+        while (true) {
             try {
                 return factory.newConnection();
             } catch (java.net.ConnectException e) {
@@ -52,7 +51,7 @@ public abstract class Agent extends Thread {
             }
         }
     }
-    
+
     protected String declareQueueForReceive(String name, Channel channel) throws IOException {
         channel.queueDeclare(name, false, false, true, null);
         return name;

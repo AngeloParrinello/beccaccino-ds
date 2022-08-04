@@ -9,7 +9,7 @@ import java.util.*;
 /**
  * "BunchOfCard" implementation for a game of "Beccaccino".
  */
-public class BeccacinoBunchOfCards implements BunchOfCards{
+public class BeccacinoBunchOfCards implements BunchOfCards {
     private final List<Card> listOfCards;
     private final Map<Value, Integer> pointsMap;
 

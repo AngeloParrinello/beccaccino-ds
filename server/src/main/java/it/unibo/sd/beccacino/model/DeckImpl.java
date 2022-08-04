@@ -6,7 +6,7 @@ import it.unibo.sd.beccacino.Value;
 
 import java.util.*;
 
-public class DeckImpl implements Deck{
+public class DeckImpl implements Deck {
     private final List<Card> deck;
     private final int seed;
 
@@ -27,7 +27,7 @@ public class DeckImpl implements Deck{
         suitList.remove(Suit.DEFAULT_SUIT);
         for (Suit suit : suitList) {
             for (Value value : valueList) {
-                Card card =  Card.newBuilder().setSuit(suit).setValue(value).build();
+                Card card = Card.newBuilder().setSuit(suit).setValue(value).build();
                 this.deck.add(card);
             }
         }

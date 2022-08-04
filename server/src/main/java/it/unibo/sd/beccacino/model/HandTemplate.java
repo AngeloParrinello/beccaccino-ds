@@ -27,6 +27,16 @@ public abstract class HandTemplate implements Hand {
     }
 
     /**
+     * Replace this hand cards with given ones.
+     *
+     * @param cards - list of cards to replace this hand cards with.
+     */
+    protected void setCards(final List<Card> cards) {
+        this.cards.clear();
+        this.cards.addAll(cards);
+    }
+
+    /**
      * {@inheritDoc}
      */
     public void removeCard(final Card card) {
@@ -47,15 +57,5 @@ public abstract class HandTemplate implements Hand {
      */
     public String toString() {
         return this.getCards().toString();
-    }
-
-    /**
-     * Replace this hand cards with given ones.
-     *
-     * @param cards - list of cards to replace this hand cards with.
-     */
-    protected void setCards(final List<Card> cards) {
-        this.cards.clear();
-        this.cards.addAll(cards);
     }
 }
