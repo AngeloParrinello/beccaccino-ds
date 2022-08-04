@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
                         false, false, true, null, "");
                 Utilities.createQueue(channel, resultQueue, BuiltinExchangeType.DIRECT, resultQueue,
                         false, false, true, null, "");
-                System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMain Activity Intialized Queue!");
+                System.out.println("Main Activity Intialized Queue!");
             } catch (IOException | TimeoutException e) {
                 e.printStackTrace();
             }
@@ -74,15 +74,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void createMatch() {
-        Request createLobbyRequest = Request.newBuilder().setLobbyMessage("create").setRequestingPlayer(myPlayer).build();
-
-        System.out.println(createLobbyRequest);
+        Request createLobbyRequest = Request.newBuilder()
+                .setLobbyMessage("create")
+                .setRequestingPlayer(myPlayer).build();
 
         executorService.execute(() -> {
             try {
                 channel.basicPublish(todoQueue, "", null, createLobbyRequest.toByteArray());
 
-                System.out.println("MainActivity published Lobby create message!");
+                System.out.println("MainActivity published Lobby create message!" + createLobbyRequest);
 
                 channel.basicConsume(resultQueue, new DefaultConsumer(channel) {
                     @Override
@@ -152,7 +152,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setPlayer(final String nickname) {
-        myPlayer = Player.newBuilder().setId(String.valueOf(new Random().nextInt())).setNickname(nickname).build();
+        System.out.println("Nickname del player" + nickname);
+        myPlayer = Player.newBuilder()
+                            .setId(String.valueOf(new Random()
+                            .nextInt())).setNickname(nickname).build();
     }
 
     public static String getUsername(Context context) {

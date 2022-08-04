@@ -31,10 +31,8 @@ public class Utilities {
         factory.setAutomaticRecoveryEnabled(true);
         while(true) {
             try {
-                System.out.println("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB");
-                Connection connectiontest = factory.newConnection();
-                System.out.println("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"+connectiontest);
-                return connectiontest;
+                System.out.println("Connection established");
+                return factory.newConnection();
             } catch (java.net.ConnectException e) {
                 System.out.println("Retrying connection to RabbitMQ");
                 try {

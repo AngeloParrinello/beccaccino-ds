@@ -3,6 +3,7 @@ package it.unibo.sd.beccacino.controller.lobby;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.rabbitmq.client.*;
 import it.unibo.sd.beccacino.Lobby;
+import org.slf4j.LoggerFactory;
 import it.unibo.sd.beccacino.Request;
 import it.unibo.sd.beccacino.Response;
 import it.unibo.sd.beccacino.ResponseCode;
@@ -24,6 +25,7 @@ public class LobbiesStub {
     private final String resultsQueue = "resultsQueueLobbies";
 
     public LobbiesStub() {
+        LoggerFactory.getLogger("ds-app").info("LobbiesStub created!");
         this.rabbitMQManager = new RabbitMQManager();
         this.lobbyManager = new LobbyManagerImpl(this);
         try {
@@ -56,7 +58,11 @@ public class LobbiesStub {
             public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties,
                                        byte[] body) throws InvalidProtocolBufferException {
 
+
+
                 Request request = Request.parseFrom(body);
+
+                LoggerFactory.getLogger("ds-app").info("CAZZODUROCONTROILMURO");
 
                 lobbyManager.handleRequest(request);
             }
