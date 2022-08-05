@@ -23,12 +23,15 @@ public class LobbiesStub {
     private ResponseCode lastResponseCode;
 
     public LobbiesStub() {
-
+        System.out.println("Connessione....");
         this.rabbitMQManager = new RabbitMQManager();
         this.lobbyManager = new LobbyManagerImpl(this);
         try {
+            System.out.println("Connessione quasi ....");
             this.connection = this.rabbitMQManager.createConnection();
+            System.out.println("Connessione quasi quasi ....");
             this.channel = connection.createChannel();
+            System.out.println("Connessione iniziata....");
             this.run();
         } catch (IOException | TimeoutException e) {
             e.printStackTrace();
@@ -37,12 +40,16 @@ public class LobbiesStub {
 
     public void run() throws IOException {
 
+        System.out.println("Code....");
+
         this.rabbitMQManager.getQueueBuilder()
                 .getInstanceOfQueueBuilder()
                 .setNameQueue(resultsQueue)
                 .setExchangeName(resultsQueue)
                 .setChannel(channel)
                 .createQueue();
+
+        System.out.println("Code quasi....");
 
         this.rabbitMQManager.getQueueBuilder()
                 .getInstanceOfQueueBuilder()
@@ -51,10 +58,14 @@ public class LobbiesStub {
                 .setChannel(channel)
                 .createQueue();
 
+        System.out.println("Code iniziate....");
+
         channel.basicConsume(todoQueue, new DefaultConsumer(channel) {
             @Override
             public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties,
                                        byte[] body) throws InvalidProtocolBufferException {
+
+                System.out.println("Code ricevono.... : " + Request.parseFrom(body));
 
                 Request request = Request.parseFrom(body);
 
@@ -70,6 +81,8 @@ public class LobbiesStub {
         this.lastResponseCode = responseCode;
         Response response;
 
+        System.out.println("Lobby Stub received request from manager: "+ lobbyUpdated + " with code "+ responseCode);
+
         if (lobbyUpdated != null) {
             response = Response.newBuilder()
                     .setLobby(lobbyUpdated)
@@ -82,6 +95,8 @@ public class LobbiesStub {
                     .setResponseMessage(responseCode.getMessage())
                     .build();
         }
+
+        System.out.println("And the final response is"+response);
 
         try {
             channel.basicPublish(resultsQueue, "", null, response.toByteArray());

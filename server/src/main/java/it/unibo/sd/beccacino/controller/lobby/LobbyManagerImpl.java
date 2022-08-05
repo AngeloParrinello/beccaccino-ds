@@ -30,9 +30,15 @@ public class LobbyManagerImpl implements LobbyManager {
     }
 
     private void createLobbyRequestHandler(Request createLobbyRequest) {
+        System.out.println("Request Create Lobby: "+ createLobbyRequest);
         Player requestingPlayer = createLobbyRequest.getRequestingPlayer();
+        System.out.println("Request Player Create Lobby: "+ requestingPlayer);
 
         String roomID = this.createNewLobby(requestingPlayer).asObjectId().getValue().toString();
+
+        System.out.println("Request new Lobby: "+ roomID);
+
+        System.out.println("Lobby effectively exist" + this.getLobby(roomID));
 
         if (!Objects.equals(roomID, "")) {
             this.lobbiesStub.sendLobbyResponse(this.getLobby(roomID), ResponseCode.OK);
@@ -42,18 +48,26 @@ public class LobbyManagerImpl implements LobbyManager {
     }
 
     private void joinLobbyRequestHandler(Request joinLobbyRequest) {
+        System.out.println("Request Join Lobby: "+ joinLobbyRequest);
         String joinLobbyId = joinLobbyRequest.getLobbyId();
+        System.out.println("Request ID Join Lobby: "+ joinLobbyId);
         Player playerJoined = joinLobbyRequest.getRequestingPlayer();
-        if (this.doesLobbyExist(joinLobbyId) && this.getLobbySize(joinLobbyId) < ROOM_CAPACITY) {
+        System.out.println("Request Player Create Lobby: "+ playerJoined);
+        if (this.doesLobbyExist(joinLobbyId) && this.getLobbySize(joinLobbyId) <= ROOM_CAPACITY) {
+            System.out.println("La lobby esiste e non è piena");
             boolean statusRequest = this.dbManager.updateLobbyPlayers(playerJoined, joinLobbyId);
+            System.out.println("Dopo aver aggiornato la lobby di player ti dico: ..." + statusRequest);
             Lobby lobbyUpdated = this.getLobby(joinLobbyId);
             if (statusRequest) {
+                System.out.println("Join LObby OK");
                 this.lobbiesStub.sendLobbyResponse(lobbyUpdated, ResponseCode.OK);
             } else {
+                System.out.println("Join LObby ERROR");
                 this.lobbiesStub.sendLobbyResponse(lobbyUpdated, ResponseCode.JOIN);
             }
         } else {
             // TODO could be also a join error because the lobby is full.
+            System.out.println("Join LObby FULL");
             this.lobbiesStub.sendLobbyResponse(null, ResponseCode.CREATE);
         }
     }

@@ -22,6 +22,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String PATH_TO_USERNAME = "username_file";
     private final String todoQueue = "todoQueueLobbies";
     private final String resultQueue = "resultsQueueLobbies";
+    private Connection connection;
     private Player myPlayer;
     private Channel channel;
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
@@ -34,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
         executorService.execute(() -> {
             try {
                 checkUsername();
-                Connection connection = Utilities.createConnection();
+                connection = Utilities.createConnection();
                 channel = connection.createChannel();
                 Utilities.createQueue(channel, todoQueue, BuiltinExchangeType.DIRECT, todoQueue,
                         false, false, true, null, "");
@@ -62,6 +63,18 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         MusicManager.pause();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        shutdown();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        shutdown();
     }
 
     @Override
@@ -115,6 +128,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void handleDelivery(String consumerTag, Envelope envelope,
                                                AMQP.BasicProperties properties, byte[] body) throws IOException {
+                        System.out.println("Risposta parsata " + Response.parseFrom(body));
                         responseHandler(Response.parseFrom(body));
                     }
                 });
@@ -214,13 +228,17 @@ public class MainActivity extends AppCompatActivity {
     private void responseHandler(Response response) {
         switch (response.getResponseCode()) {
             case(200) -> {
+                System.out.println("LOBBY ID IMMESSO: " + response.getLobby().getId());
                 Intent data = new Intent(MainActivity.this, CreateActivity.class);
                 data.putExtra("lobby", response.getLobby().toByteArray());
                 data.putExtra("player", myPlayer.toByteArray());
                 MainActivity.this.startActivity(data);
                 overridePendingTransition(R.anim.fragment_fade_enter, R.anim.fragment_fade_exit);
             }
-            case (402) -> SingleToast.show(getApplicationContext(), "Impossibile unirsi", 3000);
+            case (402) -> {
+                System.out.println("Fuckiiing");
+                SingleToast.show(getApplicationContext(), "Impossibile unirsi", 3000);
+            }
 
             case (405) -> SingleToast.show(getApplicationContext(), "Permesso negato", 3000);
 
@@ -230,6 +248,19 @@ public class MainActivity extends AppCompatActivity {
 
             default -> throw new IllegalStateException();
         }
+    }
+
+
+    private void shutdown() {
+        executorService.execute(() -> {
+            try {
+                channel.close();
+                connection.close();
+            } catch (IOException | TimeoutException e) {
+                e.printStackTrace();
+
+            }
+        });
     }
 
 
