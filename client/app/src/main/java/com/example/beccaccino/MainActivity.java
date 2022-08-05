@@ -20,8 +20,8 @@ import java.util.concurrent.TimeoutException;
 
 public class MainActivity extends AppCompatActivity {
     public static final String PATH_TO_USERNAME = "username_file";
-    private final String todoQueue = "todoQueueLobbies";
-    private final String resultQueue = "resultsQueueLobbies";
+    private final String todoQueueLobbies = "todoQueueLobbies";
+    private final String resultsQueueLobbies = "resultsQueueLobbies";
     private Connection connection;
     private Player myPlayer;
     private Channel channel;
@@ -37,9 +37,9 @@ public class MainActivity extends AppCompatActivity {
                 checkUsername();
                 connection = Utilities.createConnection();
                 channel = connection.createChannel();
-                Utilities.createQueue(channel, todoQueue, BuiltinExchangeType.DIRECT, todoQueue,
+                Utilities.createQueue(channel, todoQueueLobbies, BuiltinExchangeType.DIRECT, todoQueueLobbies,
                         false, false, true, null, "");
-                Utilities.createQueue(channel, resultQueue, BuiltinExchangeType.DIRECT, resultQueue,
+                Utilities.createQueue(channel, resultsQueueLobbies, BuiltinExchangeType.DIRECT, resultsQueueLobbies,
                         false, false, true, null, "");
                 System.out.println("Main Activity Intialized Queue!");
             } catch (IOException | TimeoutException e) {
@@ -66,18 +66,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
-        shutdown();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        shutdown();
-    }
-
-    @Override
     protected void onResume() {
         super.onResume();
         /*MUSIC*/
@@ -93,9 +81,9 @@ public class MainActivity extends AppCompatActivity {
 
         executorService.execute(() -> {
             try {
-                channel.basicPublish(todoQueue, "", null, createLobbyRequest.toByteArray());
+                channel.basicPublish(todoQueueLobbies, "", null, createLobbyRequest.toByteArray());
 
-                channel.basicConsume(resultQueue, new DefaultConsumer(channel) {
+                channel.basicConsume(resultsQueueLobbies, new DefaultConsumer(channel) {
                     @Override
                     public void handleDelivery(String consumerTag, Envelope envelope,
                                                AMQP.BasicProperties properties, byte[] body) throws IOException {
@@ -123,8 +111,8 @@ public class MainActivity extends AppCompatActivity {
                         .setRequestingPlayer(myPlayer)
                         .build();
 
-                channel.basicPublish(todoQueue, "", null, searchLobbyRequest.toByteArray());
-                channel.basicConsume(resultQueue, new DefaultConsumer(channel) {
+                channel.basicPublish(todoQueueLobbies, "", null, searchLobbyRequest.toByteArray());
+                channel.basicConsume(resultsQueueLobbies, new DefaultConsumer(channel) {
                     @Override
                     public void handleDelivery(String consumerTag, Envelope envelope,
                                                AMQP.BasicProperties properties, byte[] body) throws IOException {
@@ -235,10 +223,7 @@ public class MainActivity extends AppCompatActivity {
                 MainActivity.this.startActivity(data);
                 overridePendingTransition(R.anim.fragment_fade_enter, R.anim.fragment_fade_exit);
             }
-            case (402) -> {
-                System.out.println("Fuckiiing");
-                SingleToast.show(getApplicationContext(), "Impossibile unirsi", 3000);
-            }
+            case (402) -> SingleToast.show(getApplicationContext(), "Impossibile unirsi", 3000);
 
             case (405) -> SingleToast.show(getApplicationContext(), "Permesso negato", 3000);
 
@@ -249,19 +234,4 @@ public class MainActivity extends AppCompatActivity {
             default -> throw new IllegalStateException();
         }
     }
-
-
-    private void shutdown() {
-        executorService.execute(() -> {
-            try {
-                channel.close();
-                connection.close();
-            } catch (IOException | TimeoutException e) {
-                e.printStackTrace();
-
-            }
-        });
-    }
-
-
 }
