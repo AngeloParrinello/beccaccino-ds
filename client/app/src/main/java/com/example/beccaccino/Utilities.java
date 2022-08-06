@@ -25,7 +25,7 @@ public class Utilities {
         // NO PERCHÈ SIAMO DENTRO AL 'CONTAINER' DELL'EMULATORE QUINDI DOBBIAMO METTERE L'IP DIRETTAMENTE
         // factory.setHost("rabbitmq");
 
-        factory.setHost("10.0.2.2");
+        factory.setHost("192.168.1.5");
         factory.setPort(5672);
 
         factory.setAutomaticRecoveryEnabled(true);

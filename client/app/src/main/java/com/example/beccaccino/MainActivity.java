@@ -31,12 +31,18 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        try {
+            checkUsername();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         Button nuovaPartita = findViewById(R.id.nuovaPartita);
         nuovaPartita.setOnClickListener(v -> createMatch());
 
         Button cercaPartita = findViewById(R.id.cercaPartita);
         cercaPartita.setOnClickListener(v -> searchMatch(MainActivity.this));
+
     }
 
     @Override
@@ -44,13 +50,12 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
         executorService.execute(() -> {
             try {
-                checkUsername();
                 connection = Utilities.createConnection();
                 channel = connection.createChannel();
                 Utilities.createQueue(channel, todoQueueLobbies, BuiltinExchangeType.DIRECT, todoQueueLobbies,
-                        false, false, true, null, "");
+                        false, false, false, null, "");
                 Utilities.createQueue(channel, resultsQueueLobbies, BuiltinExchangeType.DIRECT, resultsQueueLobbies,
-                        false, false, true, null, "");
+                        false, false, false, null, "");
                 System.out.println("Main Activity Intialized Queue!");
             } catch (IOException | TimeoutException e) {
                 e.printStackTrace();

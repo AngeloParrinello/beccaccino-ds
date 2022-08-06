@@ -73,13 +73,13 @@ public class CreateActivity extends AppCompatActivity {
                 connection = Utilities.createConnection();
                 channel = connection.createChannel();
                 Utilities.createQueue(channel, todoQueueLobbies, BuiltinExchangeType.DIRECT, todoQueueLobbies,
-                        false, false, true, null, "");
+                        false, false, false, null, "");
                 Utilities.createQueue(channel, resultsQueueLobbies, BuiltinExchangeType.DIRECT, resultsQueueLobbies,
-                        false, false, true, null, "");
+                        false, false, false, null, "");
                 Utilities.createQueue(channel, todoQueueGames, BuiltinExchangeType.DIRECT, todoQueueGames,
-                        false, false, true, null, "");
+                        false, false, false, null, "");
                 Utilities.createQueue(channel, resultsQueueGames, BuiltinExchangeType.DIRECT, resultsQueueGames,
-                        false, false, true, null, "");
+                        false, false, false, null, "");
 
                 System.out.println("Create Activity Intialized Queue!");
             } catch (IOException | TimeoutException e) {
@@ -93,9 +93,8 @@ public class CreateActivity extends AppCompatActivity {
         super.onStop();
         executorService.execute(() -> {
             try {
-                channel.close();
                 connection.close();
-            } catch (IOException | TimeoutException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         });

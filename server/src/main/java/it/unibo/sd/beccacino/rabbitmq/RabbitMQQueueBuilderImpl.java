@@ -12,7 +12,7 @@ public class RabbitMQQueueBuilderImpl implements RabbitMQQueueBuilder {
     private Channel channel;
     private boolean durable = false;
     private boolean exclusive = false;
-    private boolean autoDelete = true;
+    private boolean autoDelete = false;
     private Map<String, Object> arguments = null;
     private String exchangeName = "";
     private BuiltinExchangeType exchangeType = BuiltinExchangeType.DIRECT;
