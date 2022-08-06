@@ -32,6 +32,16 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Button nuovaPartita = findViewById(R.id.nuovaPartita);
+        nuovaPartita.setOnClickListener(v -> createMatch());
+
+        Button cercaPartita = findViewById(R.id.cercaPartita);
+        cercaPartita.setOnClickListener(v -> searchMatch(MainActivity.this));
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
         executorService.execute(() -> {
             try {
                 checkUsername();
@@ -46,17 +56,6 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         });
-
-        Button nuovaPartita = findViewById(R.id.nuovaPartita);
-        nuovaPartita.setOnClickListener(v -> createMatch());
-
-        Button cercaPartita = findViewById(R.id.cercaPartita);
-        cercaPartita.setOnClickListener(v -> searchMatch(MainActivity.this));
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
     }
 
     @Override
@@ -211,6 +210,18 @@ public class MainActivity extends AppCompatActivity {
         } else {
             setUsername(this);
         }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        executorService.execute(() -> {
+            try {
+                connection.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     private void responseHandler(Response response) {

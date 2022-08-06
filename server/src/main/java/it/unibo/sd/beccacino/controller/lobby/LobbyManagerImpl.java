@@ -77,14 +77,18 @@ public class LobbyManagerImpl implements LobbyManager {
         String lobbyId = leaveLobbyRequest.getLobbyId();
 
         boolean statusRequest = this.dbManager.removeLobbyPlayer(removedPlayer, lobbyId);
+        System.out.println("Lobby updated with statusRequest: " + statusRequest);
         Lobby lobbyUpdated = this.getLobby(lobbyId);
+        System.out.println("Lobby updated within: " + lobbyUpdated);
 
         if (statusRequest) {
+            System.out.println("Lobby updated WELL");
             this.lobbiesStub.sendLobbyResponse(lobbyUpdated, ResponseCode.OK);
             if (this.getLobbySize(lobbyId) == 0) {
                 this.deleteLobby(lobbyId);
             }
         } else {
+            System.out.println("Lobby updated smells like shit");
             this.lobbiesStub.sendLobbyResponse(lobbyUpdated, ResponseCode.LEAVE);
         }
     }

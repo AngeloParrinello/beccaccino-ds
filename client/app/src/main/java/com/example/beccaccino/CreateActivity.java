@@ -52,26 +52,6 @@ public class CreateActivity extends AppCompatActivity {
         TextView matchIDTW = findViewById(R.id.matchID);
         matchIDTW.setText(matchID);
 
-        executorService.execute(() -> {
-            try {
-                connection = Utilities.createConnection();
-                channel = connection.createChannel();
-
-                Utilities.createQueue(channel, todoQueueLobbies, BuiltinExchangeType.DIRECT, todoQueueLobbies,
-                        false, false, true, null, "");
-                Utilities.createQueue(channel, resultsQueueLobbies, BuiltinExchangeType.DIRECT, resultsQueueLobbies,
-                        false, false, true, null, "");
-                Utilities.createQueue(channel, todoQueueGames, BuiltinExchangeType.DIRECT, todoQueueGames,
-                        false, false, true, null, "");
-                Utilities.createQueue(channel, resultsQueueGames, BuiltinExchangeType.DIRECT, resultsQueueGames,
-                        false, false, true, null, "");
-
-                System.out.println("Create Activity Intialized Queue!");
-            } catch (IOException | TimeoutException e) {
-                e.printStackTrace();
-            }
-        });
-
         TextView me = findViewById(R.id.player1Name);
         me.setText(MainActivity.getUsername(this));
 
@@ -88,6 +68,37 @@ public class CreateActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
+        executorService.execute(() -> {
+            try {
+                connection = Utilities.createConnection();
+                channel = connection.createChannel();
+                Utilities.createQueue(channel, todoQueueLobbies, BuiltinExchangeType.DIRECT, todoQueueLobbies,
+                        false, false, true, null, "");
+                Utilities.createQueue(channel, resultsQueueLobbies, BuiltinExchangeType.DIRECT, resultsQueueLobbies,
+                        false, false, true, null, "");
+                Utilities.createQueue(channel, todoQueueGames, BuiltinExchangeType.DIRECT, todoQueueGames,
+                        false, false, true, null, "");
+                Utilities.createQueue(channel, resultsQueueGames, BuiltinExchangeType.DIRECT, resultsQueueGames,
+                        false, false, true, null, "");
+
+                System.out.println("Create Activity Intialized Queue!");
+            } catch (IOException | TimeoutException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        executorService.execute(() -> {
+            try {
+                channel.close();
+                connection.close();
+            } catch (IOException | TimeoutException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     @Override
@@ -120,25 +131,32 @@ public class CreateActivity extends AppCompatActivity {
                     @Override
                     public void handleDelivery(String consumerTag, Envelope envelope,
                                                AMQP.BasicProperties properties, byte[] body) throws IOException {
-                        System.out.println("Risposta parsata " + Response.parseFrom(body));
-                        if (Response.parseFrom(body).getResponseCode() == 200) {
-                            Intent myIntent = new Intent(CreateActivity.this, MainActivity.class);
-                            // TODO gli devo ripassare le info con gli intent? No vero? Boh ci devo guardare (Davide dai fallo tu)
-                            CreateActivity.this.startActivity(myIntent);
-                        } else {
-                            SingleToast.show(context, "Impossibile lasciare la lobby", 3000);
+                        switch (Response.parseFrom(body).getResponseCode()) {
+                            case(200) -> {
+                                System.out.println("UScito da: " + Response.parseFrom(body).getLobby().getId());
+                                Intent myIntent = new Intent(CreateActivity.this, MainActivity.class);
+                                // TODO gli devo ripassare le info con gli intent? No vero? Boh ci devo guardare (Davide dai fallo tu)
+                                CreateActivity.this.startActivity(myIntent);
+                                overridePendingTransition(R.anim.fragment_fade_enter, R.anim.fragment_fade_exit);
+                            }
+                            case (402) -> SingleToast.show(getApplicationContext(), "Impossibile unirsi", 3000);
+
+                            case (405) -> SingleToast.show(getApplicationContext(), "Permesso negato", 3000);
+
+                            case (406) -> SingleToast.show(getApplicationContext(), "Richiesta illegale", 3000);
+
+                            case (407) -> SingleToast.show(getApplicationContext(), "Operazione fallita", 3000);
+
+                            default -> throw new IllegalStateException();
+
                         }
                     }
                 });
             } catch (IOException e) {
-                throw new RuntimeException(e);
+               e.printStackTrace();
             }
         }));
         alert.show();
-
-
-
-
     }
 
     private void startMatch() {
@@ -171,4 +189,5 @@ public class CreateActivity extends AppCompatActivity {
         usernames.add(player3Name);
         usernames.add(player4Name);
     }
+
 }

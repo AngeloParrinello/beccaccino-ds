@@ -23,15 +23,11 @@ public class LobbiesStub {
     private ResponseCode lastResponseCode;
 
     public LobbiesStub() {
-        System.out.println("Connessione....");
         this.rabbitMQManager = new RabbitMQManager();
         this.lobbyManager = new LobbyManagerImpl(this);
         try {
-            System.out.println("Connessione quasi ....");
             this.connection = this.rabbitMQManager.createConnection();
-            System.out.println("Connessione quasi quasi ....");
             this.channel = connection.createChannel();
-            System.out.println("Connessione iniziata....");
             this.run();
         } catch (IOException | TimeoutException e) {
             e.printStackTrace();
@@ -40,8 +36,6 @@ public class LobbiesStub {
 
     public void run() throws IOException {
 
-        System.out.println("Code....");
-
         this.rabbitMQManager.getQueueBuilder()
                 .getInstanceOfQueueBuilder()
                 .setNameQueue(resultsQueue)
@@ -49,16 +43,12 @@ public class LobbiesStub {
                 .setChannel(channel)
                 .createQueue();
 
-        System.out.println("Code quasi....");
-
         this.rabbitMQManager.getQueueBuilder()
                 .getInstanceOfQueueBuilder()
                 .setNameQueue(todoQueue)
                 .setExchangeName(todoQueue)
                 .setChannel(channel)
                 .createQueue();
-
-        System.out.println("Code iniziate....");
 
         channel.basicConsume(todoQueue, new DefaultConsumer(channel) {
             @Override
