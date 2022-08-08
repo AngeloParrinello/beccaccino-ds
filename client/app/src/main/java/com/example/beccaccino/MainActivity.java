@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        if(!connection.isOpen()) {
+        if(connection != null && !connection.isOpen()) {
             setupRabbitMQ();
         }
     }
