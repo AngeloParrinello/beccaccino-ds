@@ -103,4 +103,5 @@ message Response {
   Lobby lobby = 1;
   int32 response_code = 2;
   string response_message = 3;
+  Player requesting_player = 4;
 }

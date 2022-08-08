@@ -2,10 +2,7 @@ package it.unibo.sd.beccacino.controller.lobby;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.rabbitmq.client.*;
-import it.unibo.sd.beccacino.Lobby;
-import it.unibo.sd.beccacino.Request;
-import it.unibo.sd.beccacino.Response;
-import it.unibo.sd.beccacino.ResponseCode;
+import it.unibo.sd.beccacino.*;
 import it.unibo.sd.beccacino.rabbitmq.RabbitMQManager;
 
 import java.io.IOException;
@@ -15,7 +12,6 @@ public class LobbiesStub {
 
     private final RabbitMQManager rabbitMQManager;
     private final LobbyManager lobbyManager;
-    private final String todoQueue = "todoQueueLobbies";
     private final String resultsQueue = "resultsQueueLobbies";
     private Channel channel;
     private Connection connection;
@@ -35,14 +31,7 @@ public class LobbiesStub {
     }
 
     public void run() throws IOException {
-
-        this.rabbitMQManager.getQueueBuilder()
-                .getInstanceOfQueueBuilder()
-                .setNameQueue(resultsQueue)
-                .setExchangeName(resultsQueue)
-                .setChannel(channel)
-                .createQueue();
-
+        String todoQueue = "todoQueueLobbies";
         this.rabbitMQManager.getQueueBuilder()
                 .getInstanceOfQueueBuilder()
                 .setNameQueue(todoQueue)
@@ -60,13 +49,19 @@ public class LobbiesStub {
                 Request request = Request.parseFrom(body);
 
                 lobbyManager.handleRequest(request);
+
+                if(request.getLobbyMessage().equals("leave")){
+                    //TODO rimuovi la coda
+                } else {
+                    createQueueFor(request.getRequestingPlayer().getId());
+                }
             }
         });
 
 
     }
 
-    public void sendLobbyResponse(Lobby lobbyUpdated, ResponseCode responseCode) {
+    public void sendLobbyResponse(Lobby lobbyUpdated, ResponseCode responseCode, Player requestingPlayer) {
         this.lastOperation = lobbyUpdated;
         this.lastResponseCode = responseCode;
         Response response;
@@ -78,11 +73,13 @@ public class LobbiesStub {
                     .setLobby(lobbyUpdated)
                     .setResponseCode(responseCode.getCode())
                     .setResponseMessage(responseCode.getMessage())
+                    .setRequestingPlayer(requestingPlayer)
                     .build();
         } else {
             response = Response.newBuilder()
                     .setResponseCode(responseCode.getCode())
                     .setResponseMessage(responseCode.getMessage())
+                    .setRequestingPlayer(requestingPlayer)
                     .build();
         }
 
@@ -101,6 +98,26 @@ public class LobbiesStub {
 
     public ResponseCode getLastResponseCode() {
         return lastResponseCode;
+    }
+
+    private void createQueueFor(String id){
+        try {
+            this.channel.queueDeclare(resultsQueue+id, false, false, false, null);
+            this.channel.exchangeDeclare(resultsQueue, BuiltinExchangeType.FANOUT);
+            this.channel.queueBind(resultsQueue+id, resultsQueue, "");
+            /*
+            this.rabbitMQManager.getQueueBuilder()
+                    .getInstanceOfQueueBuilder()
+                    .setNameQueue(resultsQueue+id)
+                    .setExchangeName(resultsQueue)
+                    .setChannel(channel)
+                    .setExchangeType(BuiltinExchangeType.FANOUT)
+                    .createQueue();
+                    */
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void shutdownStub() {

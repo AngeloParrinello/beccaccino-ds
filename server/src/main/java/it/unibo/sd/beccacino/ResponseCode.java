@@ -2,10 +2,13 @@ package it.unibo.sd.beccacino;
 
 public enum ResponseCode {
     OK(200, "Ok"),
-    CREATE(400, "Cannot create lobby."),
-    LEAVE(401, "Cannot leave lobby."),
-    JOIN(402, "Cannot join lobby."),
-    START(403, "Cannot start the match."),
+
+    LEAVE(201, "Player left lobby"),
+    JOIN(202, "Player joined lobby"),
+    CREATE_ERROR(400, "Cannot create lobby."),
+    LEAVE_ERROR(401, "Cannot leave lobby."),
+    JOIN_ERROR(402, "Cannot join lobby."),
+    START_ERROR(403, "Cannot start the match."),
     PERMISSION_DENIED(405, "Permission denied."),
     ILLEGAL_REQUEST(406, "Illegal request"),
     FAIL(407, "Operation failed");

@@ -41,9 +41,9 @@ public class LobbyManagerImpl implements LobbyManager {
         System.out.println("Lobby effectively exist" + this.getLobby(roomID));
 
         if (!Objects.equals(roomID, "")) {
-            this.lobbiesStub.sendLobbyResponse(this.getLobby(roomID), ResponseCode.OK);
+            this.lobbiesStub.sendLobbyResponse(this.getLobby(roomID), ResponseCode.OK, requestingPlayer);
         } else {
-            this.lobbiesStub.sendLobbyResponse(null, ResponseCode.CREATE);
+            this.lobbiesStub.sendLobbyResponse(null, ResponseCode.CREATE_ERROR, requestingPlayer);
         }
     }
 
@@ -60,15 +60,15 @@ public class LobbyManagerImpl implements LobbyManager {
             Lobby lobbyUpdated = this.getLobby(joinLobbyId);
             if (statusRequest) {
                 System.out.println("Join LObby OK");
-                this.lobbiesStub.sendLobbyResponse(lobbyUpdated, ResponseCode.OK);
+                this.lobbiesStub.sendLobbyResponse(lobbyUpdated, ResponseCode.JOIN, playerJoined);
             } else {
                 System.out.println("Join LObby ERROR");
-                this.lobbiesStub.sendLobbyResponse(lobbyUpdated, ResponseCode.JOIN);
+                this.lobbiesStub.sendLobbyResponse(lobbyUpdated, ResponseCode.JOIN_ERROR, playerJoined);
             }
         } else {
             // TODO could be also a join error because the lobby is full.
             System.out.println("Join LObby FULL");
-            this.lobbiesStub.sendLobbyResponse(null, ResponseCode.CREATE);
+            this.lobbiesStub.sendLobbyResponse(null, ResponseCode.CREATE_ERROR, playerJoined);
         }
     }
 
@@ -83,13 +83,13 @@ public class LobbyManagerImpl implements LobbyManager {
 
         if (statusRequest) {
             System.out.println("Lobby updated WELL");
-            this.lobbiesStub.sendLobbyResponse(lobbyUpdated, ResponseCode.OK);
+            this.lobbiesStub.sendLobbyResponse(lobbyUpdated, ResponseCode.LEAVE, removedPlayer);
             if (this.getLobbySize(lobbyId) == 0) {
                 this.deleteLobby(lobbyId);
             }
         } else {
             System.out.println("Lobby updated smells like shit");
-            this.lobbiesStub.sendLobbyResponse(lobbyUpdated, ResponseCode.LEAVE);
+            this.lobbiesStub.sendLobbyResponse(lobbyUpdated, ResponseCode.LEAVE_ERROR, removedPlayer);
         }
     }
 

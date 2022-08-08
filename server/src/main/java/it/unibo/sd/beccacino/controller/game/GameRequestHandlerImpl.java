@@ -38,13 +38,13 @@ public class GameRequestHandlerImpl implements GameRequestHandler {
                         this.gameUtil.removeLobby(request.getLobby().getId());
                         this.gameStub.sendGameResponse(createdGame, ResponseCode.OK);
                     } else {
-                        this.gameStub.sendGameResponse(null, ResponseCode.START);
+                        this.gameStub.sendGameResponse(null, ResponseCode.START_ERROR);
                     }
                 } else {
                     this.gameStub.sendGameResponse(null, ResponseCode.PERMISSION_DENIED);
                 }
             } else {
-                this.gameStub.sendGameResponse(null, ResponseCode.START);
+                this.gameStub.sendGameResponse(null, ResponseCode.START_ERROR);
             }
         } else {
             this.gameStub.sendGameResponse(null, ResponseCode.ILLEGAL_REQUEST);
