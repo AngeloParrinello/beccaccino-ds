@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import androidx.annotation.Nullable;
@@ -74,14 +73,52 @@ public class CreateActivity extends AppCompatActivity {
                 channel = connection.createChannel();
                 Utilities.createQueue(channel, todoQueueLobbies, BuiltinExchangeType.DIRECT, todoQueueLobbies,
                         false, false, false, null, "");
-                Utilities.createQueue(channel, resultsQueueLobbies, BuiltinExchangeType.DIRECT, resultsQueueLobbies,
+                Utilities.createQueue(channel, resultsQueueLobbies, BuiltinExchangeType.FANOUT, resultsQueueLobbies+myPlayer.getId(),
                         false, false, false, null, "");
                 Utilities.createQueue(channel, todoQueueGames, BuiltinExchangeType.DIRECT, todoQueueGames,
                         false, false, false, null, "");
                 Utilities.createQueue(channel, resultsQueueGames, BuiltinExchangeType.DIRECT, resultsQueueGames,
                         false, false, false, null, "");
-
                 System.out.println("Create Activity Intialized Queue!");
+
+                channel.basicConsume(resultsQueueLobbies+myPlayer.getId(), new DefaultConsumer(channel) {
+                    @Override
+                    public void handleDelivery(String consumerTag, Envelope envelope,
+                                               AMQP.BasicProperties properties, byte[] body) throws IOException {
+                        Response response = Response.parseFrom(body);
+                        switch (Response.parseFrom(body).getResponseCode()) {
+                            case(200) -> {}
+                            case(201) -> {
+                                if(response.getRequestingPlayer().getId().equals(myPlayer.getId())){
+                                    System.out.println("Uscito da: " + Response.parseFrom(body).getLobby().getId());
+                                    Intent myIntent = new Intent(CreateActivity.this, MainActivity.class);
+                                    // TODO gli devo ripassare le info con gli intent? No vero? Boh ci devo guardare (Davide dai fallo tu)
+                                    CreateActivity.this.startActivity(myIntent);
+                                    overridePendingTransition(R.anim.fragment_fade_enter, R.anim.fragment_fade_exit);
+                                }else if(isMyLobby(response.getLobby())){
+                                    updateUsernames(response.getLobby());
+                                }
+                            }
+                            case(202) -> {
+                                if(response.getRequestingPlayer().getId().equals(myPlayer.getId())){
+                                    System.out.println("Ho joinato: " + Response.parseFrom(body).getLobby().getId());
+                                }else if(isMyLobby(response.getLobby())){
+                                    updateUsernames(response.getLobby());
+                                }
+                            }
+                            case (402) -> SingleToast.show(getApplicationContext(), "Impossibile unirsi", 3000);
+
+                            case (405) -> SingleToast.show(getApplicationContext(), "Permesso negato", 3000);
+
+                            case (406) -> SingleToast.show(getApplicationContext(), "Richiesta illegale", 3000);
+
+                            case (407) -> SingleToast.show(getApplicationContext(), "Operazione fallita", 3000);
+
+                            default -> throw new IllegalStateException();
+
+                        }
+                    }
+                });
             } catch (IOException | TimeoutException e) {
                 e.printStackTrace();
             }
@@ -115,6 +152,21 @@ public class CreateActivity extends AppCompatActivity {
         }
     }
 
+    private boolean isMyLobby(Lobby lobby){
+        return lobby.getPlayersList().stream().anyMatch(p -> p.getId().equals(myPlayer.getId()));
+    }
+
+    private void updateUsernames(Lobby lobby){
+        List<Player> players = lobby.getPlayersList();
+        for(int i=0; i<4; i++){
+            if(players.size() >= i){
+                usernames.get(i).setText(players.get(i).getNickname());
+            } else {
+                usernames.get(i).setText(R.string.waiting_player);
+            }
+        }
+    }
+
     private void backToMain(final Context context) {
         AlertDialog.Builder alert = new AlertDialog.Builder(context);
         alert.setMessage("Vuoi lasciare la Lobby?");
@@ -126,31 +178,6 @@ public class CreateActivity extends AppCompatActivity {
                         .build();
 
                 channel.basicPublish(todoQueueLobbies, "", null, leaveLobbyRequest.toByteArray());
-                channel.basicConsume(resultsQueueLobbies, new DefaultConsumer(channel) {
-                    @Override
-                    public void handleDelivery(String consumerTag, Envelope envelope,
-                                               AMQP.BasicProperties properties, byte[] body) throws IOException {
-                        switch (Response.parseFrom(body).getResponseCode()) {
-                            case(200) -> {
-                                System.out.println("UScito da: " + Response.parseFrom(body).getLobby().getId());
-                                Intent myIntent = new Intent(CreateActivity.this, MainActivity.class);
-                                // TODO gli devo ripassare le info con gli intent? No vero? Boh ci devo guardare (Davide dai fallo tu)
-                                CreateActivity.this.startActivity(myIntent);
-                                overridePendingTransition(R.anim.fragment_fade_enter, R.anim.fragment_fade_exit);
-                            }
-                            case (402) -> SingleToast.show(getApplicationContext(), "Impossibile unirsi", 3000);
-
-                            case (405) -> SingleToast.show(getApplicationContext(), "Permesso negato", 3000);
-
-                            case (406) -> SingleToast.show(getApplicationContext(), "Richiesta illegale", 3000);
-
-                            case (407) -> SingleToast.show(getApplicationContext(), "Operazione fallita", 3000);
-
-                            default -> throw new IllegalStateException();
-
-                        }
-                    }
-                });
             } catch (IOException e) {
                e.printStackTrace();
             }

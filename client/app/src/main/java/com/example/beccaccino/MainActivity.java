@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
                 channel = connection.createChannel();
                 Utilities.createQueue(channel, todoQueueLobbies, BuiltinExchangeType.DIRECT, todoQueueLobbies,
                         false, false, false, null, "");
-                Utilities.createQueue(channel, resultsQueueLobbies, BuiltinExchangeType.DIRECT, resultsQueueLobbies,
+                Utilities.createQueue(channel, resultsQueueLobbies, BuiltinExchangeType.FANOUT, resultsQueueLobbies+myPlayer.getId(),
                         false, false, false, null, "");
                 System.out.println("Main Activity Intialized Queue!");
             } catch (IOException | TimeoutException e) {
@@ -83,11 +83,12 @@ public class MainActivity extends AppCompatActivity {
                 .setLobbyMessage("create")
                 .setRequestingPlayer(myPlayer).build();
 
+        System.out.println("CREATE " + myPlayer.getId());
         executorService.execute(() -> {
             try {
                 channel.basicPublish(todoQueueLobbies, "", null, createLobbyRequest.toByteArray());
 
-                channel.basicConsume(resultsQueueLobbies, new DefaultConsumer(channel) {
+                channel.basicConsume(resultsQueueLobbies + myPlayer.getId(), new DefaultConsumer(channel) {
                     @Override
                     public void handleDelivery(String consumerTag, Envelope envelope,
                                                AMQP.BasicProperties properties, byte[] body) throws IOException {
@@ -95,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                e.printStackTrace();
             }
         });
     }
@@ -230,14 +231,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void responseHandler(Response response) {
+        System.out.println(response.getResponseCode());
+        System.out.println("ID: "+ response.getRequestingPlayer().getId());
         switch (response.getResponseCode()) {
             case(200) -> {
-                System.out.println("LOBBY ID IMMESSO: " + response.getLobby().getId());
-                Intent data = new Intent(MainActivity.this, CreateActivity.class);
-                data.putExtra("lobby", response.getLobby().toByteArray());
-                data.putExtra("player", myPlayer.toByteArray());
-                MainActivity.this.startActivity(data);
-                overridePendingTransition(R.anim.fragment_fade_enter, R.anim.fragment_fade_exit);
+                if(response.getRequestingPlayer().getId().equals(myPlayer.getId())){
+                    System.out.println("LOBBY ID: " + response.getLobby().getId());
+                    Intent data = new Intent(MainActivity.this, CreateActivity.class);
+                    data.putExtra("lobby", response.getLobby().toByteArray());
+                    data.putExtra("player", myPlayer.toByteArray());
+                    MainActivity.this.startActivity(data);
+                    overridePendingTransition(R.anim.fragment_fade_enter, R.anim.fragment_fade_exit);
+                }
             }
             case (402) -> SingleToast.show(getApplicationContext(), "Impossibile unirsi", 3000);
 
