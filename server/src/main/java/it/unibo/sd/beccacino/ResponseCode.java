@@ -1,9 +1,12 @@
 package it.unibo.sd.beccacino;
 
 public enum ResponseCode {
-    OK(200, "Ok"),
+    CREATE_OK(200, "Ok"),
     LEAVE(201, "Player left lobby"),
     JOIN(202, "Player joined lobby"),
+    START_OK(303, "Game started"),
+    BRISCOLA_OK(304, "Game started"),
+    PLAY_OK(305, "Game started"),
     CREATE_ERROR(400, "Cannot create lobby."),
     LEAVE_ERROR(401, "Cannot leave lobby."),
     JOIN_ERROR(402, "Cannot join lobby."),

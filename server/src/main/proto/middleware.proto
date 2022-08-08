@@ -24,7 +24,7 @@ message Game {
   repeated Player players = 3;
   PublicData public_data = 2;
   repeated PrivateData private_data = 4;
-  int32 round = 5;
+  int32 round = 5; //TODO s'ela?
 }
 
 /*

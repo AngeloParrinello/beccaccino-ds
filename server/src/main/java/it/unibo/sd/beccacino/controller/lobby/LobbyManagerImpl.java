@@ -41,7 +41,7 @@ public class LobbyManagerImpl implements LobbyManager {
         System.out.println("Lobby effectively exist" + this.getLobby(roomID));
 
         if (!Objects.equals(roomID, "")) {
-            this.lobbiesStub.sendLobbyResponse(this.getLobby(roomID), ResponseCode.OK, requestingPlayer);
+            this.lobbiesStub.sendLobbyResponse(this.getLobby(roomID), ResponseCode.CREATE_OK, requestingPlayer);
         } else {
             this.lobbiesStub.sendLobbyResponse(null, ResponseCode.CREATE_ERROR, requestingPlayer);
         }

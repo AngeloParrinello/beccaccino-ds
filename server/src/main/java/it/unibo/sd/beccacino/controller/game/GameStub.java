@@ -2,10 +2,7 @@ package it.unibo.sd.beccacino.controller.game;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.rabbitmq.client.*;
-import it.unibo.sd.beccacino.Game;
-import it.unibo.sd.beccacino.GameRequest;
-import it.unibo.sd.beccacino.GameResponse;
-import it.unibo.sd.beccacino.ResponseCode;
+import it.unibo.sd.beccacino.*;
 import it.unibo.sd.beccacino.rabbitmq.RabbitMQManager;
 
 import java.io.IOException;
@@ -43,14 +40,7 @@ public class GameStub {
                 .setChannel(channel)
                 .createQueue();
 
-        this.rabbitMQManager.getQueueBuilder()
-                .getInstanceOfQueueBuilder()
-                .setNameQueue(resultsQueue)
-                .setExchangeName(resultsQueue)
-                .setChannel(channel)
-                .createQueue();
-
-        channel.basicConsume(resultsQueue, new DefaultConsumer(channel) {
+        channel.basicConsume(todoQueue, new DefaultConsumer(channel) {
             @Override
             public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties,
                                        byte[] body) throws InvalidProtocolBufferException {
@@ -71,28 +61,59 @@ public class GameStub {
     }
 
     public void sendGameResponse(Game gameUpdated, ResponseCode responseCode) {
+        if(responseCode == ResponseCode.START_OK){
+            this.setupQueues(gameUpdated);
+        }
         this.lastOperation = gameUpdated;
         this.lastResponseCode = responseCode;
-        GameResponse gameResponse;
 
-        if (gameUpdated != null) {
+        gameUpdated.getPlayersList().forEach(player -> {
+            GameResponse gameResponse;
             gameResponse = GameResponse.newBuilder()
                     .setGame(gameUpdated)
                     .setResponseCode(responseCode.getCode())
                     .setResponseMessage(responseCode.getMessage())
                     .build();
-        } else {
-            gameResponse = GameResponse.newBuilder()
-                    .setResponseCode(responseCode.getCode())
-                    .setResponseMessage(responseCode.getMessage())
-                    .build();
-        }
+
+            try {
+                channel.basicPublish(resultsQueue + gameUpdated.getId() + player.getId(), "", null, gameResponse.toByteArray());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    public void sendGameErrorResponse(ResponseCode responseCode, Player requestingPlayer, String gameId) {
+        this.lastOperation = null;
+        this.lastResponseCode = responseCode;
+
+        GameResponse gameResponse;
+        gameResponse = GameResponse.newBuilder()
+                .setResponseCode(responseCode.getCode())
+                .setResponseMessage(responseCode.getMessage())
+                .build();
 
         try {
-            channel.basicPublish(todoQueue, "", null, gameResponse.toByteArray());
+            channel.basicPublish(resultsQueue + gameId + requestingPlayer.getId(), "", null, gameResponse.toByteArray());
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void setupQueues(Game game) {
+        game.getPlayersList().forEach(player -> {
+            String queueName = resultsQueue + game.getId() + player.getId();
+            try {
+                this.rabbitMQManager.getQueueBuilder()
+                        .getInstanceOfQueueBuilder()
+                        .setNameQueue(queueName)
+                        .setExchangeName(queueName)
+                        .setChannel(channel)
+                        .createQueue();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     public Game getLastOperation() {

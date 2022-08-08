@@ -2,6 +2,8 @@ package it.unibo.sd.beccacino;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
+import com.mongodb.ConnectionString;
+import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
@@ -22,15 +24,15 @@ public class DBManager {
 
     public DBManager() {
         // Use this when running server using docker.
-        MongoClient client = MongoClients.create(System.getenv("MONGODB"));
+        //MongoClient client = MongoClients.create(System.getenv("MONGODB"));
         // Use this when running server locally.
         // MongoClient client = new MongoClient(new MongoClientURI("mongodb://localhost:27017"));
         // Replace the uri string with your MongoDB deployment's connection string
-        // String mongoUri = "mongodb://localhost:27017";
-        // MongoClientSettings settings = MongoClientSettings.builder()
-        //        .applyConnectionString(new ConnectionString(mongoUri))
-        //        .build();
-        // MongoClient client = MongoClients.create(settings);
+         String mongoUri = "mongodb://localhost:27017";
+         MongoClientSettings settings = MongoClientSettings.builder()
+                .applyConnectionString(new ConnectionString(mongoUri))
+                .build();
+         MongoClient client = MongoClients.create(settings);
         this.db = client.getDatabase("beccacino");
     }
 
