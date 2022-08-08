@@ -123,7 +123,6 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void handleDelivery(String consumerTag, Envelope envelope,
                                                AMQP.BasicProperties properties, byte[] body) throws IOException {
-                        System.out.println("Risposta parsata " + Response.parseFrom(body));
                         responseHandler(Response.parseFrom(body));
                     }
                 });
@@ -165,7 +164,6 @@ public class MainActivity extends AppCompatActivity {
                 Utilities.createQueue(channel, resultsQueueLobbies, BuiltinExchangeType.FANOUT, resultsQueueLobbies+myPlayer.getId(),
                         false, false, false, null, "");
 
-                System.out.println("Main Activity Intialized Queue!");
             } catch (IOException | TimeoutException e) {
                 e.printStackTrace();
             }
@@ -239,9 +237,19 @@ public class MainActivity extends AppCompatActivity {
 
     private void responseHandler(Response response) {
         System.out.println(response.getResponseCode());
-        System.out.println("ID: "+ response.getRequestingPlayer().getId());
         switch (response.getResponseCode()) {
             case(200) -> {
+                if(response.getRequestingPlayer().getId().equals(myPlayer.getId())){
+                    System.out.println("LOBBY ID: " + response.getLobby().getId());
+                    Intent data = new Intent(MainActivity.this, CreateActivity.class);
+                    data.putExtra("lobby", response.getLobby().toByteArray());
+                    data.putExtra("player", myPlayer.toByteArray());
+                    MainActivity.this.startActivity(data);
+                    overridePendingTransition(R.anim.fragment_fade_enter, R.anim.fragment_fade_exit);
+                }
+            }
+
+            case (202) -> {
                 if(response.getRequestingPlayer().getId().equals(myPlayer.getId())){
                     System.out.println("LOBBY ID: " + response.getLobby().getId());
                     Intent data = new Intent(MainActivity.this, CreateActivity.class);

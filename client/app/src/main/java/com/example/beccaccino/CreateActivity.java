@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.rabbitmq.client.*;
+import org.w3c.dom.Text;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -67,6 +68,7 @@ public class CreateActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
+        updateUsernames(lobby);
         executorService.execute(() -> {
             try {
                 connection = Utilities.createConnection();
@@ -79,7 +81,6 @@ public class CreateActivity extends AppCompatActivity {
                         false, false, false, null, "");
                 Utilities.createQueue(channel, resultsQueueGames, BuiltinExchangeType.DIRECT, resultsQueueGames,
                         false, false, false, null, "");
-                System.out.println("Create Activity Intialized Queue!");
 
                 channel.basicConsume(resultsQueueLobbies+myPlayer.getId(), new DefaultConsumer(channel) {
                     @Override
@@ -89,21 +90,24 @@ public class CreateActivity extends AppCompatActivity {
                         switch (Response.parseFrom(body).getResponseCode()) {
                             case(200) -> {}
                             case(201) -> {
-                                if(response.getRequestingPlayer().getId().equals(myPlayer.getId())){
+                                if (response.getRequestingPlayer().getId().equals(myPlayer.getId())) {
                                     System.out.println("Uscito da: " + Response.parseFrom(body).getLobby().getId());
                                     Intent myIntent = new Intent(CreateActivity.this, MainActivity.class);
-                                    // TODO gli devo ripassare le info con gli intent? No vero? Boh ci devo guardare (Davide dai fallo tu)
                                     CreateActivity.this.startActivity(myIntent);
                                     overridePendingTransition(R.anim.fragment_fade_enter, R.anim.fragment_fade_exit);
-                                }else if(isMyLobby(response.getLobby())){
+                                } else if(isMyLobby(response.getLobby())) {
                                     updateUsernames(response.getLobby());
                                 }
                             }
                             case(202) -> {
-                                if(response.getRequestingPlayer().getId().equals(myPlayer.getId())){
+                                if (response.getRequestingPlayer().getId().equals(myPlayer.getId())) {
                                     System.out.println("Ho joinato: " + Response.parseFrom(body).getLobby().getId());
-                                }else if(isMyLobby(response.getLobby())){
+                                } else if(isMyLobby(response.getLobby())) {
+                                    System.out.println("E' arrivato un nuovo client");
+                                    System.out.println("La nuova lobby è: " + response.getLobby().getPlayersList());
                                     updateUsernames(response.getLobby());
+                                } else {
+                                    System.out.println("Partita non mia");
                                 }
                             }
                             case (402) -> SingleToast.show(getApplicationContext(), "Impossibile unirsi", 3000);
@@ -157,14 +161,16 @@ public class CreateActivity extends AppCompatActivity {
     }
 
     private void updateUsernames(Lobby lobby){
-        List<Player> players = lobby.getPlayersList();
-        for(int i=0; i<4; i++){
-            if(players.size() >= i){
-                usernames.get(i).setText(players.get(i).getNickname());
-            } else {
-                usernames.get(i).setText(R.string.waiting_player);
-            }
-        }
+        runOnUiThread(() -> {
+            List<Player> players = lobby.getPlayersList();
+            for (int i = 0; i < 4; i++) {
+                    if (players.size() > i) {
+                        usernames.get(i).setText(players.get(i).getNickname());
+                    } else {
+                        usernames.get(i).setText(R.string.waiting_player);
+                    }
+                }
+        });
     }
 
     private void backToMain(final Context context) {
@@ -208,9 +214,11 @@ public class CreateActivity extends AppCompatActivity {
     }
 
     private void saveViewElements() {
+        TextView player1Name = findViewById(R.id.player1Name);
         TextView player2Name = findViewById(R.id.player2Name);
         TextView player3Name = findViewById(R.id.player3Name);
         TextView player4Name = findViewById(R.id.player4Name);
+        usernames.add(player1Name);
         usernames.add(player2Name);
         usernames.add(player3Name);
         usernames.add(player4Name);
