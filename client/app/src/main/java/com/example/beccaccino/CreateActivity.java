@@ -73,16 +73,17 @@ public class CreateActivity extends AppCompatActivity {
             try {
                 connection = Utilities.createConnection();
                 channel = connection.createChannel();
+
                 Utilities.createQueue(channel, todoQueueLobbies, BuiltinExchangeType.DIRECT, todoQueueLobbies,
                         false, false, false, null, "");
-                Utilities.createQueue(channel, resultsQueueLobbies, BuiltinExchangeType.FANOUT, resultsQueueLobbies+myPlayer.getId(),
+                Utilities.createQueue(channel, resultsQueueLobbies, BuiltinExchangeType.FANOUT, resultsQueueLobbies + myPlayer.getId(),
                         false, false, false, null, "");
                 Utilities.createQueue(channel, todoQueueGames, BuiltinExchangeType.DIRECT, todoQueueGames,
                         false, false, false, null, "");
-                Utilities.createQueue(channel, resultsQueueGames, BuiltinExchangeType.DIRECT, resultsQueueGames,
+                Utilities.createQueue(channel, resultsQueueGames, BuiltinExchangeType.FANOUT, resultsQueueGames + myPlayer.getId(),
                         false, false, false, null, "");
 
-                channel.basicConsume(resultsQueueLobbies+myPlayer.getId(), new DefaultConsumer(channel) {
+                channel.basicConsume(resultsQueueLobbies + myPlayer.getId(), new DefaultConsumer(channel) {
                     @Override
                     public void handleDelivery(String consumerTag, Envelope envelope,
                                                AMQP.BasicProperties properties, byte[] body) throws IOException {
@@ -120,6 +121,15 @@ public class CreateActivity extends AppCompatActivity {
 
                             default -> throw new IllegalStateException();
 
+                        }
+                    }
+                });
+                channel.basicConsume(resultsQueueGames + myPlayer.getId(), new DefaultConsumer(channel) {
+                    @Override
+                    public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
+                        GameResponse gameResponse = GameResponse.parseFrom(body);
+                        switch (gameResponse.getResponseCode()) {
+                            //TODO
                         }
                     }
                 });
@@ -192,12 +202,22 @@ public class CreateActivity extends AppCompatActivity {
     }
 
     private void startMatch() {
-        // TODO comunicazione con il server
-        if(checkNumPlayer()) {
-            Intent myIntent = new Intent(CreateActivity.this, GameActivity.class);
-            CreateActivity.this.startActivity(myIntent);
-        } else {
+        if (!checkNumPlayer()) {
             SingleToast.show(getApplicationContext(), "Seleziona tutti i giocatori prima di iniziare", 3000);
+        } else {
+            executorService.execute(() -> {
+                GameRequest startGameRequest = GameRequest.newBuilder().setRequestType("start")
+                        .setRequestingPlayer(myPlayer)
+                        .setLobby(lobby)
+                        .build();
+                try {
+                    channel.basicPublish(todoQueueGames, "", null, startGameRequest.toByteArray());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                Intent myIntent = new Intent(CreateActivity.this, GameActivity.class);
+                CreateActivity.this.startActivity(myIntent);
+            });
         }
     }
 

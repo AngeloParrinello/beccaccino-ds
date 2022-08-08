@@ -105,16 +105,6 @@ public class LobbiesStub {
             this.channel.queueDeclare(resultsQueue+id, false, false, false, null);
             this.channel.exchangeDeclare(resultsQueue, BuiltinExchangeType.FANOUT);
             this.channel.queueBind(resultsQueue+id, resultsQueue, "");
-            /*
-            this.rabbitMQManager.getQueueBuilder()
-                    .getInstanceOfQueueBuilder()
-                    .setNameQueue(resultsQueue+id)
-                    .setExchangeName(resultsQueue)
-                    .setChannel(channel)
-                    .setExchangeType(BuiltinExchangeType.FANOUT)
-                    .createQueue();
-                    */
-
         } catch (IOException e) {
             e.printStackTrace();
         }
