@@ -31,6 +31,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         try {
             checkUsername();
         } catch (IOException e) {
@@ -48,19 +49,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        executorService.execute(() -> {
-            try {
-                connection = Utilities.createConnection();
-                channel = connection.createChannel();
-                Utilities.createQueue(channel, todoQueueLobbies, BuiltinExchangeType.DIRECT, todoQueueLobbies,
-                        false, false, false, null, "");
-                Utilities.createQueue(channel, resultsQueueLobbies, BuiltinExchangeType.FANOUT, resultsQueueLobbies+myPlayer.getId(),
-                        false, false, false, null, "");
-                System.out.println("Main Activity Intialized Queue!");
-            } catch (IOException | TimeoutException e) {
-                e.printStackTrace();
-            }
-        });
+        if(!connection.isOpen()) {
+            setupRabbitMQ();
+        }
     }
 
     @Override
@@ -78,12 +69,23 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        executorService.execute(() -> {
+            try {
+                connection.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
     private void createMatch() {
         Request createLobbyRequest = Request.newBuilder()
                 .setLobbyMessage("create")
                 .setRequestingPlayer(myPlayer).build();
 
-        System.out.println("CREATE " + myPlayer.getId());
         executorService.execute(() -> {
             try {
                 channel.basicPublish(todoQueueLobbies, "", null, createLobbyRequest.toByteArray());
@@ -117,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
                         .build();
 
                 channel.basicPublish(todoQueueLobbies, "", null, searchLobbyRequest.toByteArray());
-                channel.basicConsume(resultsQueueLobbies, new DefaultConsumer(channel) {
+                channel.basicConsume(resultsQueueLobbies + myPlayer.getId(), new DefaultConsumer(channel) {
                     @Override
                     public void handleDelivery(String consumerTag, Envelope envelope,
                                                AMQP.BasicProperties properties, byte[] body) throws IOException {
@@ -140,9 +142,7 @@ public class MainActivity extends AppCompatActivity {
         alert.setView(userName);
         alert.setCancelable(false);
         alert.setPositiveButton("Confirm", (dialog, whichButton) -> {
-            //What ever you want to do with the value
             Editable usernameChoosed = userName.getText();
-            // TODO l'id è messo in automatico da Proto?
             setPlayer(userName.getText().toString());
             String fileContents = usernameChoosed.toString();
             try (FileOutputStream fos = context.openFileOutput(PATH_TO_USERNAME, Context.MODE_PRIVATE)) {
@@ -154,10 +154,29 @@ public class MainActivity extends AppCompatActivity {
         alert.show();
     }
 
+    private void setupRabbitMQ() {
+        executorService.execute(() -> {
+            try {
+                connection = Utilities.createConnection();
+                channel = connection.createChannel();
+
+                Utilities.createQueue(channel, todoQueueLobbies, BuiltinExchangeType.DIRECT, todoQueueLobbies,
+                        false, false, false, null, "");
+                Utilities.createQueue(channel, resultsQueueLobbies, BuiltinExchangeType.FANOUT, resultsQueueLobbies+myPlayer.getId(),
+                        false, false, false, null, "");
+
+                System.out.println("Main Activity Intialized Queue!");
+            } catch (IOException | TimeoutException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
     private void setPlayer(final String nickname) {
         myPlayer = Player.newBuilder()
-                            .setId(String.valueOf(new Random()
-                            .nextInt())).setNickname(nickname).build();
+                         .setId(String.valueOf(new Random()
+                         .nextInt())).setNickname(nickname).build();
+        this.setupRabbitMQ();
     }
 
     public static String getUsername(Context context) {
@@ -216,18 +235,6 @@ public class MainActivity extends AppCompatActivity {
         } else {
             setUsername(this);
         }
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        executorService.execute(() -> {
-            try {
-                connection.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
     }
 
     private void responseHandler(Response response) {
