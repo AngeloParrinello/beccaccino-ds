@@ -68,15 +68,23 @@ public class GameStub {
         this.lastResponseCode = responseCode;
 
         gameUpdated.getPlayersList().forEach(player -> {
+            final int index = gameUpdated.getPlayersList().indexOf(player);
+            Game game = Game.newBuilder()
+                    .setPublicData(gameUpdated.getPublicData())
+                    .addPrivateData(gameUpdated.getPrivateData(index))
+                    .addAllPlayers(gameUpdated.getPlayersList())
+                    .setRound(gameUpdated.getRound())
+                    .build();
+
             GameResponse gameResponse;
             gameResponse = GameResponse.newBuilder()
-                    .setGame(gameUpdated)
+                    .setGame(game)
                     .setResponseCode(responseCode.getCode())
                     .setResponseMessage(responseCode.getMessage())
                     .build();
 
             try {
-                channel.basicPublish(resultsQueue + gameUpdated.getId() + player.getId(), "", null, gameResponse.toByteArray());
+                channel.basicPublish(resultsQueue + game.getId() + player.getId(), "", null, gameResponse.toByteArray());
             } catch (IOException e) {
                 e.printStackTrace();
             }
