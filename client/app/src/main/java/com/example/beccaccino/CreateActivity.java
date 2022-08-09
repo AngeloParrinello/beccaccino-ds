@@ -222,15 +222,7 @@ public class CreateActivity extends AppCompatActivity {
     }
 
     private boolean checkNumPlayer() {
-        List<String> names = new ArrayList<>();
-        SharedPreferences sh
-                = getApplication().getSharedPreferences("Settings",
-                Context.MODE_PRIVATE);
-        names.add(sh.getString("player1", "Paolo"));
-        names.add(sh.getString("player2", "Scegli"));
-        names.add(sh.getString("player3", "Scegli"));
-        names.add(sh.getString("player4", "Scegli"));
-        return !names.contains("Scegli");
+        return this.usernames.stream().map(t -> t.getText().toString()).noneMatch(s -> s.equals("In attesa"));
     }
 
     private void saveViewElements() {

@@ -24,15 +24,15 @@ public class DBManager {
 
     public DBManager() {
         // Use this when running server using docker.
-        //MongoClient client = MongoClients.create(System.getenv("MONGODB"));
+        MongoClient client = MongoClients.create(System.getenv("MONGODB"));
         // Use this when running server locally.
         // MongoClient client = new MongoClient(new MongoClientURI("mongodb://localhost:27017"));
         // Replace the uri string with your MongoDB deployment's connection string
-         String mongoUri = "mongodb://localhost:27017";
-         MongoClientSettings settings = MongoClientSettings.builder()
+        // String mongoUri = "mongodb://localhost:27017";
+        /*MongoClientSettings settings = MongoClientSettings.builder()
                 .applyConnectionString(new ConnectionString(mongoUri))
                 .build();
-         MongoClient client = MongoClients.create(settings);
+         MongoClient client = MongoClients.create(settings);*/
         this.db = client.getDatabase("beccacino");
     }
 
