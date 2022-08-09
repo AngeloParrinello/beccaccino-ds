@@ -170,21 +170,6 @@ public class CreateActivity extends AppCompatActivity {
         });
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        MusicManager.pause();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        /*MUSIC*/
-        if (getSharedPreferences("Settings", MODE_PRIVATE).getBoolean("music", false)) {
-            MusicManager.start(this, 0);
-        }
-    }
-
     private boolean isMyLobby(Lobby lobby) {
         return lobby.getPlayersList().stream().anyMatch(p -> p.getId().equals(myPlayer.getId()));
     }

@@ -22,17 +22,17 @@ public class EndgameDialog extends Dialog implements View.OnClickListener {
     private final String team2;
     private final int scoreTeam1;
     private final int scoreTeam2;
-    private final GameViewModel gameViewModel;
+    // private final GameViewModel gameViewModel;
     private final boolean isMatchOver;
 
-    public EndgameDialog(@NonNull Context context, String player1, String player2, String player3, String player4, int scoreTeam1, int scoreTeam2, boolean isMatchOver, GameViewModel viewModel) {
+    public EndgameDialog(@NonNull Context context, String player1, String player2, String player3, String player4, int scoreTeam1, int scoreTeam2, boolean isMatchOver) {
         super(context);
         this.team1 = player1 + "\n" + "&\n" + player3;
         this.team2 = player2 + "\n" + "&\n" + player4;
         this.scoreTeam1 = scoreTeam1;
         this.scoreTeam2 = scoreTeam2;
         this.isMatchOver = isMatchOver;
-        this.gameViewModel = viewModel;
+        // this.gameViewModel = viewModel;
     }
 
     @Override
@@ -80,11 +80,11 @@ public class EndgameDialog extends Dialog implements View.OnClickListener {
             case R.id.yesButton:
                 Log.d("DIALOG", "yes!");
                 if (!this.isMatchOver) {
-                    gameViewModel.createGame();
+                    // gameViewModel.createGame();
                 }
                 break;
             case R.id.noButton:
-                gameViewModel.shutDownGame();
+                // gameViewModel.shutDownGame();
                 Intent myIntent = new Intent(getContext(), MainActivity.class);
                 Objects.requireNonNull(getContext()).startActivity(myIntent);
                 Log.d("DIALOG", "no!");
