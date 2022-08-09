@@ -1,6 +1,7 @@
 package com.example.beccaccino;
 
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
@@ -12,7 +13,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -22,19 +22,22 @@ import com.example.beccaccino.model.entities.Play;
 import com.example.beccaccino.model.entities.PlayImpl;
 import com.example.beccaccino.model.logic.Round;
 import com.example.beccaccino.room.Metadata;
+import com.google.protobuf.InvalidProtocolBufferException;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class GameActivity extends AppCompatActivity implements MyAdapter.ItemClickListener {
+    private Game game;
+    private List<Player> playerList;
 
     public List<Integer> hand = new ArrayList<>();
     private MyAdapter mAdapter;
     private RecyclerView recyclerView;
     private final List<Button> message = new ArrayList<>();
     private GameViewModel viewModel;
-    private Button selected;
+    private Button buttonMessageSelected;
     private Map<String, ImageView> gameField;
     private Map<String, TextView> messageField;
 
@@ -50,6 +53,14 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
         setContentView(R.layout.activity_game);
         this.myUsername = MainActivity.getUsername(this);
 
+        Intent intent = getIntent();
+
+        try {
+            game = Game.parseFrom(intent.getByteArrayExtra("game"));
+        } catch (InvalidProtocolBufferException e) {
+            e.printStackTrace();
+        }
+
         // Add OnClickListener to each message you can send when making a play.
         this.message.add(findViewById(R.id.messageBusso));
         this.message.add(findViewById(R.id.messageStriscio));
@@ -58,19 +69,17 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
             button.setOnClickListener(v -> chooseMessage(button));
             button.getBackground().setColorFilter(Color.parseColor("#9e9e9e"), PorterDuff.Mode.DARKEN);
         }
+
         // Create the view model.
         this.viewModel = new ViewModelProvider(this).get(GameViewModel.class);
+
         // Create the horizontal recycler view to show the player's hand.
         recyclerView = findViewById(R.id.recyclerView);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
         recyclerView.setLayoutManager(layoutManager);
+
         // Set the observer for each Live Data we have during the match.
-        viewModel.getHand().observe(this, new Observer<List<ItalianCard>>() {
-            @Override
-            public void onChanged(List<ItalianCard> italianCards) {
-                updateHand(italianCards);
-            }
-        });
+        viewModel.getHand().observe(this, this::updateHand);
         viewModel.getRounds().observe(this, this::updateRound);
         viewModel.getMetadata().observe(this, metadata -> {
             if (metadata != null) {
@@ -84,6 +93,42 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
         super.onStart();
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        MusicManager.pause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        /*MUSIC*/
+        if (getSharedPreferences("Settings", MODE_PRIVATE).getBoolean("music", false)) {
+            MusicManager.start(this, 0);
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+        alertDialog.setTitle("Termina partita");
+        alertDialog.setMessage("Sei sicuro di voler uscire?");
+        alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Annulla",
+                (dialog, which) -> dialog.dismiss());
+        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Esci",
+                (dialog, which) -> {
+                    viewModel.shutDownGame();
+                    GameActivity.super.onBackPressed();
+                });
+        alertDialog.show();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        viewModel.shutDownGame();
+    }
+
     /**
      * On click listener for each card in the hand.
      **/
@@ -92,9 +137,9 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
         if (this.isMyTurn) {
             String card = getResources().getResourceEntryName(mAdapter.getItem(position));
             String messaggio;
-            if (this.selected != null) {
-                messaggio = this.selected.getText().toString().toUpperCase();
-                this.selected.getBackground().setColorFilter(Color.parseColor("#9e9e9e"), PorterDuff.Mode.DARKEN);
+            if (this.buttonMessageSelected != null) {
+                messaggio = this.buttonMessageSelected.getText().toString().toUpperCase();
+                this.buttonMessageSelected.getBackground().setColorFilter(Color.parseColor("#9e9e9e"), PorterDuff.Mode.DARKEN);
             } else {
                 messaggio = "";
             }
@@ -106,7 +151,7 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
                 if (this.playableCards.contains(italianCard)) {
                     viewModel.makePlay(new PlayImpl(italianCard, messaggio));
                     this.isMyTurn = false;
-                    this.selected = null;
+                    this.buttonMessageSelected = null;
                 } else {
                     SingleToast.show(this, "Gioca una carta di " + Objects.requireNonNull(viewModel.getRounds().getValue()).get(viewModel.getRounds().getValue().size() - 1).getSuit().get(), Toast.LENGTH_LONG);
                 }
@@ -205,7 +250,6 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
             messageField.put(players.get(i), messages.get(i));
         }
     }
-
 
     private void updateRound(List<Round> rounds) {
         TextView gameLog = findViewById(R.id.log);
@@ -326,20 +370,20 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
      * @param button the message
      */
     private void chooseMessage(Button button) {
-        if (this.selected == null) {
-            this.selected = button;
+        if (this.buttonMessageSelected == null) {
+            this.buttonMessageSelected = button;
             button.setBackgroundColor(getResources().getColor(R.color.green));
         } else {
             for (Button buttonList : this.message) {
-                if (buttonList == this.selected) {
+                if (buttonList == this.buttonMessageSelected) {
                     if (buttonList == button) {
                         buttonList.setBackgroundColor(getResources().getColor(R.color.com_facebook_device_auth_text));
-                        this.selected = null;
+                        this.buttonMessageSelected = null;
                         break;
                     } else {
                         buttonList.setBackgroundColor(getResources().getColor(R.color.com_facebook_device_auth_text));
                         button.setBackgroundColor(getResources().getColor(R.color.green));
-                        this.selected = button;
+                        this.buttonMessageSelected = button;
                         break;
                     }
                 }
@@ -365,40 +409,4 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
         }
     }
 
-
-    protected void onPause() {
-        super.onPause();
-        MusicManager.pause();
-
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        /*MUSIC*/
-        if (getSharedPreferences("Settings", MODE_PRIVATE).getBoolean("music", false)) {
-            MusicManager.start(this, 0);
-        }
-    }
-
-    @Override
-    public void onBackPressed() {
-        AlertDialog alertDialog = new AlertDialog.Builder(this).create();
-        alertDialog.setTitle("Termina partita");
-        alertDialog.setMessage("Sei sicuro di voler uscire?");
-        alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Annulla",
-                (dialog, which) -> dialog.dismiss());
-        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Esci",
-                (dialog, which) -> {
-                    viewModel.shutDownGame();
-                    GameActivity.super.onBackPressed();
-                });
-        alertDialog.show();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        viewModel.shutDownGame();
-    }
 }
