@@ -45,15 +45,11 @@ public class GameStub {
             public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties,
                                        byte[] body) throws InvalidProtocolBufferException {
 
-                System.out.println("GameStub received file!");
-
                 GameRequest gameRequest = GameRequest.parseFrom(body);
 
-                System.out.println(gameRequest);
+                System.out.println("GameRequest arrivata: " + gameRequest);
 
                 gameRequestHandler.handleRequest(gameRequest);
-
-                System.out.println("GameStub send file to manager!");
 
             }
         });
@@ -61,14 +57,18 @@ public class GameStub {
     }
 
     public void sendGameResponse(Game gameUpdated, ResponseCode responseCode) {
-        if(responseCode == ResponseCode.START_OK){
+        if (responseCode == ResponseCode.START_OK) {
             this.setupQueues(gameUpdated);
         }
+
         this.lastOperation = gameUpdated;
         this.lastResponseCode = responseCode;
 
+        System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA: "+gameUpdated.getPlayersList());
+
         gameUpdated.getPlayersList().forEach(player -> {
             final int index = gameUpdated.getPlayersList().indexOf(player);
+
             Game game = Game.newBuilder()
                     .setPublicData(gameUpdated.getPublicData())
                     .addPrivateData(gameUpdated.getPrivateData(index))
@@ -84,7 +84,9 @@ public class GameStub {
                     .build();
 
             try {
-                channel.basicPublish(resultsQueue + game.getId() + player.getId(), "", null, gameResponse.toByteArray());
+                System.out.println("Invio");
+                channel.basicPublish(resultsQueue + player.getId(),
+                        "", null, gameResponse.toByteArray());
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -102,20 +104,21 @@ public class GameStub {
                 .build();
 
         try {
-            channel.basicPublish(resultsQueue + gameId + requestingPlayer.getId(), "", null, gameResponse.toByteArray());
+            channel.basicPublish(resultsQueue + requestingPlayer.getId(), "", null, gameResponse.toByteArray());
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     private void setupQueues(Game game) {
+        game.getPlayersList().forEach(g -> System.out.println("BBBBBBBBBBBBBBBBBBBBBBBBBB: "+g.getNickname()));
         game.getPlayersList().forEach(player -> {
-            String queueName = resultsQueue + game.getId() + player.getId();
+            String resultQueueName = resultsQueue + player.getId();
             try {
                 this.rabbitMQManager.getQueueBuilder()
                         .getInstanceOfQueueBuilder()
-                        .setNameQueue(queueName)
-                        .setExchangeName(queueName)
+                        .setNameQueue(resultQueueName)
+                        .setExchangeName(resultQueueName)
                         .setChannel(channel)
                         .createQueue();
             } catch (IOException e) {

@@ -44,8 +44,6 @@ public class LobbiesStub {
             public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties,
                                        byte[] body) throws InvalidProtocolBufferException {
 
-                System.out.println("Code ricevono.... : " + Request.parseFrom(body));
-
                 Request request = Request.parseFrom(body);
 
                 lobbyManager.handleRequest(request);
@@ -66,8 +64,6 @@ public class LobbiesStub {
         this.lastResponseCode = responseCode;
         Response response;
 
-        System.out.println("Lobby Stub received request from manager: "+ lobbyUpdated + " with code "+ responseCode);
-
         if (lobbyUpdated != null) {
             response = Response.newBuilder()
                     .setLobby(lobbyUpdated)
@@ -82,8 +78,6 @@ public class LobbiesStub {
                     .setRequestingPlayer(requestingPlayer)
                     .build();
         }
-
-        System.out.println("And the final response is"+response);
 
         try {
             channel.basicPublish(resultsQueue, "", null, response.toByteArray());
@@ -100,11 +94,11 @@ public class LobbiesStub {
         return lastResponseCode;
     }
 
-    private void createQueueFor(String id){
+    private void createQueueFor(String playerID){
         try {
-            this.channel.queueDeclare(resultsQueue+id, false, false, false, null);
+            this.channel.queueDeclare(resultsQueue + playerID, false, false, false, null);
             this.channel.exchangeDeclare(resultsQueue, BuiltinExchangeType.FANOUT);
-            this.channel.queueBind(resultsQueue+id, resultsQueue, "");
+            this.channel.queueBind(resultsQueue + playerID, resultsQueue, "");
         } catch (IOException e) {
             e.printStackTrace();
         }

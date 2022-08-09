@@ -80,7 +80,8 @@ public class CreateActivity extends AppCompatActivity {
                         false, false, false, null, "");
                 Utilities.createQueue(channel, todoQueueGames, BuiltinExchangeType.DIRECT, todoQueueGames,
                         false, false, false, null, "");
-                Utilities.createQueue(channel, resultsQueueGames, BuiltinExchangeType.FANOUT, resultsQueueGames + myPlayer.getId(),
+                Utilities.createQueue(channel, resultsQueueGames + myPlayer.getId(), BuiltinExchangeType.DIRECT,
+                        resultsQueueGames + myPlayer.getId(),
                         false, false, false, null, "");
 
                 channel.basicConsume(resultsQueueLobbies + myPlayer.getId(), new DefaultConsumer(channel) {
@@ -106,6 +107,7 @@ public class CreateActivity extends AppCompatActivity {
                                 } else if(isMyLobby(response.getLobby())) {
                                     System.out.println("E' arrivato un nuovo client");
                                     System.out.println("La nuova lobby è: " + response.getLobby().getPlayersList());
+                                    lobby = response.getLobby();
                                     updateUsernames(response.getLobby());
                                 } else {
                                     System.out.println("Partita non mia");
@@ -124,6 +126,7 @@ public class CreateActivity extends AppCompatActivity {
                         }
                     }
                 });
+
                 channel.basicConsume(resultsQueueGames + myPlayer.getId(), new DefaultConsumer(channel) {
                     @Override
                     public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
@@ -187,6 +190,7 @@ public class CreateActivity extends AppCompatActivity {
     }
 
     private void updateUsernames(Lobby lobby){
+        System.out.println("Lobby del player: " + myPlayer.getNickname() + "è : " + lobby);
         runOnUiThread(() -> {
             List<Player> players = lobby.getPlayersList();
             for (int i = 0; i < 4; i++) {
@@ -227,7 +231,6 @@ public class CreateActivity extends AppCompatActivity {
                         .setLobby(lobby)
                         .build();
                 try {
-                    System.out.println("Pubblico la richiesta di start match");
                     channel.basicPublish(todoQueueGames, "", null, startGameRequest.toByteArray());
                 } catch (IOException e) {
                     e.printStackTrace();
