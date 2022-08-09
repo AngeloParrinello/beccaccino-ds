@@ -1,16 +1,16 @@
 package com.example.beccaccino.model.entities;
 
 /**
- * Alessia Rocco 
+ * Alessia Rocco
  * Player Implementation.
  */
 public class PlayerImpl implements Player {
-    private String name;
-    private Hand hand;
+    private final String name;
+    private final Hand hand;
 
     /**
      * Class constructor.
-     * 
+     *
      * @param name name of the player
      * @param hand hand of the player
      */
@@ -60,13 +60,8 @@ public class PlayerImpl implements Player {
         }
         PlayerImpl other = (PlayerImpl) obj;
         if (name == null) {
-            if (other.name != null) {
-                return false;
-            }
-        } else if (!name.equals(other.name)) {
-            return false;
-        }
-        return true;
+            return other.name == null;
+        } else return name.equals(other.name);
     }
 
     /**

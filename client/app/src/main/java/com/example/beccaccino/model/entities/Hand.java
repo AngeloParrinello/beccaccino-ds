@@ -14,14 +14,14 @@ public interface Hand {
 
     /**
      * Removes the given card, if present.
-     * 
+     *
      * @param card to be removed
      */
     void removeCard(ItalianCard card);
 
     /**
      * Adds the given card to the hand, if not full.
-     * 
+     *
      * @param card to be added
      */
     void addCard(ItalianCard card);

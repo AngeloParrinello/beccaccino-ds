@@ -1,70 +1,58 @@
 package com.example.beccaccino.model.artificialIntelligence;
 
+import com.example.beccaccino.model.entities.*;
+import com.example.beccaccino.model.entities.ItalianCard.Suit;
+import com.example.beccaccino.model.logic.Round;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
-
-import com.example.beccaccino.model.entities.BeccaccinoBunchOfCards;
-import com.example.beccaccino.model.entities.BunchOfCards;
-import com.example.beccaccino.model.entities.ItalianCard;
-import com.example.beccaccino.model.entities.ItalianCardsDeck;
-import com.example.beccaccino.model.entities.ItalianCardsDeckImpl;
-import com.example.beccaccino.model.entities.Play;
-import com.example.beccaccino.model.entities.ItalianCard.Suit;
-import com.example.beccaccino.model.logic.Round;
 
 /**
  * It defines a basic analyzer of a game.
  */
 public class GameBasicAnalyzer implements GameAnalyzer {
 
-    private final List<ItalianCard> handCard;
-    private final List<Partecipant> allPlayers;
-    private final List<ItalianCard> remainingCards;
-    private final List<Play> allPlays;
-    private Round currentRound;
-    private Round lastRound;
-    private final List<Round> roundPlayed;
-    private Suit briscola;
-
     /**
      * This field represents the position of the rightmost player.
      */
     protected static final int RIGHT = 0;
-
     /**
      * This field represents the position of the upper player.
      */
     protected static final int TEAMMATE = 1;
-
     /**
      * This field represents the position of the leftmost player.
      */
     protected static final int LEFT = 2;
-
     /**
      * This field represents the position of the human player.
      */
     protected static final int ME = 3;
-
     /**
      * It serves to verify if a player is the first in the round.
      */
     protected static final int FIRST = 0;
-
     /**
      * It serves to verify if a player is the second in the round.
      */
     protected static final int SECOND = 1;
-
     /**
      * It serves to verify if a player is the third in the round.
      */
     protected static final int THIRD = 2;
+    private final List<ItalianCard> handCard;
+    private final List<Partecipant> allPlayers;
+    private final List<ItalianCard> remainingCards;
+    private final List<Play> allPlays;
+    private final List<Round> roundPlayed;
+    private Round currentRound;
+    private Round lastRound;
+    private Suit briscola;
 
     /**
      * Class constructor.
-     * 
+     *
      * @param handCards is the AI's hand.
      */
     public GameBasicAnalyzer(final List<ItalianCard> handCards) {
@@ -145,6 +133,15 @@ public class GameBasicAnalyzer implements GameAnalyzer {
     }
 
     /**
+     * It set the briscola once it was chosen.
+     *
+     * @param briscola is the briscola of match.
+     */
+    public void setBriscola(final Suit briscola) {
+        this.briscola = briscola;
+    }
+
+    /**
      * {@inheritDoc}
      */
     public boolean isTeammateTempWinner() {
@@ -189,29 +186,18 @@ public class GameBasicAnalyzer implements GameAnalyzer {
     public boolean isTaglio(final ItalianCard card) {
         if (!this.currentRound.hasJustStarted()) {
             final Suit roundSuit = this.currentRound.getSuit().get();
-            if (card.getSuit().equals(briscola) && !roundSuit.equals(card.getSuit())) {
-                return true;
-            }
+            return card.getSuit().equals(briscola) && !roundSuit.equals(card.getSuit());
         }
         return false;
-    }
-
-    /**
-     * It set the briscola once it was chosen.
-     * 
-     * @param briscola is the briscola of match.
-     */
-    public void setBriscola(final Suit briscola) {
-        this.briscola = briscola;
     }
 
     // ***** UTILITY *********************//
 
     /**
      * It allows to watch the plays made in the current round.
-     * 
+     *
      * @param firstPlay is the first play of round
-     * @param lastPlay is the last play made in the current round
+     * @param lastPlay  is the last play made in the current round
      */
     protected void observePlaysCurrentRound(final int firstPlay, final int lastPlay) {
         List<Play> roundPlays = this.currentRound.getPlays();
@@ -228,9 +214,9 @@ public class GameBasicAnalyzer implements GameAnalyzer {
 
     /**
      * It allows to watch the plays made in the current round.
-     * 
+     *
      * @param rightPlay is the first play of round
-     * @param lastPlay is the last play made in the current round
+     * @param lastPlay  is the last play made in the current round
      */
     protected void observePlaysLastRound(final int rightPlay, final int lastPlay) {
         // counter = 0 --> RIGHT
@@ -243,7 +229,7 @@ public class GameBasicAnalyzer implements GameAnalyzer {
 
     /**
      * It checks if a enemy player is the temporary winner of the round.
-     * 
+     *
      * @return true if he is winning, false otherwise.
      */
     protected boolean isEnemyTempWinner() {
@@ -253,7 +239,7 @@ public class GameBasicAnalyzer implements GameAnalyzer {
     /**
      * It allows to evaluate the possibility that a card could win the round,
      * without considering the cards that were played in the current round.
-     * 
+     *
      * @param card is the card to evaluate.
      * @return the probability of winning.
      */
@@ -274,13 +260,12 @@ public class GameBasicAnalyzer implements GameAnalyzer {
     }
 
     /**
-     * 
      * It is used to understand the cards that are better than the card passed
      * as a parameter and that could be played this turn.
-     * 
-     * @param card is the card to evaluate
+     *
+     * @param card    is the card to evaluate
      * @param cardsOf are cards of the same suit as the one passed as a
-     * parameter
+     *                parameter
      * @return a list of better card than than the card passed as parameter
      */
     protected List<ItalianCard> betterRemainingCard(final ItalianCard card, final List<ItalianCard> cardsOf) {
@@ -296,7 +281,7 @@ public class GameBasicAnalyzer implements GameAnalyzer {
 
     /**
      * It allows to update conditions of game after a "Busso".
-     * 
+     *
      * @param player is the player that has "Busso".
      */
     protected void playerHasBusso(final int player) {
@@ -322,9 +307,9 @@ public class GameBasicAnalyzer implements GameAnalyzer {
 
     /**
      * It allows to update the condition of match after a play done.
-     * 
+     *
      * @param player is the player that have done the play.
-     * @param play is the play done.
+     * @param play   is the play done.
      */
     protected void removeAndAdd(final int player, final Play play) {
         this.remainingCards.remove(play.getCard());
@@ -337,7 +322,7 @@ public class GameBasicAnalyzer implements GameAnalyzer {
 
     /**
      * It serves to understand the position in the round of the AI.
-     * 
+     *
      * @param position is the position to check.
      * @return true if the position in the round is equal to that passed by
      * parameter.
@@ -348,7 +333,7 @@ public class GameBasicAnalyzer implements GameAnalyzer {
 
     /**
      * It verifies that the game has started.
-     * 
+     *
      * @return true if the match is started, false otherwise.
      */
     protected boolean hastheMatchStarted() {
@@ -357,25 +342,23 @@ public class GameBasicAnalyzer implements GameAnalyzer {
 
     /**
      * It allows to understand if the teammate "has busso" in a specific suit.
-     * 
+     *
      * @param player is the player to consider
-     * @param suit is the suit to consider
+     * @param suit   is the suit to consider
      * @return true if teammate "has busso" in the suit, false otherwise
      */
     protected boolean hasPlayerTheBestCardOf(final int player, final Suit suit) {
         final BunchOfCards bunchOfCards = new BeccaccinoBunchOfCards(this.remainingCards);
         if ((bunchOfCards.getHighestCardOfSuit(suit).isPresent())) {
             final ItalianCard bestCardOf = bunchOfCards.getHighestCardOfSuit(suit).get();
-            if (hasPlayerCard(player, bestCardOf)) {
-                return true;
-            }
+            return hasPlayerCard(player, bestCardOf);
         }
         return false;
     }
 
     /**
      * It returns the last round.
-     * 
+     *
      * @return the last round.
      */
     protected Round getLastRound() {
@@ -384,7 +367,7 @@ public class GameBasicAnalyzer implements GameAnalyzer {
 
     /**
      * It returns all players.
-     * 
+     *
      * @return all players.
      */
     protected List<Partecipant> getAllPlayer() {
@@ -393,8 +376,8 @@ public class GameBasicAnalyzer implements GameAnalyzer {
 
     /**
      * It checks if a player has all the cards.
-     * 
-     * @param player is the player to consider.
+     *
+     * @param player             is the player to consider.
      * @param cardsWithMoreValue are the cards to evaluate.
      * @return true if player has all the cards, false otherwise.
      */
@@ -409,9 +392,9 @@ public class GameBasicAnalyzer implements GameAnalyzer {
 
     /**
      * It checks if a player has a card.
-     * 
+     *
      * @param player is the player to consider
-     * @param card is the card to consider
+     * @param card   is the card to consider
      * @return true if player has the card
      */
     private boolean hasPlayerCard(final int player, final ItalianCard card) {
@@ -422,9 +405,9 @@ public class GameBasicAnalyzer implements GameAnalyzer {
      * It allows to evaluate the probabiity of winning the round consider the
      * probability of a card that is part of a set of cards better than the card
      * that is been calculated now the probability of winning.
-     * 
+     *
      * @param betterCards is a list of card with a better value than card that
-     * is been considered
+     *                    is been considered
      * @return the probability of winning the round
      */
     private int observeProbabilityOfEnemies(final List<ItalianCard> betterCards) {
@@ -447,7 +430,7 @@ public class GameBasicAnalyzer implements GameAnalyzer {
 
     /**
      * It initializes the list of participants in the match.
-     * 
+     *
      * @return the list of participants in the match.
      */
     private List<Partecipant> initializePlayers() {
@@ -461,7 +444,7 @@ public class GameBasicAnalyzer implements GameAnalyzer {
 
     /**
      * It initializes playable cards from other players.
-     * 
+     *
      * @param handCards is the AI's hand
      * @return a list of playable cards from other players
      */

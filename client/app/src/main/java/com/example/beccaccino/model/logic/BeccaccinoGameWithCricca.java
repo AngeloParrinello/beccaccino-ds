@@ -1,13 +1,13 @@
 package com.example.beccaccino.model.logic;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.example.beccaccino.model.entities.ItalianCard;
+import com.example.beccaccino.model.entities.ItalianCard.Value;
 import com.example.beccaccino.model.entities.ItalianCardImpl;
 import com.example.beccaccino.model.entities.Play;
 import com.example.beccaccino.model.entities.Team;
-import com.example.beccaccino.model.entities.ItalianCard.Value;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A beccaccino game that rewards the first player with extra points if he has cricca.
@@ -16,9 +16,9 @@ public class BeccaccinoGameWithCricca extends BeccaccinoGame {
     private static final int CRICCA_POINTS = 9;
 
     /**
-     *@param turnOrder - the turn order this game should follow
-     * @param team1 - first team
-     * @param team2 - second team
+     * @param turnOrder - the turn order this game should follow
+     * @param team1     - first team
+     * @param team2     - second team
      */
     public BeccaccinoGameWithCricca(final TurnOrder turnOrder, final Team team1, final Team team2) {
         super(turnOrder, team1, team2);
@@ -39,7 +39,7 @@ public class BeccaccinoGameWithCricca extends BeccaccinoGame {
     /**
      * If the first player has ASSO, DUE, TRE of the briscola suit and he plays
      * first the ASSO, his team gains immediately extra points.
-     * 
+     *
      * @param play - this turn play
      */
     protected void firstTurnRoutine(final Play play) {

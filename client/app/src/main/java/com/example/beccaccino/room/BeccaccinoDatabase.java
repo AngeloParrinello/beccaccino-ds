@@ -1,25 +1,18 @@
 package com.example.beccaccino.room;
 
 import android.content.Context;
-import android.os.AsyncTask;
-
-import androidx.annotation.NonNull;
 import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.room.TypeConverters;
-import androidx.sqlite.db.SupportSQLiteDatabase;
-
 import com.example.beccaccino.model.entities.PlayImpl;
 
 
 @Database(entities = {Metadata.class, PlayImpl.class, Settings.class}, version = 5, exportSchema = false)
 @TypeConverters({BeccaccinoTypeConverter.class})
 public abstract class BeccaccinoDatabase extends RoomDatabase {
-    public abstract GameDao gameDao();
-    public abstract SettingsDao settingsDao();
-
     private static volatile BeccaccinoDatabase INSTANCE;
+
     /*
     private static final int NUMBER_OF_THREADS = 4;
     static final ExecutorService databaseWriteExecutor =
@@ -28,12 +21,16 @@ public abstract class BeccaccinoDatabase extends RoomDatabase {
     public static synchronized BeccaccinoDatabase getDatabase(final Context context) {
         if (INSTANCE == null) {
             INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
-                    BeccaccinoDatabase.class, "beccaccino_database")
+                            BeccaccinoDatabase.class, "beccaccino_database")
                     .fallbackToDestructiveMigration()
                     .build();
         }
         return INSTANCE;
     }
+
+    public abstract GameDao gameDao();
+
+    public abstract SettingsDao settingsDao();
 
 /*
     private static RoomDatabase.Callback roomCallback = new RoomDatabase.Callback(){

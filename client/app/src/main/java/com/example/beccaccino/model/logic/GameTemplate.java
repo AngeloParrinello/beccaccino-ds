@@ -1,13 +1,13 @@
 package com.example.beccaccino.model.logic;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
 import com.example.beccaccino.model.entities.ItalianCard.Suit;
 import com.example.beccaccino.model.entities.ItalianCardsDeck;
 import com.example.beccaccino.model.entities.Play;
 import com.example.beccaccino.model.entities.Player;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 
 /**
@@ -15,24 +15,23 @@ import com.example.beccaccino.model.entities.Player;
  */
 public abstract class GameTemplate implements Game {
     private final TurnOrder turnOrder;
-    private Player firstPlayer;
-    private Optional<Suit> briscola;
-    private List<Round> rounds;
     protected Integer seed = null;
     protected Object data;
+    private final Player firstPlayer;
+    private Optional<Suit> briscola;
+    private final List<Round> rounds;
 
     /**
-     * 
      * @param turnOrder - the turn order this game should follow
      */
     public GameTemplate(final TurnOrder turnOrder, Integer seed, Object data) {
         this.turnOrder = turnOrder;
         this.briscola = Optional.empty();
         this.rounds = new ArrayList<>();
-        if(seed != null){
+        if (seed != null) {
             this.seed = seed;
         }
-        if(data != null){
+        if (data != null) {
             this.data = data;
         }
         this.firstPlayer = this.selectFirstPlayer();
@@ -84,15 +83,15 @@ public abstract class GameTemplate implements Game {
     /**
      * {@inheritDoc}
      */
-    public void setBriscola(final Suit briscola) {
-        this.briscola = Optional.ofNullable(briscola);
+    public Optional<Suit> getBriscola() {
+        return this.briscola;
     }
 
     /**
      * {@inheritDoc}
      */
-    public Optional<Suit> getBriscola() {
-        return this.briscola;
+    public void setBriscola(final Suit briscola) {
+        this.briscola = Optional.ofNullable(briscola);
     }
 
     /**
@@ -109,7 +108,7 @@ public abstract class GameTemplate implements Game {
 
     /**
      * Deal one card to each player.
-     * 
+     *
      * @param deck - needed cards are taken from here
      */
     protected void dealCards(final ItalianCardsDeck deck) {
@@ -121,7 +120,7 @@ public abstract class GameTemplate implements Game {
     /**
      * Protection method checking the briscola has already been set.
      * If this game has no rounds yet, create the first one.
-     * 
+     *
      * @throws IllegalStateException if no briscola has been set yet.
      */
     protected void checkBriscolaIsPresent() {
@@ -151,7 +150,7 @@ public abstract class GameTemplate implements Game {
     /**
      * Returns a Round. This is a factory method that allows extending this
      * class modifying the round type it will use.
-     * 
+     *
      * @param turnOrder - the turn order the round should follow
      * @return a new round
      */
@@ -160,7 +159,7 @@ public abstract class GameTemplate implements Game {
     /**
      * The first round of the game can bring unique behaviors. It's up to the
      * extending class deciding which ones.
-     * 
+     *
      * @param play - the play the first player is about to make.
      */
     protected abstract void firstTurnRoutine(Play play);
@@ -174,7 +173,7 @@ public abstract class GameTemplate implements Game {
     /**
      * Select the first player of the game. Various operations can be done in
      * order to accomplish this request.
-     * 
+     *
      * @return the first player of the game
      */
     protected abstract Player selectFirstPlayer();

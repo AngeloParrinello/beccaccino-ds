@@ -3,7 +3,6 @@ package com.example.beccaccino;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -12,7 +11,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.rabbitmq.client.*;
-import org.w3c.dom.Text;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,17 +20,17 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeoutException;
 
 public class CreateActivity extends AppCompatActivity {
-    private List<TextView> usernames = new ArrayList<>();
     private final String todoQueueLobbies = "todoQueueLobbies";
     private final String resultsQueueLobbies = "resultsQueueLobbies";
     private final String todoQueueGames = "todoQueueGames";
     private final String resultsQueueGames = "resultsQueueGames";
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private final List<TextView> usernames = new ArrayList<>();
     private String matchID;
     private Channel channel;
     private Connection connection;
     private Lobby lobby;
     private Player myPlayer;
-    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -90,21 +88,22 @@ public class CreateActivity extends AppCompatActivity {
                                                AMQP.BasicProperties properties, byte[] body) throws IOException {
                         Response response = Response.parseFrom(body);
                         switch (Response.parseFrom(body).getResponseCode()) {
-                            case(200) -> {}
-                            case(201) -> {
+                            case (200) -> {
+                            }
+                            case (201) -> {
                                 if (response.getRequestingPlayer().getId().equals(myPlayer.getId())) {
                                     System.out.println("Uscito da: " + Response.parseFrom(body).getLobby().getId());
                                     Intent myIntent = new Intent(CreateActivity.this, MainActivity.class);
                                     CreateActivity.this.startActivity(myIntent);
                                     overridePendingTransition(R.anim.fragment_fade_enter, R.anim.fragment_fade_exit);
-                                } else if(isMyLobby(response.getLobby())) {
+                                } else if (isMyLobby(response.getLobby())) {
                                     updateUsernames(response.getLobby());
                                 }
                             }
-                            case(202) -> {
+                            case (202) -> {
                                 if (response.getRequestingPlayer().getId().equals(myPlayer.getId())) {
                                     System.out.println("Ho joinato: " + Response.parseFrom(body).getLobby().getId());
-                                } else if(isMyLobby(response.getLobby())) {
+                                } else if (isMyLobby(response.getLobby())) {
                                     System.out.println("E' arrivato un nuovo client");
                                     System.out.println("La nuova lobby è: " + response.getLobby().getPlayersList());
                                     lobby = response.getLobby();
@@ -133,7 +132,8 @@ public class CreateActivity extends AppCompatActivity {
                         GameResponse gameResponse = GameResponse.parseFrom(body);
                         switch (gameResponse.getResponseCode()) {
 
-                            case (200), (201) -> {}
+                            case (200), (201) -> {
+                            }
                             case (300) -> {
                                 System.out.println("Parte una nuova partita");
                                 Intent myIntent = new Intent(CreateActivity.this, GameActivity.class);
@@ -180,26 +180,26 @@ public class CreateActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         /*MUSIC*/
-        if(getSharedPreferences("Settings", MODE_PRIVATE).getBoolean("music", false)){
-            MusicManager.start(this,0);
+        if (getSharedPreferences("Settings", MODE_PRIVATE).getBoolean("music", false)) {
+            MusicManager.start(this, 0);
         }
     }
 
-    private boolean isMyLobby(Lobby lobby){
+    private boolean isMyLobby(Lobby lobby) {
         return lobby.getPlayersList().stream().anyMatch(p -> p.getId().equals(myPlayer.getId()));
     }
 
-    private void updateUsernames(Lobby lobby){
+    private void updateUsernames(Lobby lobby) {
         System.out.println("Lobby del player: " + myPlayer.getNickname() + "è : " + lobby);
         runOnUiThread(() -> {
             List<Player> players = lobby.getPlayersList();
             for (int i = 0; i < 4; i++) {
-                    if (players.size() > i) {
-                        usernames.get(i).setText(players.get(i).getNickname());
-                    } else {
-                        usernames.get(i).setText(R.string.waiting_player);
-                    }
+                if (players.size() > i) {
+                    usernames.get(i).setText(players.get(i).getNickname());
+                } else {
+                    usernames.get(i).setText(R.string.waiting_player);
                 }
+            }
         });
     }
 
@@ -215,7 +215,7 @@ public class CreateActivity extends AppCompatActivity {
 
                 channel.basicPublish(todoQueueLobbies, "", null, leaveLobbyRequest.toByteArray());
             } catch (IOException e) {
-               e.printStackTrace();
+                e.printStackTrace();
             }
         }));
         alert.show();

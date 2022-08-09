@@ -4,6 +4,7 @@ import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
@@ -31,7 +32,7 @@ public class Utilities {
         factory.setPort(5672);
 
         factory.setAutomaticRecoveryEnabled(true);
-        while(true) {
+        while (true) {
             try {
                 System.out.println("Connection established");
                 return factory.newConnection();

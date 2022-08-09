@@ -1,15 +1,14 @@
 package com.example.beccaccino.model.logic;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
 import com.example.beccaccino.model.entities.Play;
 import com.example.beccaccino.model.entities.Player;
 import com.example.beccaccino.model.entities.Team;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class BriscolaGame extends GameTemplate {
-    
+
     private final List<Team> teams;
 
     public BriscolaGame(TurnOrder turnOrder, final Team team1, final Team team2) {
@@ -48,7 +47,7 @@ public class BriscolaGame extends GameTemplate {
         return null;
     }
 
-    public int getSeed(){
+    public int getSeed() {
         // TODO Auto-generated method stub
         return 0;
     }

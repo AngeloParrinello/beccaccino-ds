@@ -1,8 +1,8 @@
 package com.example.beccaccino.model.artificialIntelligence;
 
+import com.example.beccaccino.model.entities.ItalianCard.Suit;
 import com.example.beccaccino.model.entities.Play;
 import com.example.beccaccino.model.entities.Player;
-import com.example.beccaccino.model.entities.ItalianCard.Suit;
 import com.example.beccaccino.model.logic.Round;
 
 /**
@@ -10,15 +10,15 @@ import com.example.beccaccino.model.logic.Round;
  */
 public class AIImpl implements AI {
     private final Player me;
-    private BriscolaSelector selector;
     private final GameAnalyzer gameAnalyzer;
     private final BestPlaySelector chooser;
+    private final BriscolaSelector selector;
     private ConditionForTaglio conditionForTaglio;
 
     /**
      * Class constructor.
-     * 
-     * @param player is the virtual player associated with the AI.
+     *
+     * @param player       is the virtual player associated with the AI.
      * @param gameAnalyzer is a game analyzer useful to act in the best way in a game.
      */
     public AIImpl(final Player player, final GameAnalyzer gameAnalyzer) {
@@ -90,13 +90,8 @@ public class AIImpl implements AI {
         }
         AIImpl other = (AIImpl) obj;
         if (me == null) {
-            if (other.me != null) {
-                return false;
-            }
-        } else if (!me.equals(other.me)) {
-            return false;
-        }
-        return true;
+            return other.me == null;
+        } else return me.equals(other.me);
     }
 
     /**

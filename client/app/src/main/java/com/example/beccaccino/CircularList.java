@@ -1,8 +1,5 @@
 package com.example.beccaccino;
 
-import com.example.beccaccino.model.entities.Player;
-import com.example.beccaccino.model.logic.BasicTurnOrder;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,9 +8,8 @@ public class CircularList {
     private int index;
 
     /**
-     *
      * @param players - a list of players. The sorting of the list determines
-     * the turn order.
+     *                the turn order.
      */
     public CircularList(final List<String> players) {
         this.players = new ArrayList<>(players);
@@ -77,12 +73,7 @@ public class CircularList {
             return false;
         }
         if (players == null) {
-            if (other.players != null) {
-                return false;
-            }
-        } else if (!players.equals(other.players)) {
-            return false;
-        }
-        return true;
+            return other.players == null;
+        } else return players.equals(other.players);
     }
 }

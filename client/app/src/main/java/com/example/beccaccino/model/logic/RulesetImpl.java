@@ -1,4 +1,3 @@
-
 /*
 package com.example.beccaccino.model.logic;
 
@@ -25,6 +24,19 @@ import com.example.beccaccino.model.entities.TeamImpl;
 */
 /**
  * The implementation of the Interface Ruleset.
+ * <p>
+ * {@inheritDoc}
+ * <p>
+ * {@inheritDoc}
+ * <p>
+ * {@inheritDoc}
+ * <p>
+ * {@inheritDoc}
+ * <p>
+ * This method creates two teams from a list of 4.
+ *
+ * @param playerList - The list of player to be divided.
+ * @return teams
  *//*
 
 
@@ -32,8 +44,8 @@ public class RulesetImpl implements Ruleset {
 
     */
 /**
-     * {@inheritDoc}
-     *//*
+ * {@inheritDoc}
+ *//*
 
     public Game newGame(final List<Player> players) {
         TurnOrder turnOrder = new BasicTurnOrder(players);
@@ -63,8 +75,8 @@ public class RulesetImpl implements Ruleset {
 
     */
 /**
-     * {@inheritDoc}
-     *//*
+ * {@inheritDoc}
+ *//*
 
     public GameViewImpl newGameView(final Game game, final Stage stage) {
         GameViewImpl gameView = new GameViewImpl(game, stage);
@@ -73,8 +85,8 @@ public class RulesetImpl implements Ruleset {
 
     */
 /**
-     * {@inheritDoc}
-     *//*
+ * {@inheritDoc}
+ *//*
 
     public Player newPlayer(final String name) {
         Hand hand = new BeccaccinoHand();
@@ -84,8 +96,8 @@ public class RulesetImpl implements Ruleset {
 
     */
 /**
-     * {@inheritDoc}
-     *//*
+ * {@inheritDoc}
+ *//*
 
     public Optional<AI> newAI(final Player player, final String difficulty) {
         GameAnalyzer analyzer;
@@ -99,10 +111,10 @@ public class RulesetImpl implements Ruleset {
     }
     */
 /**
-     * This method creates two teams from a list of 4.
-     * @param playerList - The list of player to be divided.
-     * @return teams
-     *//*
+ * This method creates two teams from a list of 4.
+ * @param playerList - The list of player to be divided.
+ * @return teams
+ *//*
 
     private List<Team> createTeams(final List<Player> playerList) {
         final List<Team> teams = new ArrayList<>();

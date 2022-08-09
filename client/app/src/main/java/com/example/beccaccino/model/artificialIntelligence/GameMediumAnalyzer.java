@@ -1,16 +1,12 @@
 package com.example.beccaccino.model.artificialIntelligence;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
 import com.example.beccaccino.model.entities.BeccaccinoBunchOfCards;
 import com.example.beccaccino.model.entities.BunchOfCards;
 import com.example.beccaccino.model.entities.ItalianCard;
-import com.example.beccaccino.model.entities.Play;
 import com.example.beccaccino.model.entities.ItalianCard.Suit;
+import com.example.beccaccino.model.entities.Play;
+
+import java.util.*;
 
 /**
  * It defines a medium analyzer of a game. The AI remembers the suits in which
@@ -18,13 +14,12 @@ import com.example.beccaccino.model.entities.ItalianCard.Suit;
  */
 public class GameMediumAnalyzer extends GameBasicAnalyzer {
 
-    private final Map<Integer, List<Suit>> voliEachPlayer;
-
     private static final int NUMOTHERPLAYER = 3;
+    private final Map<Integer, List<Suit>> voliEachPlayer;
 
     /**
      * Class constructor.
-     * 
+     *
      * @param myHand is the player's hand.
      */
     public GameMediumAnalyzer(final List<ItalianCard> myHand) {
@@ -143,7 +138,7 @@ public class GameMediumAnalyzer extends GameBasicAnalyzer {
     /**
      * It checks if a player has played a card of a suit other than the suit of
      * round.
-     * 
+     *
      * @param suit is the suit of card played.
      * @return true if the two suits are equals, false otherwise.
      */
@@ -158,9 +153,9 @@ public class GameMediumAnalyzer extends GameBasicAnalyzer {
     /**
      * It is used to update the AI after a player no longer has the cards in a
      * suit.
-     * 
+     *
      * @param indexPlayer is the player who has finished the cards of the round
-     * suit.
+     *                    suit.
      */
     protected void finishedCardsOfSuit(final int indexPlayer) {
         int probability = 0;
@@ -205,9 +200,9 @@ public class GameMediumAnalyzer extends GameBasicAnalyzer {
 
     /**
      * It checks if a player has finished cards in a suit.
-     * 
+     *
      * @param player is the player to check.
-     * @param suit is the suit to check.
+     * @param suit   is the suit to check.
      * @return true if the player has finished cards in the suit, false
      * otherwise.
      */
@@ -217,7 +212,7 @@ public class GameMediumAnalyzer extends GameBasicAnalyzer {
 
     /**
      * It checks whether the enemies could "taglio" a suit.
-     * 
+     *
      * @param suit is the suit to evaluate.
      * @return true if enemies could "taglio" the suit evaluated.
      */
@@ -232,7 +227,7 @@ public class GameMediumAnalyzer extends GameBasicAnalyzer {
 
     /**
      * It checks whether the teammate could "taglio" a suit.
-     * 
+     *
      * @param suit is the suit to evaluate.
      * @return true if teammate could "taglio" the suit evaluated.
      */
@@ -245,9 +240,9 @@ public class GameMediumAnalyzer extends GameBasicAnalyzer {
 
     /**
      * It checks whether a player could "taglio" a suit.
-     * 
+     *
      * @param indexPlayer is the player to evaluate.
-     * @param suit is the suit to evaluate.
+     * @param suit        is the suit to evaluate.
      * @return true if the player could "taglio" the suit evaluated.
      */
     protected boolean couldPlayerTaglio(final int indexPlayer, final Suit suit) {

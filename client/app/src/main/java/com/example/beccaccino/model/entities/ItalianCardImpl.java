@@ -1,8 +1,6 @@
 package com.example.beccaccino.model.entities;
 
 
-import java.util.StringTokenizer;
-
 /**
  * Implementation of the ItalianCard Interface.
  */
@@ -12,8 +10,8 @@ public class ItalianCardImpl implements ItalianCard {
 
     /**
      * Creates an instance of an ItalianCard.
-     * 
-     * @param suit - the suit of the card to be created.
+     *
+     * @param suit  - the suit of the card to be created.
      * @param value - the value of the card to be created.
      */
     public ItalianCardImpl(final Suit suit, final Value value) {
@@ -70,10 +68,7 @@ public class ItalianCardImpl implements ItalianCard {
         if (suit != other.suit) {
             return false;
         }
-        if (value != other.value) {
-            return false;
-        }
-        return true;
+        return value == other.value;
     }
 
     /**

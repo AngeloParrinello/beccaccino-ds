@@ -4,12 +4,11 @@ import androidx.room.Embedded;
 import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
-import androidx.room.TypeConverter;
 
 import java.util.Optional;
 
 /**
- * Alessia Rocco 
+ * Alessia Rocco
  * Play Implementation.
  */
 @Entity(tableName = "plays")
@@ -17,22 +16,22 @@ public class PlayImpl implements Play {
     @PrimaryKey(autoGenerate = true)
     public int uid;
     @Ignore
-    private ItalianCard card;
+    private final ItalianCard card;
     @Embedded
-    private ItalianCardImpl italianCard;
-    private String string;
+    private final ItalianCardImpl italianCard;
+    private final String string;
 
     /**
      * Class constructor.
-     * 
-     * @param card the card has been played
+     *
+     * @param card    the card has been played
      * @param message the eventually message thrown with the card
      */
     @Ignore
     public PlayImpl(final ItalianCard card, final Optional<String> message) {
         this.card = card;
         this.italianCard = (ItalianCardImpl) card;
-        if(message.isPresent())
+        if (message.isPresent())
             this.string = message.get();
         else this.string = null;
     }
@@ -40,9 +39,9 @@ public class PlayImpl implements Play {
     public PlayImpl(final ItalianCardImpl italianCard, final String string) {
         this.card = italianCard;
         this.italianCard = italianCard;
-        if(string.equals("")){
+        if (string.equals("")) {
             this.string = null;
-        }else{
+        } else {
             this.string = string;
         }
 
@@ -111,13 +110,8 @@ public class PlayImpl implements Play {
             return false;
         }
         if (string == null) {
-            if (other.string != null) {
-                return false;
-            }
-        } else if (!string.equals(other.string)) {
-            return false;
-        }
-        return true;
+            return other.string == null;
+        } else return string.equals(other.string);
     }
 
     /**

@@ -1,17 +1,13 @@
 package com.example.beccaccino.model.artificialIntelligence;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
-
-import com.example.beccaccino.model.entities.BeccaccinoBunchOfCards;
-import com.example.beccaccino.model.entities.BunchOfCards;
-import com.example.beccaccino.model.entities.ItalianCard;
-import com.example.beccaccino.model.entities.Play;
-import com.example.beccaccino.model.entities.PlayImpl;
+import com.example.beccaccino.model.entities.*;
 import com.example.beccaccino.model.entities.ItalianCard.Suit;
 import com.example.beccaccino.model.entities.ItalianCard.Value;
 import com.example.beccaccino.model.logic.Round;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * It defines an implementation of "BestPlaySelector".
@@ -22,7 +18,7 @@ public class BestPlaySelectorImpl implements BestPlaySelector {
 
     /**
      * Class constructor.
-     * 
+     *
      * @param gameAnalyzer is the game analyzer of AI.
      */
     public BestPlaySelectorImpl(final GameAnalyzer gameAnalyzer) {
@@ -52,7 +48,7 @@ public class BestPlaySelectorImpl implements BestPlaySelector {
         if (areWinnerCard(myBestCards)) {
             final BunchOfCards myCardsWithMostPoints = new BeccaccinoBunchOfCards(
                     bunchOfMyBestCards.getCardsWithMostPoints());
-            myCard = myCardsWithMostPoints.getHighestCards().get(0); 
+            myCard = myCardsWithMostPoints.getHighestCards().get(0);
             if (iVoloIn(myCard.getSuit())) {
                 message = Optional.of("VOLO");
             }
@@ -65,6 +61,7 @@ public class BestPlaySelectorImpl implements BestPlaySelector {
 
     //this method is called when the conditions for cutting are respected. 
     //Look at ConditionForTaglio.
+
     /**
      * {@inheritDoc}
      */
@@ -85,7 +82,7 @@ public class BestPlaySelectorImpl implements BestPlaySelector {
             final BunchOfCards briscoleWithMostPoints = new BeccaccinoBunchOfCards(
                     setOfBriscole.getCardsWithMostPoints());
             ItalianCard myCard = briscoleWithMostPoints.getLowestCards().get(0);
-            myPlay = new PlayImpl(myCard, Optional.<String>empty());
+            myPlay = new PlayImpl(myCard, Optional.empty());
         }
         return myPlay;
     }
@@ -93,7 +90,7 @@ public class BestPlaySelectorImpl implements BestPlaySelector {
     /**
      * It allows to play the best card from the set of cards passed by
      * parameter.
-     * 
+     *
      * @param listOfCards is a list of cards.
      * @return the play i have done.
      */
@@ -120,7 +117,7 @@ public class BestPlaySelectorImpl implements BestPlaySelector {
 
     /**
      * It compares the card that is winning the round with those of the AI.
-     * 
+     *
      * @param winningCard is the card that is winning the round now.
      * @return a list of AI cards with higher value than the card that is
      * winning the round.
@@ -146,7 +143,7 @@ public class BestPlaySelectorImpl implements BestPlaySelector {
     /**
      * It checks the list of cards passed by parameters will all definitely win
      * the round.
-     * 
+     *
      * @param cards - list of cards to consider.
      * @return boolean if are all winner card, false otherwise.
      */
@@ -161,7 +158,7 @@ public class BestPlaySelectorImpl implements BestPlaySelector {
 
     /**
      * It verifies that the AI has only one card of a suit.
-     * 
+     *
      * @param suit - the suit to check.
      * @return true if "has volo" in the suit, false otherwise.
      */
@@ -180,9 +177,7 @@ public class BestPlaySelectorImpl implements BestPlaySelector {
         final Round currentRound = this.gameAnalyzer.getCurrentRound();
         if (!currentRound.hasJustStarted()) {
             final ItalianCard tempWinner = currentRound.getWinningPlay().get().getCard();
-            if (this.gameAnalyzer.isTaglio(tempWinner)) {
-                return true;
-            }
+            return this.gameAnalyzer.isTaglio(tempWinner);
         }
         return false;
     }

@@ -5,17 +5,17 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Alessia Rocco 
+ * Alessia Rocco
  * Team implementation.
  */
 public class TeamImpl implements Team {
-    private List<Player> players;
-    private List<ItalianCard> cards;
+    private final List<Player> players;
+    private final List<ItalianCard> cards;
     private int points;
 
     /**
      * Class constructor.
-     * 
+     *
      * @param players the players' team
      */
     public TeamImpl(final List<Player> players) {
@@ -117,9 +117,6 @@ public class TeamImpl implements Team {
         } else if (!players.equals(other.players)) {
             return false;
         }
-        if (points != other.points) {
-            return false;
-        }
-        return true;
+        return points == other.points;
     }
 }

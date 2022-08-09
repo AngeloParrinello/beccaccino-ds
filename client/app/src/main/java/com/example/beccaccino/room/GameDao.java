@@ -2,11 +2,9 @@ package com.example.beccaccino.room;
 
 import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
-import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
 import androidx.room.Update;
-
 import com.example.beccaccino.model.entities.PlayImpl;
 
 import java.util.List;

@@ -1,7 +1,5 @@
 package com.example.beccaccino.model.artificialIntelligence;
 
-import java.util.List;
-
 import com.example.beccaccino.model.entities.BeccaccinoBunchOfCards;
 import com.example.beccaccino.model.entities.BunchOfCards;
 import com.example.beccaccino.model.entities.ItalianCard;
@@ -9,22 +7,23 @@ import com.example.beccaccino.model.entities.ItalianCard.Suit;
 import com.example.beccaccino.model.entities.ItalianCard.Value;
 import com.example.beccaccino.model.logic.Round;
 
+import java.util.List;
+
 /**
  * It defines an implementation of "ConditionForTaglio".
  */
 public class ConditionForTaglioImpl implements ConditionForTaglio {
 
+    private static final int ONECARD = 1;
+    private static final int TWOPOINTS = 2;
     private final GameAnalyzer gameAnalyzer;
     private final Suit briscola;
 
-    private static final int ONECARD = 1;
-    private static final int TWOPOINTS = 2;
-
     /**
      * Class constructor.
-     * 
+     *
      * @param gameAnalyzer is a game analyzer.
-     * @param briscola is the briscola of the game.
+     * @param briscola     is the briscola of the game.
      */
     public ConditionForTaglioImpl(final GameAnalyzer gameAnalyzer, final Suit briscola) {
         this.gameAnalyzer = gameAnalyzer;
@@ -56,7 +55,7 @@ public class ConditionForTaglioImpl implements ConditionForTaglio {
 
     /**
      * It checks if the "asso" of a suit is still playable by other players.
-     * 
+     *
      * @param suit is the suit to consider.
      * @return true if the "asso" is still playable by others player, false
      * otherwise.
@@ -76,7 +75,7 @@ public class ConditionForTaglioImpl implements ConditionForTaglio {
 
     /**
      * It checks if "tre" is my last card of a suit.
-     * 
+     *
      * @param suit is the suit to consider.
      * @return true if "tre" is my last card of the suit, false otherwise.
      */
@@ -86,18 +85,16 @@ public class ConditionForTaglioImpl implements ConditionForTaglio {
         final List<ItalianCard> cardsOf = bunchOfCards.getCardsOfSuit(suit);
         if (!cardsOf.isEmpty()) {
             final BunchOfCards bunchOfCardsOf = new BeccaccinoBunchOfCards(cardsOf);
-            if (cardsOf.size() == ONECARD && !bunchOfCardsOf.getCardsOfValue(Value.TRE).isEmpty()) {
-                return true;
-                //if I still have a card of the seed passed as parameter 
-                //and corresponds to three
-            }
+            //if I still have a card of the seed passed as parameter
+            //and corresponds to three
+            return cardsOf.size() == ONECARD && !bunchOfCardsOf.getCardsOfValue(Value.TRE).isEmpty();
         }
         return false;
     }
 
     /**
      * It verifies if "asso" of a suit is in the player's hand.
-     * 
+     *
      * @param suit is the to consider.
      * @return true if "asso" of the suit passed by parameters is in the
      * player's hand, false otherwise.
@@ -106,16 +103,13 @@ public class ConditionForTaglioImpl implements ConditionForTaglio {
         final Round currentRound = this.gameAnalyzer.getCurrentRound();
         final BunchOfCards bunchOfCards = new BeccaccinoBunchOfCards(currentRound.getPlayableCards());
         final BunchOfCards bunchOfCardsOf = new BeccaccinoBunchOfCards(bunchOfCards.getCardsOfSuit(suit));
-        if (!bunchOfCardsOf.getCardsOfValue(Value.ASSO).isEmpty()) {
-            return true;
-        }
-        return false;
+        return !bunchOfCardsOf.getCardsOfValue(Value.ASSO).isEmpty();
     }
 
     /**
      * It verifies if the score of the cards played in the current round is
      * equals to two.
-     * 
+     *
      * @return true if the score is equals to two, false otherwise.
      */
     private boolean twoPointInvolved() {
@@ -127,7 +121,7 @@ public class ConditionForTaglioImpl implements ConditionForTaglio {
     /**
      * It verifies if the score of the cards played in the current round is
      * greater than two.
-     * 
+     *
      * @return true if the score is greater than two, false otherwise.
      */
     private boolean moreOfTwoPointInvolve() {

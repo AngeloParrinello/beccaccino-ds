@@ -1,11 +1,7 @@
 package com.example.beccaccino;
 
 import android.app.AlertDialog;
-import android.content.Context;
-import android.content.ContextWrapper;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.SharedPreferences;
+import android.content.*;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -13,22 +9,12 @@ import android.provider.MediaStore;
 import android.text.Editable;
 import android.util.Log;
 import android.view.View;
-import android.widget.CompoundButton;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.Switch;
-import android.widget.TextView;
-
+import android.widget.*;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-
 import com.travijuu.numberpicker.library.NumberPicker;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -46,9 +32,9 @@ public class SettingsActivity extends AppCompatActivity {
         setContentView(R.layout.profile_settings);
 
         // Get the elements from the layout.
-        this.profilePicture = (ImageView) findViewById(R.id.playerImage);
-        this.changeUsername = (ImageView) findViewById(R.id.editUsername);
-        this.username = (TextView) findViewById(R.id.username);
+        this.profilePicture = findViewById(R.id.playerImage);
+        this.changeUsername = findViewById(R.id.editUsername);
+        this.username = findViewById(R.id.username);
         this.username.setText(MainActivity.getUsername(this));
 
         Switch music = findViewById(R.id.musicSwitch);
@@ -63,13 +49,13 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
 
-        ((Switch)findViewById(R.id.musicSwitch)).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        ((Switch) findViewById(R.id.musicSwitch)).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 SharedPreferences.Editor myEdit = getSharedPreferences("Settings", MODE_PRIVATE).edit();
-                if(isChecked){
+                if (isChecked) {
                     myEdit.putBoolean("music", true);
                     MusicManager.start(getApplicationContext(), 0);
-                }else{
+                } else {
                     myEdit.putBoolean("music", false);
                     MusicManager.release();
                 }
@@ -82,7 +68,7 @@ public class SettingsActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 setUsername();
-             }
+            }
         });
 
         this.profilePicture.setOnClickListener(new View.OnClickListener() {
@@ -112,12 +98,12 @@ public class SettingsActivity extends AppCompatActivity {
         }
     }
 
-    private String saveToInternalStorage(Bitmap bitmapImage){
+    private String saveToInternalStorage(Bitmap bitmapImage) {
         ContextWrapper cw = new ContextWrapper(getApplicationContext());
         // path to /data/data/yourapp/app_data/imageDir
         File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
         // Create imageDir
-        File mypath=new File(directory,"profile.jpg");
+        File mypath = new File(directory, "profile.jpg");
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(mypath);
@@ -138,17 +124,15 @@ public class SettingsActivity extends AppCompatActivity {
     private void loadImageFromStorage() {
         String path = "/data/user/0/com.faventia.beccaccino/app_imageDir";
         try {
-            File f=new File(path, "profile.jpg");
+            File f = new File(path, "profile.jpg");
             Bitmap b = BitmapFactory.decodeStream(new FileInputStream(f));
             this.profilePicture.setImageBitmap(b);
-        }
-        catch (FileNotFoundException e)
-        {
+        } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
     }
 
-    private void setUsername(){
+    private void setUsername() {
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
         final EditText userName = new EditText(this);
         alert.setMessage("Scegli il tuo Username");
@@ -183,7 +167,7 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         SharedPreferences.Editor myEdit = getSharedPreferences("Settings", MODE_PRIVATE).edit();
-        myEdit.putInt("ai_delay", ((NumberPicker)findViewById(R.id.number_picker_ia)).getValue());
+        myEdit.putInt("ai_delay", ((NumberPicker) findViewById(R.id.number_picker_ia)).getValue());
         myEdit.apply();
 
 
@@ -194,8 +178,8 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         /*MUSIC*/
-        if(getSharedPreferences("Settings", MODE_PRIVATE).getBoolean("music", false)){
-            MusicManager.start(this,0);
+        if (getSharedPreferences("Settings", MODE_PRIVATE).getBoolean("music", false)) {
+            MusicManager.start(this, 0);
         }
     }
 }

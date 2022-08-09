@@ -1,17 +1,18 @@
 package com.example.beccaccino.model.logic;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
 import com.example.beccaccino.model.entities.BeccaccinoBunchOfCards;
 import com.example.beccaccino.model.entities.BunchOfCards;
 import com.example.beccaccino.model.entities.ItalianCard;
 import com.example.beccaccino.model.entities.ItalianCard.Suit;
 import com.example.beccaccino.model.entities.Play;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 /**
  * This is a round of the Italian card game "Beccaccino".
+ *
  * @see <a href="Marafone Beccaccino">https://it.wikipedia.org/wiki/Marafone_Beccacino</a>
  */
 public class BeccaccinoRound extends RoundTemplate {
@@ -20,6 +21,7 @@ public class BeccaccinoRound extends RoundTemplate {
 
     /**
      * {@inheritDoc}.
+     *
      * @param briscola - the briscola suit.
      */
     public BeccaccinoRound(final TurnOrder turnOrder, final Suit briscola) {
@@ -61,10 +63,10 @@ public class BeccaccinoRound extends RoundTemplate {
     }
 
     /**
-     * If the player is the first of the round, all cards are playable. 
-     * If he isn't, he must play only cards of the dominant suit of the round. 
+     * If the player is the first of the round, all cards are playable.
+     * If he isn't, he must play only cards of the dominant suit of the round.
      * If he hasn't cards of dominant suit, all cards are playable.
-     * 
+     *
      * @return list of playable cards.
      */
     public List<ItalianCard> getPlayableCards() {
@@ -87,7 +89,7 @@ public class BeccaccinoRound extends RoundTemplate {
 
     /**
      * This is an utility method returning the suit of this round.
-     * 
+     *
      * @return an optional containing the dominant suit of this round (namely
      * the suit of the first card played in this round) if present, or an empty
      * optional otherwise.
@@ -105,7 +107,7 @@ public class BeccaccinoRound extends RoundTemplate {
      */
     public List<Optional<String>> getSendableMessages(final ItalianCard card) {
         final List<Optional<String>> sendableMessages = new ArrayList<>();
-        sendableMessages.add(Optional.<String>empty());
+        sendableMessages.add(Optional.empty());
         if (this.hasJustStarted()) {
             sendableMessages.add(Optional.of("BUSSO"));
             sendableMessages.add(Optional.of("STRISCIO"));
@@ -124,13 +126,13 @@ public class BeccaccinoRound extends RoundTemplate {
         }
         if (!this.getSendableMessages(card).contains(play.getMessage())) {
             throw new IllegalArgumentException("Can't send this message now: " + play.getMessage().get());
-         }
+        }
     }
 
     /**
      * This is an utility method looking for the play that contains a certain
      * card.
-     * 
+     *
      * @param card - the card to be searched among the plays
      * @return an optional containing the play containing given card if present,
      * an empty optional otherwise

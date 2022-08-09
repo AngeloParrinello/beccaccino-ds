@@ -1,11 +1,11 @@
 package com.example.beccaccino;
 
-import java.util.Collection;
-import java.util.HashMap;
-
 import android.content.Context;
 import android.media.MediaPlayer;
 import android.util.Log;
+
+import java.util.Collection;
+import java.util.HashMap;
 
 
 /**
@@ -14,16 +14,13 @@ import android.util.Log;
  * different sounds.
  * This code was heavily based on the code found here:
  * http://www.rbgrn.net/content/307-light-racer-20-days-61-64-completion
- *
  */
 public class MusicManager {
-    private static final String TAG = "MusicManager";
     public static final int MUSIC_PREVIOUS = -1;
     public static final int MUSIC_BACKGROUND = 0;
     public static final int MUSIC_GAMEPLAY = 1;
-
-
-    private static HashMap<Integer, MediaPlayer> players = new HashMap<Integer, MediaPlayer>();
+    private static final String TAG = "MusicManager";
+    private static final HashMap<Integer, MediaPlayer> players = new HashMap<Integer, MediaPlayer>();
     private static int currentMusic = -1;
     private static int previousMusic = -1;
 
@@ -64,9 +61,9 @@ public class MusicManager {
         } else {
             if (music == MUSIC_BACKGROUND) {
                 mp = MediaPlayer.create(context, R.raw.romagna);
-            } else if(music == MUSIC_GAMEPLAY){
+            } else if (music == MUSIC_GAMEPLAY) {
                 mp = MediaPlayer.create(context, R.raw.romagna);
-            }else {
+            } else {
                 Log.e(TAG, "unsupported music number - " + music);
                 return;
             }

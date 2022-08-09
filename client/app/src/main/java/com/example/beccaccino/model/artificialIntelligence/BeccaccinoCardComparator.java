@@ -1,18 +1,18 @@
 package com.example.beccaccino.model.artificialIntelligence;
 
+import com.example.beccaccino.model.entities.ItalianCard;
+import com.example.beccaccino.model.entities.ItalianCard.Value;
+
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
-
-import com.example.beccaccino.model.entities.ItalianCard;
-import com.example.beccaccino.model.entities.ItalianCard.Value;
 
 /**
  * A comparator for card values.
  */
 public class BeccaccinoCardComparator implements Comparator<ItalianCard> {
 
-    private Map<Value, Integer> valueMap;
+    private final Map<Value, Integer> valueMap;
 
     /**
      * Class constructor.
@@ -24,7 +24,7 @@ public class BeccaccinoCardComparator implements Comparator<ItalianCard> {
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @param cardOne is the first card to consider
      * @param cardTwo is the second one
      */

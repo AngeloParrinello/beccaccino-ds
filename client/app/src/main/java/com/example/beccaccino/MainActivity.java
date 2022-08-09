@@ -10,6 +10,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import androidx.appcompat.app.AppCompatActivity;
 import com.rabbitmq.client.*;
+
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
@@ -22,10 +23,33 @@ public class MainActivity extends AppCompatActivity {
     public static final String PATH_TO_USERNAME = "username_file";
     private final String todoQueueLobbies = "todoQueueLobbies";
     private final String resultsQueueLobbies = "resultsQueueLobbies";
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private Connection connection;
     private Player myPlayer;
     private Channel channel;
-    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+
+    public static String getUsername(Context context) {
+        FileInputStream fis = null;
+        try {
+            fis = context.openFileInput(PATH_TO_USERNAME);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        InputStreamReader inputStreamReader =
+                new InputStreamReader(fis, StandardCharsets.UTF_8);
+        StringBuilder stringBuilder = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(inputStreamReader)) {
+            String line = reader.readLine();
+            while (line != null) {
+                stringBuilder.append(line).append('\n');
+                line = reader.readLine();
+            }
+        } catch (IOException e) {
+            // Error occurred when opening raw file for reading.
+        }
+        String username = stringBuilder.toString();
+        return username.substring(0, username.length() - 1);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        if(connection != null && !connection.isOpen()) {
+        if (connection != null && !connection.isOpen()) {
             setupRabbitMQ();
         }
     }
@@ -161,7 +185,7 @@ public class MainActivity extends AppCompatActivity {
 
                 Utilities.createQueue(channel, todoQueueLobbies, BuiltinExchangeType.DIRECT, todoQueueLobbies,
                         false, false, false, null, "");
-                Utilities.createQueue(channel, resultsQueueLobbies, BuiltinExchangeType.FANOUT, resultsQueueLobbies+myPlayer.getId(),
+                Utilities.createQueue(channel, resultsQueueLobbies, BuiltinExchangeType.FANOUT, resultsQueueLobbies + myPlayer.getId(),
                         false, false, false, null, "");
 
             } catch (IOException | TimeoutException e) {
@@ -172,32 +196,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void setPlayer(final String nickname) {
         myPlayer = Player.newBuilder()
-                         .setId(String.valueOf(new Random()
-                         .nextInt())).setNickname(nickname).build();
+                .setId(String.valueOf(new Random()
+                        .nextInt())).setNickname(nickname).build();
         this.setupRabbitMQ();
-    }
-
-    public static String getUsername(Context context) {
-        FileInputStream fis = null;
-        try {
-            fis = context.openFileInput(PATH_TO_USERNAME);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        InputStreamReader inputStreamReader =
-                new InputStreamReader(fis, StandardCharsets.UTF_8);
-        StringBuilder stringBuilder = new StringBuilder();
-        try (BufferedReader reader = new BufferedReader(inputStreamReader)) {
-            String line = reader.readLine();
-            while (line != null) {
-                stringBuilder.append(line).append('\n');
-                line = reader.readLine();
-            }
-        } catch (IOException e) {
-            // Error occurred when opening raw file for reading.
-        }
-        String username = stringBuilder.toString();
-        return username.substring(0, username.length() - 1);
     }
 
     private void checkUsername() throws IOException {
@@ -238,8 +239,8 @@ public class MainActivity extends AppCompatActivity {
     private void responseHandler(Response response) {
         System.out.println(response.getResponseCode());
         switch (response.getResponseCode()) {
-            case(200) -> {
-                if(response.getRequestingPlayer().getId().equals(myPlayer.getId())){
+            case (200) -> {
+                if (response.getRequestingPlayer().getId().equals(myPlayer.getId())) {
                     System.out.println("LOBBY ID: " + response.getLobby().getId());
                     Intent data = new Intent(MainActivity.this, CreateActivity.class);
                     data.putExtra("lobby", response.getLobby().toByteArray());
@@ -250,7 +251,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             case (202) -> {
-                if(response.getRequestingPlayer().getId().equals(myPlayer.getId())){
+                if (response.getRequestingPlayer().getId().equals(myPlayer.getId())) {
                     System.out.println("LOBBY ID: " + response.getLobby().getId());
                     Intent data = new Intent(MainActivity.this, CreateActivity.class);
                     data.putExtra("lobby", response.getLobby().toByteArray());

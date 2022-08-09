@@ -8,7 +8,7 @@ public interface ConditionForTaglio {
 
     /**
      * It checks if there are conditions to "tagliare" or not.
-     * 
+     *
      * @return true if there is the possibility of "tagliare", false otherwise.
      */
     boolean areRespected();

@@ -5,8 +5,8 @@ package com.example.beccaccino.model.artificialIntelligence;
  */
 public class Counter {
 
-    private int counter;
     private static final int INITIALVALUE = 0;
+    private int counter;
 
     /**
      * Class constructor.
@@ -17,7 +17,7 @@ public class Counter {
 
     /**
      * It return the next one integer.
-     * 
+     *
      * @return the next one integer.
      */
     public int next() {

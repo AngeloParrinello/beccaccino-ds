@@ -1,9 +1,5 @@
 package com.example.beccaccino.model.artificialIntelligence;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Random;
-
 import com.example.beccaccino.model.entities.BeccaccinoBunchOfCards;
 import com.example.beccaccino.model.entities.BunchOfCards;
 import com.example.beccaccino.model.entities.ItalianCard;
@@ -11,23 +7,27 @@ import com.example.beccaccino.model.entities.ItalianCard.Suit;
 import com.example.beccaccino.model.entities.ItalianCard.Value;
 import com.example.beccaccino.model.entities.ItalianCardImpl;
 
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Random;
+
 /**
  * It is an implementation of briscola selector.
  */
 public class BriscolaSelectorImpl implements BriscolaSelector {
 
-    private final List<ItalianCard> myCards;
-    private List<Suit> preferredSuitList;
-    private Suit preferredSuit;
     private static final int UNACARTA = 1;
     private static final int DUECARTE = 2;
     private static final int TRECARTE = 3;
     private static final int QUATTROCARTE = 4;
     private static final int CINQUECARTE = 5;
+    private final List<ItalianCard> myCards;
+    private List<Suit> preferredSuitList;
+    private Suit preferredSuit;
 
     /**
      * Class constructor.
-     * 
+     *
      * @param myCards are the cards in AI's hand.
      */
     public BriscolaSelectorImpl(final List<ItalianCard> myCards) {
@@ -45,7 +45,7 @@ public class BriscolaSelectorImpl implements BriscolaSelector {
 
     /**
      * It is used to understand the suits with more cards in AI's hand.
-     * 
+     *
      * @return a list of suit that have more cards.
      */
     private List<Suit> maxNumberCardsOfSuit() {
@@ -97,7 +97,7 @@ public class BriscolaSelectorImpl implements BriscolaSelector {
      * cards.
      */
     private void maxValueOfSuit() {
-        ItalianCard max = new ItalianCardImpl(Suit.BASTONI, Value.QUATTRO); 
+        ItalianCard max = new ItalianCardImpl(Suit.BASTONI, Value.QUATTRO);
         final BeccaccinoCardComparator comparator = new BeccaccinoCardComparator();
         final BunchOfCards bunchOfCards = new BeccaccinoBunchOfCards(this.myCards);
         for (Suit suit : this.preferredSuitList) {
@@ -114,7 +114,7 @@ public class BriscolaSelectorImpl implements BriscolaSelector {
         }
         for (Suit suit : this.preferredSuitList) {
             if (bunchOfCards.getHighestCardOfSuit(suit).isPresent()) {
-                this.myCards.remove(bunchOfCards.getHighestCardOfSuit(suit).get()); 
+                this.myCards.remove(bunchOfCards.getHighestCardOfSuit(suit).get());
             }
         }
     }

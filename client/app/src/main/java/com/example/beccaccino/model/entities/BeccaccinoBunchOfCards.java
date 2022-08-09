@@ -1,15 +1,10 @@
 package com.example.beccaccino.model.entities;
 
-import java.util.HashMap;
-
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
 import com.example.beccaccino.model.artificialIntelligence.BeccaccinoCardComparator;
 import com.example.beccaccino.model.entities.ItalianCard.Suit;
 import com.example.beccaccino.model.entities.ItalianCard.Value;
+
+import java.util.*;
 
 /**
  * "BunchOfCard" implementation for a game of "Beccaccino".
@@ -21,7 +16,7 @@ public class BeccaccinoBunchOfCards implements BunchOfCards {
 
     /**
      * Class constructor.
-     * 
+     *
      * @param listOfCards is a list of cards.
      */
     public BeccaccinoBunchOfCards(final List<ItalianCard> listOfCards) {

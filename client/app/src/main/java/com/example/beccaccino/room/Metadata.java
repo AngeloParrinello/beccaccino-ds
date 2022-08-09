@@ -12,13 +12,13 @@ public class Metadata {
 
     private int seed;
 
-    private String player1;
+    private final String player1;
 
-    private String player2;
+    private final String player2;
 
-    private String player3;
+    private final String player3;
 
-    private String player4;
+    private final String player4;
 
     private String briscola;
 
@@ -48,7 +48,7 @@ public class Metadata {
     }
 
     @Ignore
-    public Metadata(String player1, String player2, String player3, String player4){
+    public Metadata(String player1, String player2, String player3, String player4) {
         this.player1 = player1;
         this.player2 = player2;
         this.player3 = player3;
@@ -58,7 +58,7 @@ public class Metadata {
 
     /*Create new game*/
     @Ignore
-    public Metadata(Metadata metadata, int seed){
+    public Metadata(Metadata metadata, int seed) {
         this.id = metadata.id;
         this.player1 = metadata.player1;
         this.player2 = metadata.player2;
@@ -76,7 +76,7 @@ public class Metadata {
 
     /*Set the briscola*/
     @Ignore
-    public Metadata(Metadata metadata, String briscola){
+    public Metadata(Metadata metadata, String briscola) {
         this.id = metadata.id;
         this.player1 = metadata.player1;
         this.player2 = metadata.player2;
@@ -94,7 +94,7 @@ public class Metadata {
 
     /*Game over*/
     @Ignore
-    public Metadata(Metadata metadata, int points13, int points24){
+    public Metadata(Metadata metadata, int points13, int points24) {
         this.id = metadata.id;
         this.player1 = metadata.player1;
         this.player2 = metadata.player2;

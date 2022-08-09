@@ -1,18 +1,15 @@
 package com.example.beccaccino.model.entities;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 /**
  * Implementation of the interface ItalianCardDeck.
  */
 public class ItalianCardsDeckImpl implements ItalianCardsDeck {
-    private List<ItalianCardImpl> cardDeck;
     private final int indexFirstCard = 0;
-    private int seed;
+    private final List<ItalianCardImpl> cardDeck;
+    private final int seed;
+
     /**
      * Creates an instance of ItalianCardDeckImpl and populates it with all of the possible ItalianCards.
      */
@@ -46,7 +43,8 @@ public class ItalianCardsDeckImpl implements ItalianCardsDeck {
      */
     public int remainingCards() {
         return cardDeck.size();
-    } 
+    }
+
     /**
      * This private method populates a deck with all existing ItalianCards.
      */
@@ -60,7 +58,7 @@ public class ItalianCardsDeckImpl implements ItalianCardsDeck {
         }
     }
 
-    public int getSeed(){
+    public int getSeed() {
         return this.seed;
     }
 

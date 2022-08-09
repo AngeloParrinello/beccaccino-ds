@@ -5,31 +5,15 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.util.Log;
-
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-
-import com.example.beccaccino.model.artificialIntelligence.AI;
-import com.example.beccaccino.model.artificialIntelligence.AIImpl;
-import com.example.beccaccino.model.artificialIntelligence.GameAnalyzer;
-import com.example.beccaccino.model.artificialIntelligence.GameBasicAnalyzer;
-import com.example.beccaccino.model.artificialIntelligence.GameMediumAnalyzer;
-import com.example.beccaccino.model.entities.BeccaccinoHand;
-import com.example.beccaccino.model.entities.Hand;
-import com.example.beccaccino.model.entities.ItalianCard;
-import com.example.beccaccino.model.entities.PlayImpl;
+import com.example.beccaccino.model.artificialIntelligence.*;
 import com.example.beccaccino.model.entities.Player;
-import com.example.beccaccino.model.entities.PlayerImpl;
-import com.example.beccaccino.model.entities.Team;
-import com.example.beccaccino.model.entities.TeamImpl;
-import com.example.beccaccino.model.logic.BasicTurnOrder;
-import com.example.beccaccino.model.logic.BeccaccinoGame;
-import com.example.beccaccino.model.logic.BeccaccinoGameWithCricca;
+import com.example.beccaccino.model.entities.*;
 import com.example.beccaccino.model.logic.Game;
-import com.example.beccaccino.model.logic.Round;
-import com.example.beccaccino.model.logic.TurnOrder;
+import com.example.beccaccino.model.logic.*;
 import com.example.beccaccino.repository.BeccaccinoRepository;
 import com.example.beccaccino.repository.BeccaccinoRepositoryImpl;
 import com.example.beccaccino.room.Metadata;
@@ -41,22 +25,21 @@ import java.util.Map;
 
 
 public class GameViewModel extends AndroidViewModel {
-    private MutableLiveData<List<Round>> rounds;
-    private MutableLiveData<List<ItalianCard>> hand;
+    private final MutableLiveData<List<Round>> rounds;
+    private final MutableLiveData<List<ItalianCard>> hand;
 
-    private LiveData<Metadata> metadata;
-    private LiveData<List<PlayImpl>> plays;
-    private BeccaccinoRepository repository;
+    private final LiveData<Metadata> metadata;
+    private final LiveData<List<PlayImpl>> plays;
+    private final BeccaccinoRepository repository;
     private Game game;
-    private List<Player> players;
-    private Map<Player, AI> ais;
+    private final List<Player> players;
+    private final Map<Player, AI> ais;
     private Player firstPlayer;
-    private Handler handler = new Handler();
-    private int limit;
-    private String matchType;
+    private final Handler handler = new Handler();
+    private final int limit;
+    private final String matchType;
 
-    private int aiDelay;
-
+    private final int aiDelay;
 
 
     public GameViewModel(@NonNull Application application) {
@@ -89,38 +72,42 @@ public class GameViewModel extends AndroidViewModel {
         this.createMetadata();
     }
 
-    public void setBriscola(ItalianCard.Suit briscola){
-        Metadata md =  this.metadata.getValue();
+    public void setBriscola(ItalianCard.Suit briscola) {
+        Metadata md = this.metadata.getValue();
         Metadata updatedMetadata = new Metadata(md, briscola.toString());
 
         this.repository.updateMetadata(updatedMetadata);
 
         this.game.setBriscola(briscola);
         this.rounds.postValue(this.game.getRounds());
-        for(AI ai : this.ais.values()){
+        for (AI ai : this.ais.values()) {
             ai.setBriscola(briscola);
         }
         this.checkGameState();
     }
 
-    public LiveData<List<Round>> getRounds(){
+    public LiveData<List<Round>> getRounds() {
         return this.rounds;
     }
 
-    public LiveData<List<ItalianCard>> getHand(){
+    public LiveData<List<ItalianCard>> getHand() {
         return this.hand;
     }
 
-    public LiveData<Metadata> getMetadata() { return this.repository.getMetadata(); }
+    public LiveData<Metadata> getMetadata() {
+        return this.repository.getMetadata();
+    }
 
-    public String getFirstPlayer() { return this.firstPlayer.getName(); }
+    public String getFirstPlayer() {
+        return this.firstPlayer.getName();
+    }
 
-    public void shutDownGame(){this.clearGame();}
+    public void shutDownGame() {
+        this.clearGame();
+    }
 
 
-
-
-    private void createMetadata(){
+    private void createMetadata() {
         Metadata metadata = new Metadata(players.get(0).getName(), players.get(1).getName(), players.get(2).getName(), players.get(3).getName());
         metadata.setLimit(this.limit);
         metadata.setType(this.matchType);
@@ -130,38 +117,38 @@ public class GameViewModel extends AndroidViewModel {
         this.repository.updateMetadata(metadata);
     }
 
-    public void createGame(){
+    public void createGame() {
         //Metadata existentMetadata = this.metadata.getValue();
-        if(/*existentMetadata == null*/true){
+        if (/*existentMetadata == null*/true) {
             /*If a new game should be started*/
-            Log.d("VIEWMODEL","START NEW GAME");
+            Log.d("VIEWMODEL", "START NEW GAME");
 
             TurnOrder to = new BasicTurnOrder(this.players);
             List<Team> teams = this.createTeams(this.players);
             /*Check if normal or "with cricca" game should be created*/
-            if(this.isCriccaEnabled()){
-                if(this.firstPlayer == null){
+            if (this.isCriccaEnabled()) {
+                if (this.firstPlayer == null) {
                     this.game = new BeccaccinoGameWithCricca(to, teams.get(0), teams.get(1));
-                }else{
+                } else {
                     this.game = new BeccaccinoGameWithCricca(to, teams.get(0), teams.get(1), this.getFirstPlayer());
                 }
-            }else{
-                if(this.firstPlayer == null){
+            } else {
+                if (this.firstPlayer == null) {
                     this.game = new BeccaccinoGame(to, teams.get(0), teams.get(1));
-                }else{
+                } else {
                     this.game = new BeccaccinoGame(to, teams.get(0), teams.get(1), this.getFirstPlayer());
                 }
             }
             Log.d("SEED", this.game.getSeed() + "");
             this.setAIs();
             this.repository.updateMetadata(new Metadata(this.metadata.getValue(), this.game.getSeed()));
-            if(this.plays.getValue() != null){
+            if (this.plays.getValue() != null) {
                 throw new IllegalStateException("Ci sono plays in memoria senza un metadata attivo");
             }
             this.makeAISelectBriscola();
-        }else{
+        } else {
             /*If a game is already in progress*/
-            Log.d("VIEWMODEL","RESUME GAME");
+            Log.d("VIEWMODEL", "RESUME GAME");
             /*List<String> names = new ArrayList<>();
             names.add(existentMetadata.getPlayer1());
             names.add(existentMetadata.getPlayer2());
@@ -185,7 +172,7 @@ public class GameViewModel extends AndroidViewModel {
         Log.d("PRIMOOOOOOOOOOOO", this.firstPlayer + " è il primo");
     }
 
-    public void makePlay(PlayImpl play){
+    public void makePlay(PlayImpl play) {
         this.addPlayToRepository(play);
 
         this.hand.postValue(this.players.get(0).getHand().getCards());
@@ -193,7 +180,7 @@ public class GameViewModel extends AndroidViewModel {
         this.checkGameState();
     }
 
-    private void scheduleAIPlay(){
+    private void scheduleAIPlay() {
         final Runnable r = new Runnable() {
             public void run() {
                 makeAIPlay();
@@ -203,13 +190,13 @@ public class GameViewModel extends AndroidViewModel {
     }
 
 
-    private void makeAIPlay(){
+    private void makeAIPlay() {
         final AI ai = this.ais.get(this.game.getCurrentPlayer());
         if (ai != null) {
             final PlayImpl play = (PlayImpl) ai.makePlay(this.game.getCurrentRound());
             this.addPlayToRepository(play);
             Log.d("AI PLAY", play.getCard().toString());
-        }else{
+        } else {
             throw new NullPointerException("Player not in ais");
         }
 
@@ -218,19 +205,19 @@ public class GameViewModel extends AndroidViewModel {
     }
 
 
-    private void checkGameState(){
-        if(this.game.isOver()){
+    private void checkGameState() {
+        if (this.game.isOver()) {
             List<Team> teams = this.game.getTeams();
-            Metadata md =  this.metadata.getValue();
+            Metadata md = this.metadata.getValue();
             Metadata updatedMetadata = new Metadata(md, teams.get(0).getPoints() / 3, teams.get(1).getPoints() / 3);
 
-            if(updatedMetadata.getType().equals("Punti")) {
-                if(updatedMetadata.getPoints13() >= updatedMetadata.getLimit() || updatedMetadata.getPoints24() >= updatedMetadata.getLimit()){
+            if (updatedMetadata.getType().equals("Punti")) {
+                if (updatedMetadata.getPoints13() >= updatedMetadata.getLimit() || updatedMetadata.getPoints24() >= updatedMetadata.getLimit()) {
                     updatedMetadata.setMatchOver(true);
                 }
             }
-            if(updatedMetadata.getType().equals("Round")) {
-                if(updatedMetadata.getGamesPlayed() == updatedMetadata.getLimit()){
+            if (updatedMetadata.getType().equals("Round")) {
+                if (updatedMetadata.getGamesPlayed() == updatedMetadata.getLimit()) {
                     updatedMetadata.setMatchOver(true);
                 }
             }
@@ -238,17 +225,17 @@ public class GameViewModel extends AndroidViewModel {
             this.repository.updateMetadata(updatedMetadata);
             this.repository.clearPlays();
 
-        }else{
-            if(this.ais.containsKey(game.getCurrentPlayer())){
+        } else {
+            if (this.ais.containsKey(game.getCurrentPlayer())) {
                 this.scheduleAIPlay();
             }
         }
     }
 
-    private void makeAISelectBriscola(){
+    private void makeAISelectBriscola() {
         final AI ai = this.ais.get(game.getCurrentPlayer());
 
-        if(ai != null){
+        if (ai != null) {
             final Runnable r = new Runnable() {
                 public void run() {
                     setBriscola(ai.selectBriscola());
@@ -259,7 +246,7 @@ public class GameViewModel extends AndroidViewModel {
     }
 
 
-    private void setAIs(){
+    private void setAIs() {
         List<String> aiEasyNames = new ArrayList<>();
         List<String> aiMediumNames = new ArrayList<>();
         aiEasyNames.add("IA Facile");
@@ -270,20 +257,20 @@ public class GameViewModel extends AndroidViewModel {
         aiMediumNames.add("IA Media 1");
         aiMediumNames.add("IA Media 2");
         aiMediumNames.add("IA Media 3");
-        for(Player player : this.players){
-            if(aiEasyNames.contains(player.getName())){
+        for (Player player : this.players) {
+            if (aiEasyNames.contains(player.getName())) {
                 this.ais.put(player, this.newAI(player, "easy"));
             }
-            if(aiMediumNames.contains(player.getName())){
+            if (aiMediumNames.contains(player.getName())) {
                 this.ais.put(player, this.newAI(player, "medium"));
             }
         }
     }
 
 
-    private List<Player> newPlayers(final List<String> names){
+    private List<Player> newPlayers(final List<String> names) {
         List<Player> players = new ArrayList<>();
-        for(String name : names){
+        for (String name : names) {
             players.add(this.newPlayer(name));
         }
         return players;
@@ -324,29 +311,29 @@ public class GameViewModel extends AndroidViewModel {
         return new AIImpl(player, analyzer);
     }
 
-    private void addPlayToRepository(PlayImpl play){
+    private void addPlayToRepository(PlayImpl play) {
         this.game.makeTurn(play);
         this.rounds.postValue(this.game.getRounds());
         this.repository.addPlay(play);
     }
 
-    private List<String> makeNamesUnique(List<String> names){
+    private List<String> makeNamesUnique(List<String> names) {
         List<String> result = new ArrayList<>();
-        for(String name : names){
-            if(result.contains(name)){
+        for (String name : names) {
+            if (result.contains(name)) {
                 int index = result.indexOf(name);
                 result.set(index, result.get(index) + " 1");
                 result.add(name + " 2");
-            }else if(result.contains(name + " 1")){
+            } else if (result.contains(name + " 1")) {
                 result.add(name + " 3");
-            }else{
+            } else {
                 result.add(name);
             }
         }
         return result;
     }
 
-    private boolean isCriccaEnabled(){
+    private boolean isCriccaEnabled() {
         SharedPreferences sh
                 = getApplication().getSharedPreferences("Settings",
                 Context.MODE_PRIVATE);

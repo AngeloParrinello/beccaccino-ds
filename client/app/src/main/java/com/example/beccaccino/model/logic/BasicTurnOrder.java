@@ -1,9 +1,9 @@
 package com.example.beccaccino.model.logic;
 
+import com.example.beccaccino.model.entities.Player;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import com.example.beccaccino.model.entities.Player;
 
 /**
  * {@inheritDoc}.
@@ -13,9 +13,8 @@ public class BasicTurnOrder implements TurnOrder {
     private int index;
 
     /**
-     * 
      * @param players - a list of players. The sorting of the list determines
-     * the turn order.
+     *                the turn order.
      */
     public BasicTurnOrder(final List<Player> players) {
         this.players = new ArrayList<>(players);
@@ -79,13 +78,8 @@ public class BasicTurnOrder implements TurnOrder {
             return false;
         }
         if (players == null) {
-            if (other.players != null) {
-                return false;
-            }
-        } else if (!players.equals(other.players)) {
-            return false;
-        }
-        return true;
+            return other.players == null;
+        } else return players.equals(other.players);
     }
 
 }

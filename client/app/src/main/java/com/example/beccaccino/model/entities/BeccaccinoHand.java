@@ -31,10 +31,7 @@ public class BeccaccinoHand extends HandTemplate {
      * {@inheritDoc}
      */
     public boolean isFull() {
-        if (this.getCards().size() == MAX_HAND_SIZE) {
-            return true;
-        }
-        return false;
+        return this.getCards().size() == MAX_HAND_SIZE;
     }
 
     public boolean isEmpty() {
@@ -55,10 +52,7 @@ public class BeccaccinoHand extends HandTemplate {
             return false;
         }
         final BeccaccinoHand hand = (BeccaccinoHand) obj;
-        if (hand.getCards().equals(this.getCards())) {
-            return true;
-        }
-        return false;
+        return hand.getCards().equals(this.getCards());
     }
 
     /**
