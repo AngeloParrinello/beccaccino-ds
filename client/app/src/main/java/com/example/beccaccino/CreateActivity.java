@@ -129,7 +129,23 @@ public class CreateActivity extends AppCompatActivity {
                     public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
                         GameResponse gameResponse = GameResponse.parseFrom(body);
                         switch (gameResponse.getResponseCode()) {
-                            //TODO
+
+                            case (200), (201) -> {}
+                            case (300) -> {
+                                System.out.println("Parte una nuova partita");
+                                Intent myIntent = new Intent(CreateActivity.this, GameActivity.class);
+                                myIntent.putExtra("game", gameResponse.getGame().toByteArray());
+                                CreateActivity.this.startActivity(myIntent);
+                            }
+                            case (402) -> SingleToast.show(getApplicationContext(), "Impossibile unirsi", 3000);
+
+                            case (405) -> SingleToast.show(getApplicationContext(), "Permesso negato", 3000);
+
+                            case (406) -> SingleToast.show(getApplicationContext(), "Richiesta illegale", 3000);
+
+                            case (407) -> SingleToast.show(getApplicationContext(), "Operazione fallita", 3000);
+
+                            default -> throw new IllegalStateException();
                         }
                     }
                 });
@@ -211,12 +227,11 @@ public class CreateActivity extends AppCompatActivity {
                         .setLobby(lobby)
                         .build();
                 try {
+                    System.out.println("Pubblico la richiesta di start match");
                     channel.basicPublish(todoQueueGames, "", null, startGameRequest.toByteArray());
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    e.printStackTrace();
                 }
-                Intent myIntent = new Intent(CreateActivity.this, GameActivity.class);
-                CreateActivity.this.startActivity(myIntent);
             });
         }
     }
