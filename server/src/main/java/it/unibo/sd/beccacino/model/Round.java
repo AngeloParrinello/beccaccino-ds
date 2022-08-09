@@ -17,7 +17,7 @@ public interface Round {
      * the round isn't finished yet).
      *
      * @param cardPlayed - the card to be added to this round.
-     * @param message - the message to be added to this round.
+     * @param message    - the message to be added to this round.
      * @throws IllegalStateException if the round is over.
      */
     void addPlay(Card cardPlayed, String message);

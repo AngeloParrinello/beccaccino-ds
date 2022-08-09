@@ -6,13 +6,13 @@ import com.rabbitmq.client.Channel;
 import java.io.IOException;
 import java.util.Map;
 
-public class RabbitMQQueueBuilderImpl implements RabbitMQQueueBuilder{
+public class RabbitMQQueueBuilderImpl implements RabbitMQQueueBuilder {
 
     private String nameQueue;
     private Channel channel;
     private boolean durable = false;
     private boolean exclusive = false;
-    private boolean autoDelete = true;
+    private boolean autoDelete = false;
     private Map<String, Object> arguments = null;
     private String exchangeName = "";
     private BuiltinExchangeType exchangeType = BuiltinExchangeType.DIRECT;
@@ -36,19 +36,19 @@ public class RabbitMQQueueBuilderImpl implements RabbitMQQueueBuilder{
     }
 
     @Override
-    public RabbitMQQueueBuilder setDurable(boolean durable){
+    public RabbitMQQueueBuilder setDurable(boolean durable) {
         this.durable = durable;
         return this;
     }
 
     @Override
-    public RabbitMQQueueBuilder setExclusive(boolean exclusive){
+    public RabbitMQQueueBuilder setExclusive(boolean exclusive) {
         this.exclusive = exclusive;
         return this;
     }
 
     @Override
-    public RabbitMQQueueBuilder setAutoDelete(boolean autoDelete){
+    public RabbitMQQueueBuilder setAutoDelete(boolean autoDelete) {
         this.autoDelete = autoDelete;
         return this;
     }
@@ -72,23 +72,16 @@ public class RabbitMQQueueBuilderImpl implements RabbitMQQueueBuilder{
     }
 
     @Override
-    public RabbitMQQueueBuilder setArguments(Map<String, Object> arguments){
+    public RabbitMQQueueBuilder setArguments(Map<String, Object> arguments) {
         this.arguments = arguments;
         return this;
     }
 
     @Override
-    public String createQueueForReceive() throws IOException {
+    public String createQueue() throws IOException {
         this.channel.queueDeclare(this.nameQueue, this.durable, this.exclusive, this.autoDelete, this.arguments);
-        return this.nameQueue;
-    }
-
-    @Override
-    public String createQueueForSend() throws IOException {
-        this.createQueueForReceive();
         this.channel.exchangeDeclare(this.exchangeName, this.exchangeType);
         this.channel.queueBind(this.nameQueue, this.exchangeName, this.routingKey);
         return this.nameQueue;
     }
-
 }

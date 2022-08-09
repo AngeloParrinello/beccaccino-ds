@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class BeccacinoCardComparator implements Comparator<Card> {
-    private Map<Value, Integer> valueMap;
+    private final Map<Value, Integer> valueMap;
 
     /**
      * Class constructor.

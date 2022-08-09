@@ -1,0 +1,107 @@
+syntax = 'proto3';
+
+option java_multiple_files = true;
+option java_package = "com.example.beccaccino";
+option java_outer_classname = "MiddlewareProto";
+
+package beccacino;
+
+message Lobby {
+  string _id = 1;
+  int32 room_capacity = 2;
+  int32 target_score = 3; // not all game has target score
+  repeated Player players = 4; // host is the first player in the list
+  // optional int32 lobby_timeout = 5;
+}
+
+message Player {
+  string _id = 1;
+  string nickname = 2;
+}
+
+message Game {
+  string _id = 1;
+  repeated Player players = 3;
+  PublicData public_data = 2;
+  repeated PrivateData private_data = 4;
+  int32 round = 5;
+}
+
+/*
+ * Section specific for each game-type
+ */
+
+message PublicData {
+  int32 score_team1 = 1;
+  int32 score_team2 = 2;
+  repeated Card cards_on_table = 3;
+  string message = 4;
+  Player current_player = 5;
+  Suit briscola = 6;
+  Suit dominant_suit = 7;
+  repeated Card team1_card_won = 9;
+  repeated Card team2_card_won = 10;
+}
+
+message PrivateData {
+  Player player = 1;
+  repeated Card my_cards = 2;
+}
+
+message Card {
+  Suit suit = 1;
+  Value value = 2;
+}
+
+enum Suit {
+  SUIT = 0;
+  COPPE = 4;
+  BASTONI = 1;
+  DENARI = 2;
+  SPADE = 3;
+  DEFAULT_SUIT = 5;
+}
+
+enum Value {
+  VALUE = 0;
+  ASSO = 10;
+  DUE = 1;
+  TRE = 2;
+  QUATTRO = 3;
+  CINQUE = 4;
+  SEI = 5;
+  SETTE = 6;
+  FANTE = 7;
+  CAVALLO = 8;
+  RE = 9;
+}
+
+// TODO why should i pass the entire lobby??
+message GameRequest {
+  string request_type = 1;
+  Lobby lobby = 2;
+  string game_id = 3;
+  Suit briscola = 4;
+  Card card_played = 5;
+  string card_message = 6;
+  Player requesting_player = 7;
+}
+
+message GameResponse {
+  Game game = 1;
+  int32 response_code = 2;
+  string response_message = 3;
+}
+
+message Request {
+  string lobby_id = 1;
+  string lobby_message = 2;
+  Player requesting_player = 3;
+}
+
+message Response {
+  Lobby lobby = 1;
+  int32 response_code = 2;
+  string response_message = 3;
+  Player requesting_player = 4;
+}

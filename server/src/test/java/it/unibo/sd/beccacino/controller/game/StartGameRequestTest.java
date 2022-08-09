@@ -67,7 +67,7 @@ public class StartGameRequestTest {
                 .setLobby(testLobby)
                 .setRequestingPlayer(this.player)
                 .build());
-        Assertions.assertEquals(ResponseCode.START, this.gameStub.getLastResponseCode());
+        Assertions.assertEquals(ResponseCode.START_ERROR, this.gameStub.getLastResponseCode());
     }
 
     @Test

@@ -1,6 +1,9 @@
 package it.unibo.sd.beccacino.controller.game;
 
-import it.unibo.sd.beccacino.*;
+import it.unibo.sd.beccacino.Game;
+import it.unibo.sd.beccacino.GameRequest;
+import it.unibo.sd.beccacino.Player;
+import it.unibo.sd.beccacino.ResponseCode;
 import org.bson.BsonValue;
 import org.bson.Document;
 
@@ -19,7 +22,7 @@ public class GameRequestHandlerImpl implements GameRequestHandler {
             case ("start") -> this.startGameRequestHandler(request);
             case ("briscola") -> this.setBriscolaRequestHandler(request);
             case ("play") -> this.makePlayRequestHandler(request);
-            default -> this.gameStub.sendGameResponse(null, ResponseCode.PERMISSION_DENIED);
+            default -> this.gameStub.sendGameErrorResponse(ResponseCode.ILLEGAL_REQUEST, request.getRequestingPlayer(), "");
         }
     }
 
@@ -33,18 +36,18 @@ public class GameRequestHandlerImpl implements GameRequestHandler {
                     if (!createdGameID.equals("")) {
                         Game createdGame = this.gameUtil.getGameById(createdGameID);
                         this.gameUtil.removeLobby(request.getLobby().getId());
-                        this.gameStub.sendGameResponse(createdGame, ResponseCode.OK);
+                        this.gameStub.sendGameResponse(createdGame, ResponseCode.START_OK);
                     } else {
-                        this.gameStub.sendGameResponse(null, ResponseCode.START);
+                        this.gameStub.sendGameErrorResponse(ResponseCode.START_ERROR, request.getRequestingPlayer(), "");
                     }
                 } else {
-                    this.gameStub.sendGameResponse(null, ResponseCode.PERMISSION_DENIED);
+                    this.gameStub.sendGameErrorResponse(ResponseCode.PERMISSION_DENIED, request.getRequestingPlayer(), "");
                 }
             } else {
-                this.gameStub.sendGameResponse(null, ResponseCode.START);
+                this.gameStub.sendGameErrorResponse(ResponseCode.START_ERROR, request.getRequestingPlayer(), "");
             }
         } else {
-            this.gameStub.sendGameResponse(null, ResponseCode.ILLEGAL_REQUEST);
+            this.gameStub.sendGameErrorResponse(ResponseCode.ILLEGAL_REQUEST, request.getRequestingPlayer(), "");
         }
     }
 
@@ -56,16 +59,16 @@ public class GameRequestHandlerImpl implements GameRequestHandler {
                 boolean operationSuccessful = this.gameUtil.setBriscola(request);
                 if (operationSuccessful) {
                     Game updatedGame = this.gameUtil.getGameById(request.getGameId());
-                    this.gameStub.sendGameResponse(updatedGame, ResponseCode.OK);
+                    this.gameStub.sendGameResponse(updatedGame, ResponseCode.BRISCOLA_OK);
                 } else {
                     // TODO if something goes wrong, should we return null or the 'old' game?
-                    this.gameStub.sendGameResponse(null, ResponseCode.FAIL);
+                    this.gameStub.sendGameErrorResponse(ResponseCode.FAIL, requestingPlayer, game.getId());
                 }
             } else {
-                this.gameStub.sendGameResponse(null, ResponseCode.ILLEGAL_REQUEST);
+                this.gameStub.sendGameErrorResponse(ResponseCode.ILLEGAL_REQUEST, requestingPlayer, game.getId());
             }
         } else {
-            this.gameStub.sendGameResponse(null, ResponseCode.PERMISSION_DENIED);
+            this.gameStub.sendGameErrorResponse(ResponseCode.PERMISSION_DENIED, requestingPlayer, game.getId());
         }
     }
 
@@ -75,22 +78,22 @@ public class GameRequestHandlerImpl implements GameRequestHandler {
             if (this.gameUtil.isBriscolaSet(game)) {
                 if (this.gameUtil.isCardPlayable(request)) {
                     boolean operationSuccessful = this.gameUtil.makePlay(request);
-                    if(operationSuccessful) {
+                    if (operationSuccessful) {
                         this.gameUtil.updateCurrentPlayer(request.getGameId());
                         this.gameUtil.computeWinnerAndSetNextPlayer(request.getGameId());
                         Game updatedGame = this.gameUtil.getGameById(request.getGameId());
-                        this.gameStub.sendGameResponse(updatedGame, ResponseCode.OK);
+                        this.gameStub.sendGameResponse(updatedGame, ResponseCode.PLAY_OK);
                     } else {
-                        this.gameStub.sendGameResponse(null, ResponseCode.FAIL);
+                        this.gameStub.sendGameErrorResponse(ResponseCode.FAIL, request.getRequestingPlayer(), game.getId());
                     }
                 } else {
-                    this.gameStub.sendGameResponse(null, ResponseCode.ILLEGAL_REQUEST);
+                    this.gameStub.sendGameErrorResponse(ResponseCode.ILLEGAL_REQUEST, request.getRequestingPlayer(), game.getId());
                 }
             } else {
-                this.gameStub.sendGameResponse(null, ResponseCode.ILLEGAL_REQUEST);
+                this.gameStub.sendGameErrorResponse(ResponseCode.ILLEGAL_REQUEST, request.getRequestingPlayer(), game.getId());
             }
         } else {
-            this.gameStub.sendGameResponse(null, ResponseCode.PERMISSION_DENIED);
+            this.gameStub.sendGameErrorResponse(ResponseCode.PERMISSION_DENIED, request.getRequestingPlayer(), game.getId());
         }
     }
 }

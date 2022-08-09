@@ -11,9 +11,8 @@ import java.util.concurrent.TimeoutException;
 public class RealStartGameRequestWithClient {
 
     public static void main(String[] args) {
-        LobbiesStub lobbiesStub = new LobbiesStub();
-        FakeClient client;
-        client = new FakeClient(new RabbitMQManager());
+        new LobbiesStub();
+        FakeClient client = new FakeClient(new RabbitMQManager());
         try {
             client.simpleLobbyPublish();
         } catch (IOException e) {
@@ -23,11 +22,10 @@ public class RealStartGameRequestWithClient {
 
     private static class FakeClient {
         private final RabbitMQManager rabbitMQManager;
-        private Connection connection;
-        private Channel channel;
-
         private final String todoQueue = "todoQueueLobbies";
         private final String resultsQueue = "resultsQueueLobbies";
+        private Connection connection;
+        private Channel channel;
 
         public FakeClient(RabbitMQManager rabbitMQManager) {
             this.rabbitMQManager = rabbitMQManager;
@@ -47,13 +45,14 @@ public class RealStartGameRequestWithClient {
                     .setNameQueue(todoQueue)
                     .setExchangeName(todoQueue)
                     .setChannel(channel)
-                    .createQueueForSend();
+                    .createQueue();
 
             this.rabbitMQManager.getQueueBuilder()
                     .getInstanceOfQueueBuilder()
                     .setNameQueue(resultsQueue)
+                    .setExchangeName(resultsQueue)
                     .setChannel(channel)
-                    .createQueueForReceive();
+                    .createQueue();
 
             System.out.println("Client Intialized Queue!");
         }

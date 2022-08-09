@@ -1,0 +1,59 @@
+<resources>
+    <string name="app_name">Beccaccino</string>
+    <string name="beccaccino">Beccaccino</string>
+    <string name="nuova_partita">Nuova Partita</string>
+    <string name="cerca_partita">Cerca Partita</string>
+    <string name="amici">Amici</string>
+    <string name="impostazioni">Impostazioni</string>
+    <string name="inizia_partita">Inizia Partita</string>
+    <string name="avvia_partita" />
+    <string name="back_button">Back Button</string>
+    <string name="avvia_match">Avvia Partita</string>
+    <string name="profile_image_for_player_1">Profile image for player 1</string>
+    <string name="profile_image_for_player_2">Profile image for player 2</string>
+    <string name="profile_image_for_player_3">Profile image for player 3</string>
+    <string name="profile_image_for_player_4">Profile image for player 4</string>
+    <string name="match_id">Match ID</string>
+    <string name="waiting_player">In attesa</string>
+    <string name="volo">Volo</string>
+    <string name="striscio">Striscio</string>
+    <string name="busso">Busso</string>
+    <string name="card_played_by_player_3">Card played by player 3</string>
+    <string name="card_played_by_player_4">card played by player 4</string>
+    <string name="carta_giocata_da_player2">Carta giocata da player2</string>
+    <string name="a_card">A card</string>
+    <string name="textview">TextView</string>
+    <string name="briscola">Briscola:</string>
+    <string name="paolo">Paolo</string>
+    <string name="impostazioni_partita">IMPOSTAZIONI PARTITA</string>
+    <string name="cricca_attiva">Cricca Attiva</string>
+    <string name="hai_vinto">Hai Vinto!</string>
+    <string name="team_13">Team 13</string>
+    <string name="team_24">Team 24</string>
+    <string name="_7">7</string>
+    <string name="_4">4</string>
+    <string name="prossimo_round">Prossimo Round</string>
+    <string name="esci">Esci</string>
+    <string name="name">Name</string>
+    <string name="attendi">Attendi</string>
+    <string name="sconfitta">Hai perso!</string>
+    <string name="vittoria">Hai vinto!</string>
+    <string name="username">Username</string>
+    <string name="profile_picture">Profile Picture</string>
+    <string name="edit_username">edit username</string>
+    <string name="edit_profile_picture">edit profile picture</string>
+    <string name="roundLost">Hai perso questo round</string>
+    <string name="roundWin">Hai vinto questo round</string>
+    <string name="matchWin">Hai vinto la partita!</string>
+    <string name="matchLost">Hai perso la partita!</string>
+    <string name="la_tua_immagine_del_profilo">La tua immagine del profilo</string>
+    <string name="durata_del_match">Durata del match</string>
+    <string name="limite">limite</string>
+    <string name="abilita_punti_extra_per_cricca___">"3 punti extra per cricca   "</string>
+    <string name="settings">Impostazioni</string>
+
+    <string-array name="match_type">
+        <item>Punti</item>
+        <item>Round</item>
+    </string-array>
+</resources>

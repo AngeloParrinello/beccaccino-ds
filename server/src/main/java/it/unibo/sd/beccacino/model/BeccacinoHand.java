@@ -5,7 +5,7 @@ import it.unibo.sd.beccacino.Card;
 /**
  * A beccaccino hand, capable of holding a maximum number of {@value #MAX_HAND_SIZE} cards.
  */
-public class BeccacinoHand  extends HandTemplate{
+public class BeccacinoHand extends HandTemplate {
     private static final int MAX_HAND_SIZE = 10;
 
     /**
@@ -30,10 +30,7 @@ public class BeccacinoHand  extends HandTemplate{
      * {@inheritDoc}
      */
     public boolean isFull() {
-        if (this.getCards().size() == MAX_HAND_SIZE) {
-            return true;
-        }
-        return false;
+        return this.getCards().size() == MAX_HAND_SIZE;
     }
 
     public boolean isEmpty() {
@@ -54,10 +51,7 @@ public class BeccacinoHand  extends HandTemplate{
             return false;
         }
         final BeccacinoHand hand = (BeccacinoHand) obj;
-        if (hand.getCards().equals(this.getCards())) {
-            return true;
-        }
-        return false;
+        return hand.getCards().equals(this.getCards());
     }
 
     /**

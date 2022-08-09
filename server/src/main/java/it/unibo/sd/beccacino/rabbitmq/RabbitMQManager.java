@@ -24,7 +24,7 @@ public class RabbitMQManager {
         factory.setHost(System.getenv("RABBIT_HOST"));
         factory.setPort(5672);
         factory.setAutomaticRecoveryEnabled(true);
-        while(true) {
+        while (true) {
             try {
                 return factory.newConnection();
             } catch (java.net.ConnectException e) {

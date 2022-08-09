@@ -12,6 +12,15 @@ public class Sender extends Agent {
         this.message = message;
     }
 
+    public static void main(String[] args) throws InterruptedException {
+        Thread sender = new Sender(
+                args.length > 0 ? args[0] : "nobody",
+                args.length > 1 ? args[1] : "hello"
+        );
+        sender.start();
+        sender.join();
+    }
+
     @Override
     public void run(String myName, Connection connection) throws Exception {
         // data una connessione creo un canale
@@ -31,14 +40,5 @@ public class Sender extends Agent {
         System.out.printf("[%s] Sent message %s\n", myName, message);
         channel.close();
         connection.close();
-    }
-
-    public static void main(String[] args) throws InterruptedException {
-        Thread sender = new Sender(
-                args.length > 0 ? args[0] : "nobody",
-                args.length > 1 ? args[1] : "hello"
-            );
-        sender.start();
-        sender.join();
     }
 }

@@ -12,14 +12,12 @@ public class GameStub {
 
     private final RabbitMQManager rabbitMQManager;
     private final GameRequestHandler gameRequestHandler;
-    private Channel channel;
-    private Connection connection;
-
-    private Game lastOperation;
-    private ResponseCode lastResponseCode;
-
     String todoQueue = "todoQueueGames";
     String resultsQueue = "resultsQueueGames";
+    private Channel channel;
+    private Connection connection;
+    private Game lastOperation;
+    private ResponseCode lastResponseCode;
 
     public GameStub() {
         this.rabbitMQManager = new RabbitMQManager();
@@ -40,15 +38,9 @@ public class GameStub {
                 .setNameQueue(todoQueue)
                 .setExchangeName(todoQueue)
                 .setChannel(channel)
-                .createQueueForSend();
+                .createQueue();
 
-        this.rabbitMQManager.getQueueBuilder()
-                .getInstanceOfQueueBuilder()
-                .setNameQueue(resultsQueue)
-                .setChannel(channel)
-                .createQueueForReceive();
-
-        channel.basicConsume(resultsQueue, new DefaultConsumer(channel) {
+        channel.basicConsume(todoQueue, new DefaultConsumer(channel) {
             @Override
             public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties,
                                        byte[] body) throws InvalidProtocolBufferException {
@@ -69,28 +61,67 @@ public class GameStub {
     }
 
     public void sendGameResponse(Game gameUpdated, ResponseCode responseCode) {
+        if(responseCode == ResponseCode.START_OK){
+            this.setupQueues(gameUpdated);
+        }
         this.lastOperation = gameUpdated;
         this.lastResponseCode = responseCode;
-        GameResponse gameResponse;
 
-        if (gameUpdated != null) {
+        gameUpdated.getPlayersList().forEach(player -> {
+            final int index = gameUpdated.getPlayersList().indexOf(player);
+            Game game = Game.newBuilder()
+                    .setPublicData(gameUpdated.getPublicData())
+                    .addPrivateData(gameUpdated.getPrivateData(index))
+                    .addAllPlayers(gameUpdated.getPlayersList())
+                    .setRound(gameUpdated.getRound())
+                    .build();
+
+            GameResponse gameResponse;
             gameResponse = GameResponse.newBuilder()
-                    .setGame(gameUpdated)
+                    .setGame(game)
                     .setResponseCode(responseCode.getCode())
                     .setResponseMessage(responseCode.getMessage())
                     .build();
-        } else {
-            gameResponse = GameResponse.newBuilder()
-                    .setResponseCode(responseCode.getCode())
-                    .setResponseMessage(responseCode.getMessage())
-                    .build();
-        }
+
+            try {
+                channel.basicPublish(resultsQueue + game.getId() + player.getId(), "", null, gameResponse.toByteArray());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    public void sendGameErrorResponse(ResponseCode responseCode, Player requestingPlayer, String gameId) {
+        this.lastOperation = null;
+        this.lastResponseCode = responseCode;
+
+        GameResponse gameResponse;
+        gameResponse = GameResponse.newBuilder()
+                .setResponseCode(responseCode.getCode())
+                .setResponseMessage(responseCode.getMessage())
+                .build();
 
         try {
-            channel.basicPublish(todoQueue, "", null, gameResponse.toByteArray());
+            channel.basicPublish(resultsQueue + gameId + requestingPlayer.getId(), "", null, gameResponse.toByteArray());
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void setupQueues(Game game) {
+        game.getPlayersList().forEach(player -> {
+            String queueName = resultsQueue + game.getId() + player.getId();
+            try {
+                this.rabbitMQManager.getQueueBuilder()
+                        .getInstanceOfQueueBuilder()
+                        .setNameQueue(queueName)
+                        .setExchangeName(queueName)
+                        .setChannel(channel)
+                        .createQueue();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     public Game getLastOperation() {

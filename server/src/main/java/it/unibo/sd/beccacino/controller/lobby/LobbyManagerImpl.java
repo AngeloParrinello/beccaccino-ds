@@ -9,11 +9,10 @@ import java.util.Objects;
 
 public class LobbyManagerImpl implements LobbyManager {
 
-    private final DBManager dbManager;
-    private final LobbiesStub lobbiesStub;
-
     private static final int ROOM_CAPACITY = 4;
     private static final int TARGET_SCORE = 31;
+    private final DBManager dbManager;
+    private final LobbiesStub lobbiesStub;
 
     public LobbyManagerImpl(LobbiesStub lobbiesStub) {
         this.dbManager = new DBManager();
@@ -26,36 +25,50 @@ public class LobbyManagerImpl implements LobbyManager {
             case ("create") -> this.createLobbyRequestHandler(request);
             case ("join") -> this.joinLobbyRequestHandler(request);
             case ("leave") -> this.leaveLobbyRequestHandler(request);
-            default -> {
-            } // TODO: Log illegal request received.
+            default -> throw new RuntimeException(); // TODO: Log illegal request received.
         }
     }
 
     private void createLobbyRequestHandler(Request createLobbyRequest) {
+        System.out.println("Request Create Lobby: "+ createLobbyRequest);
         Player requestingPlayer = createLobbyRequest.getRequestingPlayer();
+        System.out.println("Request Player Create Lobby: "+ requestingPlayer);
+
         String roomID = this.createNewLobby(requestingPlayer).asObjectId().getValue().toString();
+
+        System.out.println("Request new Lobby: "+ roomID);
+
+        System.out.println("Lobby effectively exist" + this.getLobby(roomID));
+
         if (!Objects.equals(roomID, "")) {
-            Lobby lobbyUpdated = this.getLobby(roomID);
-            this.lobbiesStub.sendLobbyResponse(lobbyUpdated, ResponseCode.OK);
+            this.lobbiesStub.sendLobbyResponse(this.getLobby(roomID), ResponseCode.CREATE_OK, requestingPlayer);
         } else {
-            this.lobbiesStub.sendLobbyResponse(null, ResponseCode.CREATE);
+            this.lobbiesStub.sendLobbyResponse(null, ResponseCode.CREATE_ERROR, requestingPlayer);
         }
     }
 
     private void joinLobbyRequestHandler(Request joinLobbyRequest) {
+        System.out.println("Request Join Lobby: "+ joinLobbyRequest);
         String joinLobbyId = joinLobbyRequest.getLobbyId();
+        System.out.println("Request ID Join Lobby: "+ joinLobbyId);
         Player playerJoined = joinLobbyRequest.getRequestingPlayer();
-        if (this.doesLobbyExist(joinLobbyId) && this.getLobbySize(joinLobbyId) < ROOM_CAPACITY) {
+        System.out.println("Request Player Create Lobby: "+ playerJoined);
+        if (this.doesLobbyExist(joinLobbyId) && this.getLobbySize(joinLobbyId) <= ROOM_CAPACITY) {
+            System.out.println("La lobby esiste e non è piena");
             boolean statusRequest = this.dbManager.updateLobbyPlayers(playerJoined, joinLobbyId);
+            System.out.println("Dopo aver aggiornato la lobby di player ti dico: ..." + statusRequest);
             Lobby lobbyUpdated = this.getLobby(joinLobbyId);
             if (statusRequest) {
-                this.lobbiesStub.sendLobbyResponse(lobbyUpdated, ResponseCode.OK);
+                System.out.println("Join LObby OK");
+                this.lobbiesStub.sendLobbyResponse(lobbyUpdated, ResponseCode.JOIN, playerJoined);
             } else {
-                this.lobbiesStub.sendLobbyResponse(lobbyUpdated, ResponseCode.JOIN);
+                System.out.println("Join LObby ERROR");
+                this.lobbiesStub.sendLobbyResponse(lobbyUpdated, ResponseCode.JOIN_ERROR, playerJoined);
             }
         } else {
             // TODO could be also a join error because the lobby is full.
-            this.lobbiesStub.sendLobbyResponse(null, ResponseCode.CREATE);
+            System.out.println("Join LObby FULL");
+            this.lobbiesStub.sendLobbyResponse(null, ResponseCode.CREATE_ERROR, playerJoined);
         }
     }
 
@@ -64,15 +77,19 @@ public class LobbyManagerImpl implements LobbyManager {
         String lobbyId = leaveLobbyRequest.getLobbyId();
 
         boolean statusRequest = this.dbManager.removeLobbyPlayer(removedPlayer, lobbyId);
+        System.out.println("Lobby updated with statusRequest: " + statusRequest);
         Lobby lobbyUpdated = this.getLobby(lobbyId);
+        System.out.println("Lobby updated within: " + lobbyUpdated);
 
         if (statusRequest) {
-            this.lobbiesStub.sendLobbyResponse(lobbyUpdated, ResponseCode.OK);
+            System.out.println("Lobby updated WELL");
+            this.lobbiesStub.sendLobbyResponse(lobbyUpdated, ResponseCode.LEAVE, removedPlayer);
             if (this.getLobbySize(lobbyId) == 0) {
                 this.deleteLobby(lobbyId);
             }
         } else {
-            this.lobbiesStub.sendLobbyResponse(lobbyUpdated, ResponseCode.LEAVE);
+            System.out.println("Lobby updated smells like shit");
+            this.lobbiesStub.sendLobbyResponse(lobbyUpdated, ResponseCode.LEAVE_ERROR, removedPlayer);
         }
     }
 
