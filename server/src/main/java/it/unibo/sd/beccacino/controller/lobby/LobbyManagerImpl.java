@@ -13,12 +13,12 @@ public class LobbyManagerImpl implements LobbyManager {
     private static final int TARGET_SCORE = 31;
     private final DBManager dbManager;
     private final LobbiesStub lobbiesStub;
-    private final GameStub gamestub;
+    private final GameStub gameStub;
 
     public LobbyManagerImpl(LobbiesStub lobbiesStub, GameStub gameStub) {
         this.dbManager = new DBManager();
         this.lobbiesStub = lobbiesStub;
-        this.gamestub = gameStub;
+        this.gameStub = gameStub;
     }
 
     @Override
@@ -27,7 +27,10 @@ public class LobbyManagerImpl implements LobbyManager {
             case ("create") -> this.createLobbyRequestHandler(request);
             case ("join") -> this.joinLobbyRequestHandler(request);
             case ("leave") -> this.leaveLobbyRequestHandler(request);
-            case("start") -> this.startGameLobbyRequestHandler(request);
+            case("start") -> {
+                System.out.println("Start game handler");
+                this.startGameLobbyRequestHandler(request);
+            }
             default -> throw new RuntimeException(); // TODO: Log illegal request received.
         }
     }
@@ -96,20 +99,33 @@ public class LobbyManagerImpl implements LobbyManager {
         }
     }
 
-
     private void startGameLobbyRequestHandler(Request request) {
-        String gameId = this.gamestub.startNewGame(request);
         Lobby lobby = this.getLobby(request.getLobbyId());
 
+        String gameId = this.gameStub.startNewGame(GameRequest.newBuilder()
+                                                .setRequestType("start")
+                                                .setRequestingPlayer(request.getRequestingPlayer())
+                                                .setLobby(lobby)
+                                                .build());
+
+        System.out.println("GameID di start: " + gameId + "lobby di start: "+ lobby);
+
         switch (gameId) {
-            case "error" ->
-                    this.lobbiesStub.sendLobbyResponse(lobby, ResponseCode.START_ERROR, request.getRequestingPlayer());
-            case "permission-denied" ->
-                    this.lobbiesStub.sendLobbyResponse(lobby, ResponseCode.PERMISSION_DENIED, request.getRequestingPlayer());
-            case "illegal" ->
-                    this.lobbiesStub.sendLobbyResponse(lobby, ResponseCode.ILLEGAL_REQUEST, request.getRequestingPlayer());
-            default ->
-                    this.lobbiesStub.sendGameStartLobbyResponse(lobby, request.getRequestingPlayer(), gameId);
+            case "error" -> {
+                System.out.println("Errore");
+                this.lobbiesStub.sendLobbyResponse(lobby, ResponseCode.START_ERROR, request.getRequestingPlayer());
+            }
+            case "permission-denied" -> {
+                System.out.println("Permesso negato");
+                this.lobbiesStub.sendLobbyResponse(lobby, ResponseCode.PERMISSION_DENIED, request.getRequestingPlayer());
+            }
+            case "illegal" -> {
+                System.out.println("Illegal request");
+                this.lobbiesStub.sendLobbyResponse(lobby, ResponseCode.ILLEGAL_REQUEST, request.getRequestingPlayer());
+            }
+            default -> {System.out.println("Start correttamente");
+                this.lobbiesStub.sendGameStartLobbyResponse(lobby, request.getRequestingPlayer(), gameId);
+            }
         }
     }
 
@@ -126,7 +142,7 @@ public class LobbyManagerImpl implements LobbyManager {
     }
 
     private boolean doesLobbyExist(String id) {
-        return !this.dbManager.getLobbyById(id).getId().equals("");
+        return this.dbManager.getLobbyById(id) != null;
     }
 
     private BsonValue createNewLobby(Player requestingPlayer) {

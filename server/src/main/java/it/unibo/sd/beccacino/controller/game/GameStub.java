@@ -64,12 +64,11 @@ public class GameStub {
         this.lastOperation = gameUpdated;
         this.lastResponseCode = responseCode;
 
-        System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA: "+gameUpdated.getPlayersList());
-
         gameUpdated.getPlayersList().forEach(player -> {
             final int index = gameUpdated.getPlayersList().indexOf(player);
 
             Game game = Game.newBuilder()
+                    .setId(gameUpdated.getId())
                     .setPublicData(gameUpdated.getPublicData())
                     .addPrivateData(gameUpdated.getPrivateData(index))
                     .addAllPlayers(gameUpdated.getPlayersList())
@@ -85,7 +84,7 @@ public class GameStub {
 
             try {
                 System.out.println("Invio");
-                channel.basicPublish(resultsQueue + player.getId(),
+                channel.basicPublish(resultsQueue + game.getId() + player.getId(),
                         "", null, gameResponse.toByteArray());
             } catch (IOException e) {
                 e.printStackTrace();
@@ -104,7 +103,8 @@ public class GameStub {
                 .build();
 
         try {
-            channel.basicPublish(resultsQueue + requestingPlayer.getId(), "", null, gameResponse.toByteArray());
+            channel.basicPublish(resultsQueue + gameId + requestingPlayer.getId(), "", null,
+                    gameResponse.toByteArray());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -113,7 +113,7 @@ public class GameStub {
     private void setupQueues(Game game) {
         game.getPlayersList().forEach(g -> System.out.println("Setup queues for players : "+g.getNickname()));
         game.getPlayersList().forEach(player -> {
-            String resultQueueName = resultsQueue + player.getId();
+            String resultQueueName = resultsQueue + game.getId() + player.getId();
             try {
                 this.rabbitMQManager.getQueueBuilder()
                         .getInstanceOfQueueBuilder()
@@ -127,14 +127,9 @@ public class GameStub {
         });
     }
 
-    public String startNewGame(Request request){
-        return this.gameRequestHandler.startGameRequestHandler(GameRequest.newBuilder().setRequestType("start")
-                .setRequestingPlayer(request.getRequestingPlayer())
-                .setLobby(Lobby.newBuilder().setId(request.getLobbyId()))
-                .build());
+    public String startNewGame(GameRequest request){
+        return this.gameRequestHandler.startGameRequestHandler(request);
     }
-
-
 
     public Game getLastOperation() {
         return lastOperation;

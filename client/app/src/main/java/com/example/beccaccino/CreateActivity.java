@@ -76,9 +76,6 @@ public class CreateActivity extends AppCompatActivity {
                         false, false, false, null, "");
                 Utilities.createQueue(channel, resultsQueueLobbies, BuiltinExchangeType.FANOUT, resultsQueueLobbies + myPlayer.getId(),
                         false, false, false, null, "");
-                Utilities.createQueue(channel, resultsQueueGames + myPlayer.getId(), BuiltinExchangeType.DIRECT,
-                        resultsQueueGames + myPlayer.getId(),
-                        false, false, false, null, "");
 
                 channel.basicConsume(resultsQueueLobbies + myPlayer.getId(), new DefaultConsumer(channel) {
                     @Override
@@ -86,8 +83,7 @@ public class CreateActivity extends AppCompatActivity {
                                                AMQP.BasicProperties properties, byte[] body) throws IOException {
                         Response response = Response.parseFrom(body);
                         switch (Response.parseFrom(body).getResponseCode()) {
-                            case (200) -> {
-                            }
+                            case (200) -> {}
                             case (201) -> {
                                 if (response.getRequestingPlayer().getId().equals(myPlayer.getId())) {
                                     System.out.println("Uscito da: " + Response.parseFrom(body).getLobby().getId());
@@ -111,12 +107,16 @@ public class CreateActivity extends AppCompatActivity {
                                 }
                             }
                             case(300) -> {
-                                if(isMyLobby(response.getLobby())){
-                                    String queueName = resultsQueueGames + response.getResponseMessage() + myPlayer.getId();
-                                    Utilities.createQueue(channel, queueName, BuiltinExchangeType.DIRECT,
-                                            queueName,
-                                            false, false, false, null, "");
-                                    consumeGameQueue(queueName);
+                                try {
+                                    if (isMyLobby(response.getLobby())) {
+                                        System.out.println("Inizia il mio game " + response.getResponseMessage());
+                                        String queueName = resultsQueueGames + response.getResponseMessage() + myPlayer.getId();
+                                        Utilities.createQueue(channel, queueName, BuiltinExchangeType.DIRECT,
+                                                queueName, false, false, false, null, "");
+                                        consumeGameQueue(queueName);
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
                                 }
                             }
                             case (402) -> SingleToast.show(getApplicationContext(), "Impossibile unirsi", 3000);
@@ -197,6 +197,7 @@ public class CreateActivity extends AppCompatActivity {
                         .build();
                 try {
                     channel.basicPublish(todoQueueLobbies, "", null, startGameRequest.toByteArray());
+                    System.out.println("Mando : "+startGameRequest);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

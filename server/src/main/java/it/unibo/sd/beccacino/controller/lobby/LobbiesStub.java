@@ -95,8 +95,11 @@ public class LobbiesStub {
                     .setRequestingPlayer(requestingPlayer)
                     .build();
 
+        System.out.println("La response del game start è" + response);
+
         try {
             channel.basicPublish(resultsQueue, "", null, response.toByteArray());
+            System.out.println("Response inviata!");
         } catch (IOException e) {
             e.printStackTrace();
         }
