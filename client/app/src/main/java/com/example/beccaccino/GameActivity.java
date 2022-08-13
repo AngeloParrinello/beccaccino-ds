@@ -19,9 +19,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.protobuf.GeneratedMessageLite;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.DefaultConsumer;
+import com.rabbitmq.client.Envelope;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -45,12 +48,11 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
     private Channel channel;
     private Connection connection;
     private final String todoQueueGames = "todoQueueGames";
-    private final String resultsQueueGames = "resultsQueueGames";
+    private String resultsQueueGames = "resultsQueueGames";
 
     private boolean isMyTurn;
-    // private List<ItalianCard> playableCards;
+    private List<Card> playableCards;
     private boolean amITheFirst = false;
-    private boolean selectBriscola;
     private Player myPlayer;
 
     @Override
@@ -83,7 +85,7 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
         this.setupRabbitMQ();
 
         this.showUsers(game.getPlayersList().stream().map(Player::getNickname).collect(Collectors.toList()));
-        this.updateRound();
+        this.update();
     }
 
     @Override
@@ -123,13 +125,35 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
             try {
                 connection = Utilities.createConnection();
                 channel = connection.createChannel();
-
-                //TODO aggiungere game-id e player-id
+                this.resultsQueueGames = "resultsQueueGames" + game.getId() + myPlayer.getId();
                 Utilities.createQueue(channel, todoQueueGames, BuiltinExchangeType.DIRECT, todoQueueGames,
                         false, false, false, null, "");
-                Utilities.createQueue(channel, resultsQueueGames, BuiltinExchangeType.DIRECT, resultsQueueGames + myPlayer.getId(),
+                Utilities.createQueue(channel, resultsQueueGames, BuiltinExchangeType.DIRECT, resultsQueueGames,
                         false, false, false, null, "");
 
+                channel.basicConsume(resultsQueueGames, new DefaultConsumer(channel) {
+                    @Override
+                    public void handleDelivery(String consumerTag, Envelope envelope,
+                                               AMQP.BasicProperties properties, byte[] body) throws IOException {
+                        GameResponse response = GameResponse.parseFrom(body);
+                        switch (Response.parseFrom(body).getResponseCode()) {
+                            case (301), (302) -> {
+                                game = response.getGame();
+                                update();
+                            }
+                            case (402) -> SingleToast.show(getApplicationContext(), "Impossibile unirsi", 3000);
+
+                            case (405) -> SingleToast.show(getApplicationContext(), "Permesso negato", 3000);
+
+                            case (406) -> SingleToast.show(getApplicationContext(), "Richiesta illegale", 3000);
+
+                            case (407) -> SingleToast.show(getApplicationContext(), "Operazione fallita", 3000);
+
+                            default -> throw new IllegalStateException();
+
+                        }
+                    }
+                });
             } catch (IOException | TimeoutException e) {
                 e.printStackTrace();
             }
@@ -142,41 +166,64 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
     @Override
     public void onItemClick(View view, int position) {
         if (this.isMyTurn) {
-            String card = getResources().getResourceEntryName(mAdapter.getItem(position));
-            String messaggio;
+            String cardName = getResources().getResourceEntryName(mAdapter.getItem(position));
+            String message;
             if (this.buttonMessageSelected != null) {
-                messaggio = this.buttonMessageSelected.getText().toString().toUpperCase();
+                message = this.buttonMessageSelected.getText().toString().toUpperCase();
                 this.buttonMessageSelected.getBackground().setColorFilter(Color.parseColor("#9e9e9e"), PorterDuff.Mode.DARKEN);
             } else {
-                messaggio = "";
+                message = "";
             }
-            Log.d("CARTA GIOCATA", card);
-            // ItalianCardImpl italianCard = new ItalianCardImpl(card);
-            if (this.selectBriscola) {
-                // TODO CHIAMARE METDO CHE CONTROLLA LA BRISCOLA
-                // produce set briscola
-                //this.confirmBriscola(italianCard.getSuit());
+            Log.d("CARTA GIOCATA", cardName);
+            Card card = card(cardName);
+            if (this.game.getRound() == 1) {
+                this.confirmBriscola(card.getSuit());
             } else {
-                if (Boolean.valueOf("TODO SE LA CARTA È GIOCABILE ALLORA LA FACCIO GIOCARE SENNO NO")) {
-                    // TODO gestire la giocata con il server
+                if (playableCards.contains(card)) {
+                    executorService.execute(() -> {
+                        GameRequest playRequest = GameRequest.newBuilder()
+                                .setGameId(game.getId())
+                                .setRequestType("play")
+                                .setCardPlayed(card)
+                                .setCardMessage(message)
+                                .setRequestingPlayer(myPlayer)
+                                .build();
+                        try {
+                            channel.basicPublish(todoQueueGames, "", null, playRequest.toByteArray());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    });
                     this.isMyTurn = false;
                     this.buttonMessageSelected = null;
                 } else {
-                    SingleToast.show(this, "Gioca una carta di TODO METTERE IL TIPO DELLA BRISCOLA", Toast.LENGTH_LONG);
+                    SingleToast.show(this, "Gioca una carta di " + game.getPublicData().getDominantSuit(), Toast.LENGTH_LONG);
                 }
             }
+        } else {
+            SingleToast.show(this, "Non è il tuo turno!", Toast.LENGTH_SHORT);
         }
     }
 
-    private void confirmBriscola() {
+    private void confirmBriscola(Suit suit) {
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
-        alert.setMessage("La briscola che hai selezionato è TODO INSERIRE BRISCOLA");
+        alert.setMessage("La briscola che hai selezionato è " + suit);
         alert.setTitle("Conferma");
         alert.setCancelable(true);
         alert.setPositiveButton("Conferma", (dialog, whichButton) -> {
-            selectBriscola = false;
-            // TODO settare la briscola selezionata con il server
-
+            executorService.execute(() -> {
+                GameRequest setBriscolaRequest = GameRequest.newBuilder()
+                        .setGameId(game.getId())
+                        .setRequestType("briscola")
+                        .setBriscola(suit)
+                        .setRequestingPlayer(myPlayer)
+                        .build();
+                try {
+                    channel.basicPublish(todoQueueGames, "", null, setBriscolaRequest.toByteArray());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
         });
         alert.setNegativeButton("Annulla", (dialog, whichButton) -> {
         });
@@ -187,15 +234,13 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
      * Update the players'name, the score and the briscola.
      */
     private void updateMetadata() {
-        // TODO displayare gli user con il metodo showUsers()
-
         /*Show Briscola*/
         TextView briscola = findViewById(R.id.briscola);
         briscola.setText(game.getPublicData().getBriscola().toString());
 
         /*Show score*/
         TextView score = findViewById(R.id.score);
-        score.setText("TODO SETTARE I PUNTI GIUSTI");
+        score.setText("Punti: ");
 
         // TODO se la partita è finita showare l'endgameDialog con showGameRecap()
     }
@@ -246,7 +291,7 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
         }
     }
 
-    private void updateRound() {
+    private void update() {
         TextView gameLog = findViewById(R.id.log);
         Player currentPlayer = game.getPublicData().getCurrentPlayer();
         System.out.println("IO: " + myPlayer);
@@ -255,12 +300,11 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
         if (game.getRound() == 1) {
             if (this.isMyTurn) {
                 Log.d("PRIMO GIOCATORE", "IO");
-                this.selectBriscola = true;
-                String batezza = "Seleziona la briscola";
-                gameLog.setText(batezza);
+                String battezza = "Seleziona la briscola";
+                gameLog.setText(battezza);
             } else {
-                String staBatezzando = currentPlayer.getNickname() + " sta battezzando";
-                gameLog.setText(staBatezzando);
+                String staBattezzando = currentPlayer.getNickname() + " sta battezzando";
+                gameLog.setText(staBattezzando);
             }
         } else {
             if (this.isMyTurn) {
@@ -282,9 +326,11 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
             String turn = "E' il turno di " + currentPlayer.getNickname();
             gameLog.setText(turn);
         }
+        updatePlayableCards();
         updateHand();
         updateButtonsVisibility();
         updateMetadata();
+        showPlays();
     }
 
     /*Decide which message buttons to make visible*/
@@ -413,8 +459,25 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
         }
     }
 
+    private void updatePlayableCards(){
+        playableCards = new ArrayList<>(this.game.getPrivateData(0).getMyCardsList());
+        Suit dominantSuit = this.game.getPublicData().getDominantSuit();
+        if(playableCards.stream().anyMatch(c -> c.getSuit() == dominantSuit)){
+            playableCards = playableCards.stream().filter(c -> c.getSuit() == dominantSuit).collect(Collectors.toList());
+        }
+    }
+
     private String name(Card card) {
         return card.getValue().toString().toLowerCase() + "di" + card.getSuit().toString().toLowerCase();
+    }
+
+    private Card card(String name){
+        String[] tokens = name.split("di");
+
+        return Card.newBuilder()
+                .setValue(Value.valueOf(tokens[0].toUpperCase()))
+                .setSuit(Suit.valueOf(tokens[1].toUpperCase()))
+                .build();
     }
 
     private int decrement(int num, int i){
