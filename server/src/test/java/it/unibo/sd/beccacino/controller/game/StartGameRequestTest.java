@@ -11,8 +11,8 @@ import org.junit.jupiter.api.Test;
 public class StartGameRequestTest {
     private final GameStub gameStub = new GameStub();
     private final GameRequestHandler gameRequestHandler = new GameRequestHandlerImpl(gameStub);
-    private final LobbiesStub lobbiesStub = new LobbiesStub();
-    private final LobbyManager lobbyManager = new LobbyManagerImpl(lobbiesStub);
+    private final LobbiesStub lobbiesStub = new LobbiesStub(new GameStub());
+    private final LobbyManager lobbyManager = new LobbyManagerImpl(lobbiesStub, gameStub);
     private Player player;
     private Player player2;
     private Player player3;

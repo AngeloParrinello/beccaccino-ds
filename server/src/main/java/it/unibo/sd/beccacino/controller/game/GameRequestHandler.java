@@ -5,4 +5,5 @@ import it.unibo.sd.beccacino.GameRequest;
 public interface GameRequestHandler {
 
     void handleRequest(GameRequest request);
+    String startGameRequestHandler(GameRequest request);
 }

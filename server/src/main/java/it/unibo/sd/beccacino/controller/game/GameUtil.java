@@ -56,7 +56,7 @@ public interface GameUtil {
      * @param request the game start request sent by the client.
      * @return true if the lobby is full, false otherwise.
      */
-    boolean isLobbyFull(GameRequest request);
+    boolean isLobbyFull(String id);
 
     /**
      * Check if the specified lobby exist.

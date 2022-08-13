@@ -14,8 +14,8 @@ import java.util.Random;
 public class MakePlayRequestTest {
     private final GameStub gameStub = new GameStub();
     private final GameRequestHandler gameRequestHandler = new GameRequestHandlerImpl(gameStub);
-    private final LobbiesStub lobbiesStub = new LobbiesStub();
-    private final LobbyManager lobbyManager = new LobbyManagerImpl(lobbiesStub);
+    private final LobbiesStub lobbiesStub = new LobbiesStub(new GameStub());
+    private final LobbyManager lobbyManager = new LobbyManagerImpl(lobbiesStub, gameStub);
     private Player player1;
     private Player player2;
     private Player player3;

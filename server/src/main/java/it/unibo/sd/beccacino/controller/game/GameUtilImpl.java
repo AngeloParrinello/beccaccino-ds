@@ -68,8 +68,8 @@ public class GameUtilImpl implements GameUtil {
     }
 
     @Override
-    public boolean isLobbyFull(GameRequest request) {
-        Lobby lobby = this.dbManager.getLobbyById(request.getLobby().getId());
+    public boolean isLobbyFull(String id) {
+        Lobby lobby = this.dbManager.getLobbyById(id);
         return lobby.getPlayersCount() == 4;
     }
 

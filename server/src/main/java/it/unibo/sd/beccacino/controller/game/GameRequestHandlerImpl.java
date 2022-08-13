@@ -19,37 +19,42 @@ public class GameRequestHandlerImpl implements GameRequestHandler {
     @Override
     public void handleRequest(GameRequest request) {
         switch (request.getRequestType()) {
-            case ("start") -> this.startGameRequestHandler(request);
             case ("briscola") -> this.setBriscolaRequestHandler(request);
             case ("play") -> this.makePlayRequestHandler(request);
             default -> this.gameStub.sendGameErrorResponse(ResponseCode.ILLEGAL_REQUEST, request.getRequestingPlayer(), "");
         }
     }
 
-    private void startGameRequestHandler(GameRequest request) {
-        if (gameUtil.doesLobbyExists(request.getLobby().getId())) {
-            if (this.gameUtil.isLobbyFull(request)) {
+    public String startGameRequestHandler(GameRequest request) {
+        String lobbyId = request.getLobby().getId();
+        if (gameUtil.doesLobbyExists(lobbyId)) {
+            if (this.gameUtil.isLobbyFull(lobbyId)) {
                 if (this.gameUtil.isPlayerLobbyLeader(request)) {
-                    System.out.println("Ecco la lobby: "+ request.getLobby());
+                    System.out.println("Ecco la lobby: "+ lobbyId);
                     Document emptyGameDocument = this.gameUtil.createNewGame(request);
                     BsonValue insertResponse = this.gameUtil.insertGame(emptyGameDocument);
                     String createdGameID = insertResponse.asObjectId().getValue().toString();
                     if (!createdGameID.equals("")) {
                         Game createdGame = this.gameUtil.getGameById(createdGameID);
                         createdGame.getPlayersList().forEach(g -> System.out.println("Il game creato contiene: " + g.getNickname()));
-                        this.gameUtil.removeLobby(request.getLobby().getId());
+                        this.gameUtil.removeLobby(lobbyId);
                         this.gameStub.sendGameResponse(createdGame, ResponseCode.START_OK);
+                        return createdGameID;
                     } else {
-                        this.gameStub.sendGameErrorResponse(ResponseCode.START_ERROR, request.getRequestingPlayer(), "");
+                        //this.gameStub.sendGameErrorResponse(ResponseCode.START_ERROR, request.getRequestingPlayer(), "");
+                        return "error";
                     }
                 } else {
-                    this.gameStub.sendGameErrorResponse(ResponseCode.PERMISSION_DENIED, request.getRequestingPlayer(), "");
+                    //this.gameStub.sendGameErrorResponse(ResponseCode.PERMISSION_DENIED, request.getRequestingPlayer(), "");
+                    return "permission-denied";
                 }
             } else {
-                this.gameStub.sendGameErrorResponse(ResponseCode.START_ERROR, request.getRequestingPlayer(), "");
+                //this.gameStub.sendGameErrorResponse(ResponseCode.START_ERROR, request.getRequestingPlayer(), "");
+                return "error";
             }
         } else {
-            this.gameStub.sendGameErrorResponse(ResponseCode.ILLEGAL_REQUEST, request.getRequestingPlayer(), "");
+            //this.gameStub.sendGameErrorResponse(ResponseCode.ILLEGAL_REQUEST, request.getRequestingPlayer(), "");
+            return "illegal";
         }
     }
 

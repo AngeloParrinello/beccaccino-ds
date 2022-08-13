@@ -3,6 +3,7 @@ package it.unibo.sd.beccacino.controller.lobby;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.rabbitmq.client.*;
 import it.unibo.sd.beccacino.*;
+import it.unibo.sd.beccacino.controller.game.GameStub;
 import it.unibo.sd.beccacino.rabbitmq.RabbitMQManager;
 
 import java.io.IOException;
@@ -18,9 +19,9 @@ public class LobbiesStub {
     private Lobby lastOperation;
     private ResponseCode lastResponseCode;
 
-    public LobbiesStub() {
+    public LobbiesStub(GameStub gameStub) {
         this.rabbitMQManager = new RabbitMQManager();
-        this.lobbyManager = new LobbyManagerImpl(this);
+        this.lobbyManager = new LobbyManagerImpl(this, gameStub);
         try {
             this.connection = this.rabbitMQManager.createConnection();
             this.channel = connection.createChannel();
@@ -78,6 +79,21 @@ public class LobbiesStub {
                     .setRequestingPlayer(requestingPlayer)
                     .build();
         }
+
+        try {
+            channel.basicPublish(resultsQueue, "", null, response.toByteArray());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void sendGameStartLobbyResponse(Lobby lobby, Player requestingPlayer, String gameID) {
+        Response response = Response.newBuilder()
+                    .setLobby(lobby)
+                    .setResponseCode(300)
+                    .setResponseMessage(gameID)
+                    .setRequestingPlayer(requestingPlayer)
+                    .build();
 
         try {
             channel.basicPublish(resultsQueue, "", null, response.toByteArray());

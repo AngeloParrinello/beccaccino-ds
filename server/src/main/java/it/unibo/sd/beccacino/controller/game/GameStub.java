@@ -111,7 +111,7 @@ public class GameStub {
     }
 
     private void setupQueues(Game game) {
-        game.getPlayersList().forEach(g -> System.out.println("BBBBBBBBBBBBBBBBBBBBBBBBBB: "+g.getNickname()));
+        game.getPlayersList().forEach(g -> System.out.println("Setup queues for players : "+g.getNickname()));
         game.getPlayersList().forEach(player -> {
             String resultQueueName = resultsQueue + player.getId();
             try {
@@ -126,6 +126,15 @@ public class GameStub {
             }
         });
     }
+
+    public String startNewGame(Request request){
+        return this.gameRequestHandler.startGameRequestHandler(GameRequest.newBuilder().setRequestType("start")
+                .setRequestingPlayer(request.getRequestingPlayer())
+                .setLobby(Lobby.newBuilder().setId(request.getLobbyId()))
+                .build());
+    }
+
+
 
     public Game getLastOperation() {
         return lastOperation;

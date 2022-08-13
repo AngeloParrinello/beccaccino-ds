@@ -2,6 +2,7 @@ package it.unibo.sd.beccacino;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.rabbitmq.client.*;
+import it.unibo.sd.beccacino.controller.game.GameStub;
 import it.unibo.sd.beccacino.controller.lobby.LobbiesStub;
 import it.unibo.sd.beccacino.rabbitmq.RabbitMQManager;
 
@@ -11,7 +12,7 @@ import java.util.concurrent.TimeoutException;
 public class RealStartGameRequestWithClient {
 
     public static void main(String[] args) {
-        new LobbiesStub();
+        new LobbiesStub(new GameStub());
         FakeClient client = new FakeClient(new RabbitMQManager());
         try {
             client.simpleLobbyPublish();
