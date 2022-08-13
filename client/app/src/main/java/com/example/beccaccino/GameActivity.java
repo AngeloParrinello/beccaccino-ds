@@ -11,21 +11,28 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.protobuf.GeneratedMessageLite;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.rabbitmq.client.BuiltinExchangeType;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 
 public class GameActivity extends AppCompatActivity implements MyAdapter.ItemClickListener {
     private Game game;
-    private List<Player> playerList;
-
-    public List<Integer> hand = new ArrayList<>();
     private MyAdapter mAdapter;
     private RecyclerView recyclerView;
     private final List<Button> buttonsMessage = new ArrayList<>();
@@ -34,22 +41,27 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
     private Map<String, ImageView> gameField;
     private Map<String, TextView> messageField;
 
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private Channel channel;
+    private Connection connection;
+    private final String todoQueueGames = "todoQueueGames";
+    private final String resultsQueueGames = "resultsQueueGames";
+
     private boolean isMyTurn;
     // private List<ItalianCard> playableCards;
     private boolean amITheFirst = false;
     private boolean selectBriscola;
-    private String myUsername;
+    private Player myPlayer;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
-        this.myUsername = MainActivity.getUsername(this);
-
         Intent intent = getIntent();
 
         try {
             game = Game.parseFrom(intent.getByteArrayExtra("game"));
+            myPlayer = Player.parseFrom(intent.getByteArrayExtra("player"));
         } catch (InvalidProtocolBufferException e) {
             e.printStackTrace();
         }
@@ -68,6 +80,22 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
         LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
         recyclerView.setLayoutManager(layoutManager);
 
+        this.setupRabbitMQ();
+
+        this.showUsers(game.getPlayersList().stream().map(Player::getNickname).collect(Collectors.toList()));
+        this.updateRound();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        executorService.execute(() -> {
+            try {
+                connection.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     @Override
@@ -90,6 +118,24 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
         super.onDestroy();
     }
 
+    private void setupRabbitMQ() {
+        executorService.execute(() -> {
+            try {
+                connection = Utilities.createConnection();
+                channel = connection.createChannel();
+
+                //TODO aggiungere game-id e player-id
+                Utilities.createQueue(channel, todoQueueGames, BuiltinExchangeType.DIRECT, todoQueueGames,
+                        false, false, false, null, "");
+                Utilities.createQueue(channel, resultsQueueGames, BuiltinExchangeType.DIRECT, resultsQueueGames + myPlayer.getId(),
+                        false, false, false, null, "");
+
+            } catch (IOException | TimeoutException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
     /**
      * On click listener for each card in the hand.
      **/
@@ -108,6 +154,7 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
             // ItalianCardImpl italianCard = new ItalianCardImpl(card);
             if (this.selectBriscola) {
                 // TODO CHIAMARE METDO CHE CONTROLLA LA BRISCOLA
+                // produce set briscola
                 //this.confirmBriscola(italianCard.getSuit());
             } else {
                 if (Boolean.valueOf("TODO SE LA CARTA È GIOCABILE ALLORA LA FACCIO GIOCARE SENNO NO")) {
@@ -138,14 +185,13 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
 
     /**
      * Update the players'name, the score and the briscola.
-     *
      */
     private void updateMetadata() {
         // TODO displayare gli user con il metodo showUsers()
 
         /*Show Briscola*/
         TextView briscola = findViewById(R.id.briscola);
-        briscola.setText("TODO SETTARE BRISCOLA");
+        briscola.setText(game.getPublicData().getBriscola().toString());
 
         /*Show score*/
         TextView score = findViewById(R.id.score);
@@ -155,23 +201,18 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
     }
 
     private void showGameRecap() {
-        int score1 = Integer.valueOf("TODO METTERE SCORE 1");
-        int score2 = Integer.valueOf("TODO METTERE SCORE 2");
-        boolean isMatchOver = Boolean.valueOf("TODO METTERE SE LA PARTITA È FINITA O MENO");
-        EndgameDialog recap = new EndgameDialog(this, "TODO METTERE PLAYER1", "TODO METTERE PLAYER2",
-                "TODO METTERE PLAYER3", "TODO METTERE PLAYER4", score1, score2, isMatchOver);
+        int score1 = game.getPublicData().getScoreTeam1();
+        int score2 = game.getPublicData().getScoreTeam2();
+        //boolean isMatchOver = Boolean.valueOf("Nel caso di match a più partite, capire se abbiamo finito o no");
+        EndgameDialog recap = new EndgameDialog(this, game.getPlayers(0).getNickname(), game.getPlayers(1).getNickname(),
+                game.getPlayers(2).getNickname(), game.getPlayers(3).getNickname(), score1, score2, true);
         recap.show();
     }
 
     /*Display users in the place they belong*/
-    private void showUsers() {
-        List<String> player = new ArrayList<>();
-        player.add("TODO AGGIUNGERE PLAYER1");
-        player.add("TODO AGGIUNGERE PLAYER2");
-        player.add("TODO AGGIUNGERE PLAYER3");
-        player.add("TODO AGGIUNGERE PLAYER4");
-        CircularList circularList = new CircularList(player);
-        circularList.setNext(this.myUsername);
+    private void showUsers(List<String> players) {
+        CircularList circularList = new CircularList(players);
+        circularList.setNext(this.myPlayer.getNickname());
         TextView playerName1 = findViewById(R.id.playerName);
         TextView playerName2 = findViewById(R.id.playerWest);
         TextView playerName3 = findViewById(R.id.playerNorth);
@@ -181,7 +222,7 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
         playerName3.setText(circularList.next());
         playerName4.setText(circularList.next());
         if (gameField == null) {
-            createGameField(player);
+            createGameField(players);
         }
     }
 
@@ -206,161 +247,171 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
     }
 
     private void updateRound() {
-        // TODO Gestione round con il server
-        /*        TextView gameLog = findViewById(R.id.log);
-        //        if (rounds.isEmpty()) {
-        //            if (viewModel.getFirstPlayer().equals(this.myUsername)) {
-        //                Log.d("PRIMO GIOCATORE", "IO");
-        //                this.isMyTurn = true;
-        //                this.selectBriscola = true;
-        //                String turn = "Seleziona la briscola";
-        //                gameLog.setText(turn);
-        //            } else {
-        //                String first = viewModel.getFirstPlayer() + " sta battezzando";
-        //                gameLog.setText(first);
-        //            }
-        //        } else {
-        //            Round current = rounds.get(rounds.size() - 1);
-        //            if (current.getCurrentPlayer().toString().equals(this.myUsername)) {
-        //                this.isMyTurn = true;
-        //                this.playableCards = current.getPlayableCards();
-        //                if (current.hasJustStarted()) {
-        //                    this.amITheFirst = true;
-        //                }
-        //                Log.d("TURN", this.myUsername);
-        //            } else {
-        //                this.isMyTurn = false;
-        //                Log.d("TURN", "THEIRTURN");
-        //            }
-        //            if (current.hasJustStarted() && rounds.size() > 1) {
-        //                this.showPlays(rounds.get(rounds.size() - 2));
-        //                //animation(rounds.get(rounds.size()-2), (rounds.get(rounds.size()-1).getCurrentPlayer().toString()));
-        //            } else {
-        //                this.showPlays(current);
-        //            }
-        //            String turn = "E' il turno di " + current.getCurrentPlayer();
-        //            gameLog.setText(turn);
-                }*/
-        makeButtonInvisible();
+        TextView gameLog = findViewById(R.id.log);
+        Player currentPlayer = game.getPublicData().getCurrentPlayer();
+        System.out.println("IO: "+myPlayer);
+        System.out.println("Current: "+currentPlayer);
+        this.isMyTurn = currentPlayer.equals(this.myPlayer);
+        if (game.getRound() == 1) {
+            if (this.isMyTurn) {
+                Log.d("PRIMO GIOCATORE", "IO");
+                this.selectBriscola = true;
+                String batezza = "Seleziona la briscola";
+                gameLog.setText(batezza);
+            } else {
+                String staBatezzando = currentPlayer.getNickname() + " sta battezzando";
+                gameLog.setText(staBatezzando);
+            }
+        } else {
+            if (this.isMyTurn) {
+                if (game.getRound() % 4 == 1) {
+                    this.amITheFirst = true;
+                }
+                Log.d("TURN", this.myPlayer.getNickname());
+            } else {
+                Log.d("TURN", "THEIRTURN");
+            }
+
+            /*
+            if (game.getRound() % 4 == 1 && game.getRound() > 1) {
+                this.showPlays(rounds.get(rounds.size() - 2));
+                //animation(rounds.get(rounds.size()-2), (rounds.get(rounds.size()-1).getCurrentPlayer().toString()));
+            } else {
+                this.showPlays(current);
+            }*/
+            String turn = "E' il turno di " + currentPlayer.getNickname();
+            gameLog.setText(turn);
+        }
+        updateHand();
+        updateButtonsVisibility();
+        updateMetadata();
     }
 
-    /*Decide which message buttons to make visible*/
-    private void makeButtonInvisible() {
-        if (this.amITheFirst) {
-            for (Button button : this.buttonsMessage) {
-                button.setVisibility(View.VISIBLE);
-            }
-            this.amITheFirst = false;
-        } else {
-            for (Button button : this.buttonsMessage) {
-                button.setVisibility(View.INVISIBLE);
+        /*Decide which message buttons to make visible*/
+        private void updateButtonsVisibility () {
+            if (this.amITheFirst) {
+                for (Button button : this.buttonsMessage) {
+                    button.setVisibility(View.VISIBLE);
+                }
+                this.amITheFirst = false;
+            } else {
+                for (Button button : this.buttonsMessage) {
+                    button.setVisibility(View.INVISIBLE);
+                }
             }
         }
 
-    }
+        /*Show the plays made in the given round*/
+        private void showPlays () {
+            List<String> nicknames = game.getPlayersList().stream().map(Player::getNickname).collect(Collectors.toList());
 
-    /*Show the plays made in the given round*/
-    private void showPlays() {
-//        List<Play> plays = round.getPlays();
-//        List<String> users = round.getUsers();
-//        for (int i = 0; i < 4; i++) {
-//            ImageView placeholder = gameField.get(users.get(i));
-//            TextView messageHolder = messageField.get(users.get(i));
-//            int cardId = R.drawable.retro;
-//            String mess = "";
-//            if (i < plays.size()) {
-//                Play play = plays.get(i);
-//                cardId = getResources().getIdentifier(play.getCard().toString(), "drawable", "com.faventia.beccaccino");
-//                if (play.getMessage().isPresent()) {
-//                    mess = play.getMessage().get();
-//                }
-//            }
-//            if (placeholder != null) {
-//                placeholder.setImageResource(cardId);
-//            }
-//            if (messageHolder != null) {
-//                messageHolder.setText(mess);
-//            }
-//        }
-    }
+            List<Card> cards = game.getPublicData().getCardsOnTableList();
 
-    private void animation(String player) {
-        ImageView target = gameField.get(player);
-        Collection<ImageView> temp = gameField.values();
-        temp.remove(target);
-        for (ImageView view : temp) {
-            if (target != null) {
-                translate(view, target);
+            CircularList players = new CircularList(nicknames);
+            Map<String, Card> plays = new HashMap<>();
+
+            for (int i = 0; i < 4; i++) {
+                ImageView placeholder = gameField.get(nicknames.get(i));
+                TextView messageHolder = messageField.get(nicknames.get(i));
+                int cardId = R.drawable.retro;
+                String mess = "";
+                if (i < plays.size()) {
+                    Play play = plays.get(i);
+                    cardId = getResources().getIdentifier(play.getCard().toString(), "drawable", "com.faventia.beccaccino");
+                    if (play.getMessage().isPresent()) {
+                        mess = play.getMessage().get();
+                    }
+                }
+                if (placeholder != null) {
+                    placeholder.setImageResource(cardId);
+                }
+                if (messageHolder != null) {
+                    messageHolder.setText(mess);
+                }
             }
         }
-    }
 
-    private void translate(View viewToMove, View target) {
-        viewToMove.animate()
-                .x(target.getX())
-                .y(target.getY())
-                .setDuration(500)
-                .start();
-    }
+        private void animation (String player){
+            ImageView target = gameField.get(player);
+            Collection<ImageView> temp = gameField.values();
+            temp.remove(target);
+            for (ImageView view : temp) {
+                if (target != null) {
+                    translate(view, target);
+                }
+            }
+        }
 
-    /**
-     * Update the hand of the human player.
-     *
-     */
-    private void updateHand() {
-//        hand = new ArrayList<>();
-//        for (ItalianCard card : italianCards) {
-//            String nome = card.toString();
-//            hand.add(getResources().getIdentifier(nome, "drawable", "com.faventia.beccaccino"));
-//        }
-//        mAdapter = new MyAdapter(getApplicationContext(), hand);
-//        mAdapter.setClickListener(this);
-//        recyclerView.setAdapter(mAdapter);
-    }
+        private void translate (View viewToMove, View target){
+            viewToMove.animate()
+                    .x(target.getX())
+                    .y(target.getY())
+                    .setDuration(500)
+                    .start();
+        }
 
-    /**
-     * Method to highlight the message that the player want to send.
-     *
-     * @param button the message
-     */
-    private void chooseMessage(Button button) {
-        if (this.buttonMessageSelected == null) {
-            this.buttonMessageSelected = button;
-            button.setBackgroundColor(getResources().getColor(R.color.green));
-        } else {
-            for (Button buttonList : this.buttonsMessage) {
-                if (buttonList == this.buttonMessageSelected) {
-                    if (buttonList == button) {
-                        buttonList.setBackgroundColor(getResources().getColor(R.color.com_facebook_device_auth_text));
-                        this.buttonMessageSelected = null;
-                        break;
-                    } else {
-                        buttonList.setBackgroundColor(getResources().getColor(R.color.com_facebook_device_auth_text));
-                        button.setBackgroundColor(getResources().getColor(R.color.green));
-                        this.buttonMessageSelected = button;
-                        break;
+        /**
+         * Update the hand of the human player.
+         *
+         */
+        private void updateHand () {
+            List<Integer> hand = new ArrayList<>();
+            for (Card card : game.getPrivateData(0).getMyCardsList()) {
+                String nome = name(card);
+                hand.add(getResources().getIdentifier(nome, "drawable", "com.faventia.beccaccino"));
+            }
+            mAdapter = new MyAdapter(getApplicationContext(), hand);
+            mAdapter.setClickListener(this);
+            recyclerView.setAdapter(mAdapter);
+        }
+
+        /**
+         * Method to highlight the message that the player want to send.
+         *
+         * @param button the message
+         */
+        private void chooseMessage (Button button){
+            if (this.buttonMessageSelected == null) {
+                this.buttonMessageSelected = button;
+                button.setBackgroundColor(getResources().getColor(R.color.green));
+            } else {
+                for (Button buttonList : this.buttonsMessage) {
+                    if (buttonList == this.buttonMessageSelected) {
+                        if (buttonList == button) {
+                            buttonList.setBackgroundColor(getResources().getColor(R.color.com_facebook_device_auth_text));
+                            this.buttonMessageSelected = null;
+                            break;
+                        } else {
+                            buttonList.setBackgroundColor(getResources().getColor(R.color.com_facebook_device_auth_text));
+                            button.setBackgroundColor(getResources().getColor(R.color.green));
+                            this.buttonMessageSelected = button;
+                            break;
+                        }
                     }
                 }
             }
         }
-    }
 
-    private String readUsername() throws FileNotFoundException {
-        FileInputStream fis = getApplicationContext().openFileInput("username_file");
-        InputStreamReader inputStreamReader =
-                new InputStreamReader(fis, StandardCharsets.UTF_8);
-        StringBuilder stringBuilder = new StringBuilder();
-        try (BufferedReader reader = new BufferedReader(inputStreamReader)) {
-            String line = reader.readLine();
-            while (line != null) {
-                stringBuilder.append(line).append('\n');
-                line = reader.readLine();
+        private String readUsername () throws FileNotFoundException {
+            FileInputStream fis = getApplicationContext().openFileInput("username_file");
+            InputStreamReader inputStreamReader =
+                    new InputStreamReader(fis, StandardCharsets.UTF_8);
+            StringBuilder stringBuilder = new StringBuilder();
+            try (BufferedReader reader = new BufferedReader(inputStreamReader)) {
+                String line = reader.readLine();
+                while (line != null) {
+                    stringBuilder.append(line).append('\n');
+                    line = reader.readLine();
+                }
+            } catch (IOException e) {
+                // Error occurred when opening raw file for reading.
+            } finally {
+                return stringBuilder.toString();
             }
-        } catch (IOException e) {
-            // Error occurred when opening raw file for reading.
-        } finally {
-            return stringBuilder.toString();
         }
-    }
 
-}
+        private String name(Card card){
+            return card.getValue().toString().toLowerCase() + "di" + card.getSuit().toString().toLowerCase();
+        }
+
+    }

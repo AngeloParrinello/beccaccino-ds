@@ -14,6 +14,7 @@ import com.rabbitmq.client.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -26,11 +27,11 @@ public class CreateActivity extends AppCompatActivity {
     private final String resultsQueueGames = "resultsQueueGames";
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private final List<TextView> usernames = new ArrayList<>();
-    private String matchID;
     private Channel channel;
     private Connection connection;
     private Lobby lobby;
     private Player myPlayer;
+    private String gameId;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -46,9 +47,8 @@ public class CreateActivity extends AppCompatActivity {
             throw new RuntimeException(e);
         }
 
-        matchID = lobby.getId();
         TextView matchIDTW = findViewById(R.id.matchID);
-        matchIDTW.setText(matchID);
+        matchIDTW.setText(lobby.getId());
 
         TextView me = findViewById(R.id.player1Name);
         me.setText(MainActivity.getUsername(this));
@@ -75,8 +75,6 @@ public class CreateActivity extends AppCompatActivity {
                 Utilities.createQueue(channel, todoQueueLobbies, BuiltinExchangeType.DIRECT, todoQueueLobbies,
                         false, false, false, null, "");
                 Utilities.createQueue(channel, resultsQueueLobbies, BuiltinExchangeType.FANOUT, resultsQueueLobbies + myPlayer.getId(),
-                        false, false, false, null, "");
-                Utilities.createQueue(channel, todoQueueGames, BuiltinExchangeType.DIRECT, todoQueueGames,
                         false, false, false, null, "");
                 Utilities.createQueue(channel, resultsQueueGames + myPlayer.getId(), BuiltinExchangeType.DIRECT,
                         resultsQueueGames + myPlayer.getId(),
@@ -112,33 +110,14 @@ public class CreateActivity extends AppCompatActivity {
                                     System.out.println("Partita non mia");
                                 }
                             }
-                            case (402) -> SingleToast.show(getApplicationContext(), "Impossibile unirsi", 3000);
-
-                            case (405) -> SingleToast.show(getApplicationContext(), "Permesso negato", 3000);
-
-                            case (406) -> SingleToast.show(getApplicationContext(), "Richiesta illegale", 3000);
-
-                            case (407) -> SingleToast.show(getApplicationContext(), "Operazione fallita", 3000);
-
-                            default -> throw new IllegalStateException();
-
-                        }
-                    }
-                });
-
-                channel.basicConsume(resultsQueueGames + myPlayer.getId(), new DefaultConsumer(channel) {
-                    @Override
-                    public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
-                        GameResponse gameResponse = GameResponse.parseFrom(body);
-                        switch (gameResponse.getResponseCode()) {
-
-                            case (200), (201) -> {
-                            }
-                            case (300) -> {
-                                System.out.println("Parte una nuova partita");
-                                Intent myIntent = new Intent(CreateActivity.this, GameActivity.class);
-                                myIntent.putExtra("game", gameResponse.getGame().toByteArray());
-                                CreateActivity.this.startActivity(myIntent);
+                            case(300) -> {
+                                if(isMyLobby(response.getLobby())){
+                                    String queueName = resultsQueueGames + response.getResponseMessage() + myPlayer.getId();
+                                    Utilities.createQueue(channel, queueName, BuiltinExchangeType.DIRECT,
+                                            queueName,
+                                            false, false, false, null, "");
+                                    consumeGameQueue(queueName);
+                                }
                             }
                             case (402) -> SingleToast.show(getApplicationContext(), "Impossibile unirsi", 3000);
 
@@ -149,6 +128,7 @@ public class CreateActivity extends AppCompatActivity {
                             case (407) -> SingleToast.show(getApplicationContext(), "Operazione fallita", 3000);
 
                             default -> throw new IllegalStateException();
+
                         }
                     }
                 });
@@ -193,7 +173,7 @@ public class CreateActivity extends AppCompatActivity {
         alert.setMessage("Vuoi lasciare la Lobby?");
         alert.setPositiveButton("Esci", (dialog, whichButton) -> executorService.execute(() -> {
             try {
-                Request leaveLobbyRequest = Request.newBuilder().setLobbyId(matchID)
+                Request leaveLobbyRequest = Request.newBuilder().setLobbyId(lobby.getId())
                         .setLobbyMessage("leave")
                         .setRequestingPlayer(myPlayer)
                         .build();
@@ -211,17 +191,41 @@ public class CreateActivity extends AppCompatActivity {
             SingleToast.show(getApplicationContext(), "Seleziona tutti i giocatori prima di iniziare", 3000);
         } else {
             executorService.execute(() -> {
-                GameRequest startGameRequest = GameRequest.newBuilder().setRequestType("start")
+                Request startGameRequest = Request.newBuilder().setLobbyId(lobby.getId())
+                        .setLobbyMessage("start")
                         .setRequestingPlayer(myPlayer)
-                        .setLobby(lobby)
                         .build();
                 try {
-                    channel.basicPublish(todoQueueGames, "", null, startGameRequest.toByteArray());
+                    channel.basicPublish(todoQueueLobbies, "", null, startGameRequest.toByteArray());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             });
         }
+    }
+
+    private void consumeGameQueue(String name){
+        try {
+            channel.basicConsume(name, new DefaultConsumer(channel) {
+                @Override
+                public void handleDelivery(String consumerTag, Envelope envelope,
+                                           AMQP.BasicProperties properties, byte[] body) throws IOException {
+                    GameResponse gameResponse = GameResponse.parseFrom(body);
+                    if (gameResponse.getResponseCode() == 300) {
+                        System.out.println("Parte una nuova partita");
+                        Intent myIntent = new Intent(CreateActivity.this, GameActivity.class);
+                        myIntent.putExtra("game", gameResponse.getGame().toByteArray());
+                        myIntent.putExtra("player", myPlayer.toByteArray());
+                        CreateActivity.this.startActivity(myIntent);
+                    } else {
+                        throw new IllegalStateException();
+                    }
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     private boolean checkNumPlayer() {
@@ -238,5 +242,48 @@ public class CreateActivity extends AppCompatActivity {
         usernames.add(player3Name);
         usernames.add(player4Name);
     }
+
+    //PER TEST GAME SENZA DOVER LANCIARE 4 EMULATORI
+    /*
+    private Game createGame(){
+        List<Player> playerList = Arrays.asList(Player.newBuilder().setId(myPlayer.getId()).setNickname(myPlayer.getNickname()).build(),
+                Player.newBuilder().setId("2").setNickname("Tizio").build(),
+                Player.newBuilder().setId("3").setNickname("Caio").build(),
+                Player.newBuilder().setId("4").setNickname("Sempronio").build());
+        List<PrivateData> privateDataList = dealCards(playerList);
+        PublicData publicData = PublicData.newBuilder()
+                .setScoreTeam1(0)
+                .setScoreTeam2(0)
+                .setMessage("")
+                .setBriscola(Suit.BASTONI)
+                .setCurrentPlayer(playerList.get(0))
+                .setCardsOnTable(0, Card.newBuilder().setSuit(Suit.BASTONI).setValue(Value.TRE).build())
+                .build();
+        Game game = Game.newBuilder()
+                .setPublicData(publicData)
+                .addAllPrivateData(privateDataList)
+                .addAllPlayers(playerList)
+                .setRound(5)
+                .build();
+
+        return game;
+    }
+
+    private List<PrivateData> dealCards(List<Player> playerList) {
+        DeckImpl deck = new DeckImpl(19);
+        List<PrivateData> privateDataList = new ArrayList<>();
+        for (Player p : playerList) {
+            List<Card> cardList = new ArrayList<>();
+            for (int i = 0; i < 10; i++) {
+                cardList.add(deck.drawCard());
+            }
+            privateDataList.add(PrivateData.newBuilder()
+                    .setPlayer(p)
+                    .addAllMyCards(cardList)
+                    .build());
+        }
+        return privateDataList;
+    }
+    */
 
 }
