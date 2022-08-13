@@ -249,8 +249,8 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
     private void updateRound() {
         TextView gameLog = findViewById(R.id.log);
         Player currentPlayer = game.getPublicData().getCurrentPlayer();
-        System.out.println("IO: "+myPlayer);
-        System.out.println("Current: "+currentPlayer);
+        System.out.println("IO: " + myPlayer);
+        System.out.println("Current: " + currentPlayer);
         this.isMyTurn = currentPlayer.equals(this.myPlayer);
         if (game.getRound() == 1) {
             if (this.isMyTurn) {
@@ -287,131 +287,142 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
         updateMetadata();
     }
 
-        /*Decide which message buttons to make visible*/
-        private void updateButtonsVisibility () {
-            if (this.amITheFirst) {
-                for (Button button : this.buttonsMessage) {
-                    button.setVisibility(View.VISIBLE);
-                }
-                this.amITheFirst = false;
-            } else {
-                for (Button button : this.buttonsMessage) {
-                    button.setVisibility(View.INVISIBLE);
-                }
+    /*Decide which message buttons to make visible*/
+    private void updateButtonsVisibility() {
+        if (this.amITheFirst) {
+            for (Button button : this.buttonsMessage) {
+                button.setVisibility(View.VISIBLE);
+            }
+            this.amITheFirst = false;
+        } else {
+            for (Button button : this.buttonsMessage) {
+                button.setVisibility(View.INVISIBLE);
             }
         }
-
-        /*Show the plays made in the given round*/
-        private void showPlays () {
-            List<String> nicknames = game.getPlayersList().stream().map(Player::getNickname).collect(Collectors.toList());
-
-            List<Card> cards = game.getPublicData().getCardsOnTableList();
-
-            CircularList players = new CircularList(nicknames);
-            Map<String, Card> plays = new HashMap<>();
-
-            for (int i = 0; i < 4; i++) {
-                ImageView placeholder = gameField.get(nicknames.get(i));
-                TextView messageHolder = messageField.get(nicknames.get(i));
-                int cardId = R.drawable.retro;
-                String mess = "";
-                if (i < plays.size()) {
-                    Play play = plays.get(i);
-                    cardId = getResources().getIdentifier(play.getCard().toString(), "drawable", "com.faventia.beccaccino");
-                    if (play.getMessage().isPresent()) {
-                        mess = play.getMessage().get();
-                    }
-                }
-                if (placeholder != null) {
-                    placeholder.setImageResource(cardId);
-                }
-                if (messageHolder != null) {
-                    messageHolder.setText(mess);
-                }
-            }
-        }
-
-        private void animation (String player){
-            ImageView target = gameField.get(player);
-            Collection<ImageView> temp = gameField.values();
-            temp.remove(target);
-            for (ImageView view : temp) {
-                if (target != null) {
-                    translate(view, target);
-                }
-            }
-        }
-
-        private void translate (View viewToMove, View target){
-            viewToMove.animate()
-                    .x(target.getX())
-                    .y(target.getY())
-                    .setDuration(500)
-                    .start();
-        }
-
-        /**
-         * Update the hand of the human player.
-         *
-         */
-        private void updateHand () {
-            List<Integer> hand = new ArrayList<>();
-            for (Card card : game.getPrivateData(0).getMyCardsList()) {
-                String nome = name(card);
-                hand.add(getResources().getIdentifier(nome, "drawable", "com.faventia.beccaccino"));
-            }
-            mAdapter = new MyAdapter(getApplicationContext(), hand);
-            mAdapter.setClickListener(this);
-            recyclerView.setAdapter(mAdapter);
-        }
-
-        /**
-         * Method to highlight the message that the player want to send.
-         *
-         * @param button the message
-         */
-        private void chooseMessage (Button button){
-            if (this.buttonMessageSelected == null) {
-                this.buttonMessageSelected = button;
-                button.setBackgroundColor(getResources().getColor(R.color.green));
-            } else {
-                for (Button buttonList : this.buttonsMessage) {
-                    if (buttonList == this.buttonMessageSelected) {
-                        if (buttonList == button) {
-                            buttonList.setBackgroundColor(getResources().getColor(R.color.com_facebook_device_auth_text));
-                            this.buttonMessageSelected = null;
-                            break;
-                        } else {
-                            buttonList.setBackgroundColor(getResources().getColor(R.color.com_facebook_device_auth_text));
-                            button.setBackgroundColor(getResources().getColor(R.color.green));
-                            this.buttonMessageSelected = button;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-
-        private String readUsername () throws FileNotFoundException {
-            FileInputStream fis = getApplicationContext().openFileInput("username_file");
-            InputStreamReader inputStreamReader =
-                    new InputStreamReader(fis, StandardCharsets.UTF_8);
-            StringBuilder stringBuilder = new StringBuilder();
-            try (BufferedReader reader = new BufferedReader(inputStreamReader)) {
-                String line = reader.readLine();
-                while (line != null) {
-                    stringBuilder.append(line).append('\n');
-                    line = reader.readLine();
-                }
-            } catch (IOException e) {
-                // Error occurred when opening raw file for reading.
-            } finally {
-                return stringBuilder.toString();
-            }
-        }
-
-        private String name(Card card){
-            return card.getValue().toString().toLowerCase() + "di" + card.getSuit().toString().toLowerCase();
-        }
-
     }
+
+    /*Show the plays made in the given round*/
+    private void showPlays() {
+        List<String> nicknames = game.getPlayersList().stream().map(Player::getNickname).collect(Collectors.toList());
+
+        List<Card> cards = game.getPublicData().getCardsOnTableList();
+
+        int indexCurrent = nicknames.indexOf(game.getPublicData().getCurrentPlayer().getNickname());
+
+        System.out.println("Current player index: " + indexCurrent);
+
+        for (int i = 0; i < 4; i++) {
+            ImageView placeholder = gameField.get(nicknames.get(decrement(indexCurrent, i)));
+            int cardId = R.drawable.retro;
+            System.out.println("i: " + i);
+            System.out.println("decrementedIndex: " + nicknames.get(decrement(indexCurrent, i)));
+
+            if(i < cards.size()){
+                Card card = cards.get(i);
+                cardId = getResources().getIdentifier(name(card), "drawable", "com.faventia.beccaccino");
+            }
+            if (i == cards.size() - 1){
+                TextView messageHolder = messageField.get(nicknames.get(decrement(indexCurrent, i)));
+                if(messageHolder!= null){
+                    System.out.println("Setting message");
+                    messageHolder.setText(game.getPublicData().getMessage());
+                }
+            }
+
+            if (placeholder != null) {
+                placeholder.setImageResource(cardId);
+            }
+        }
+    }
+
+    private void animation(String player) {
+        ImageView target = gameField.get(player);
+        Collection<ImageView> temp = gameField.values();
+        temp.remove(target);
+        for (ImageView view : temp) {
+            if (target != null) {
+                translate(view, target);
+            }
+        }
+    }
+
+    private void translate(View viewToMove, View target) {
+        viewToMove.animate()
+                .x(target.getX())
+                .y(target.getY())
+                .setDuration(500)
+                .start();
+    }
+
+    /**
+     * Update the hand of the human player.
+     */
+    private void updateHand() {
+        List<Integer> hand = new ArrayList<>();
+        for (Card card : game.getPrivateData(0).getMyCardsList()) {
+            String nome = name(card);
+            hand.add(getResources().getIdentifier(nome, "drawable", "com.faventia.beccaccino"));
+        }
+        mAdapter = new MyAdapter(getApplicationContext(), hand);
+        mAdapter.setClickListener(this);
+        recyclerView.setAdapter(mAdapter);
+    }
+
+    /**
+     * Method to highlight the message that the player want to send.
+     *
+     * @param button the message
+     */
+    private void chooseMessage(Button button) {
+        if (this.buttonMessageSelected == null) {
+            this.buttonMessageSelected = button;
+            button.setBackgroundColor(getResources().getColor(R.color.green));
+        } else {
+            for (Button buttonList : this.buttonsMessage) {
+                if (buttonList == this.buttonMessageSelected) {
+                    if (buttonList == button) {
+                        buttonList.setBackgroundColor(getResources().getColor(R.color.com_facebook_device_auth_text));
+                        this.buttonMessageSelected = null;
+                        break;
+                    } else {
+                        buttonList.setBackgroundColor(getResources().getColor(R.color.com_facebook_device_auth_text));
+                        button.setBackgroundColor(getResources().getColor(R.color.green));
+                        this.buttonMessageSelected = button;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    private String readUsername() throws FileNotFoundException {
+        FileInputStream fis = getApplicationContext().openFileInput("username_file");
+        InputStreamReader inputStreamReader =
+                new InputStreamReader(fis, StandardCharsets.UTF_8);
+        StringBuilder stringBuilder = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(inputStreamReader)) {
+            String line = reader.readLine();
+            while (line != null) {
+                stringBuilder.append(line).append('\n');
+                line = reader.readLine();
+            }
+        } catch (IOException e) {
+            // Error occurred when opening raw file for reading.
+        } finally {
+            return stringBuilder.toString();
+        }
+    }
+
+    private String name(Card card) {
+        return card.getValue().toString().toLowerCase() + "di" + card.getSuit().toString().toLowerCase();
+    }
+
+    private int decrement(int num, int i){
+        num -= i;
+        if(num<0){
+            num = 4 + num;
+        }
+        return num;
+    }
+
+}
