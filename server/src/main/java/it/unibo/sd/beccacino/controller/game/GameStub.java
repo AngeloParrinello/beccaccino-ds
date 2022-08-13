@@ -53,7 +53,6 @@ public class GameStub {
 
             }
         });
-
     }
 
     public void sendGameResponse(Game gameUpdated, ResponseCode responseCode) {

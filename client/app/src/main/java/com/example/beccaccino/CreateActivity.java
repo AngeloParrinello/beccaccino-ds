@@ -23,7 +23,6 @@ import java.util.concurrent.TimeoutException;
 public class CreateActivity extends AppCompatActivity {
     private final String todoQueueLobbies = "todoQueueLobbies";
     private final String resultsQueueLobbies = "resultsQueueLobbies";
-    private final String todoQueueGames = "todoQueueGames";
     private final String resultsQueueGames = "resultsQueueGames";
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private final List<TextView> usernames = new ArrayList<>();
@@ -31,7 +30,6 @@ public class CreateActivity extends AppCompatActivity {
     private Connection connection;
     private Lobby lobby;
     private Player myPlayer;
-    private String gameId;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {

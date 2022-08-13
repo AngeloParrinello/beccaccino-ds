@@ -48,7 +48,7 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
     private Channel channel;
     private Connection connection;
     private final String todoQueueGames = "todoQueueGames";
-    private String resultsQueueGames = "resultsQueueGames";
+    private final String resultsQueueGames = "resultsQueueGames";
 
     private boolean isMyTurn;
     private List<Card> playableCards;
@@ -82,10 +82,16 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
         LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
         recyclerView.setLayoutManager(layoutManager);
 
-        this.setupRabbitMQ();
-
         this.showUsers(game.getPlayersList().stream().map(Player::getNickname).collect(Collectors.toList()));
         this.update();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (connection != null && !connection.isOpen()) {
+            setupRabbitMQ();
+        }
     }
 
     @Override
@@ -115,32 +121,29 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
         alertDialog.show();
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-    }
-
     private void setupRabbitMQ() {
         executorService.execute(() -> {
             try {
                 connection = Utilities.createConnection();
                 channel = connection.createChannel();
-                this.resultsQueueGames = "resultsQueueGames" + game.getId() + myPlayer.getId();
+                String myResultsQueueGames = this.resultsQueueGames + game.getId() + myPlayer.getId();
+
                 Utilities.createQueue(channel, todoQueueGames, BuiltinExchangeType.DIRECT, todoQueueGames,
                         false, false, false, null, "");
-                Utilities.createQueue(channel, resultsQueueGames, BuiltinExchangeType.DIRECT, resultsQueueGames,
+                Utilities.createQueue(channel, myResultsQueueGames, BuiltinExchangeType.DIRECT, myResultsQueueGames,
                         false, false, false, null, "");
 
-                channel.basicConsume(resultsQueueGames, new DefaultConsumer(channel) {
+                channel.basicConsume(myResultsQueueGames, new DefaultConsumer(channel) {
                     @Override
                     public void handleDelivery(String consumerTag, Envelope envelope,
                                                AMQP.BasicProperties properties, byte[] body) throws IOException {
                         GameResponse response = GameResponse.parseFrom(body);
-                        switch (Response.parseFrom(body).getResponseCode()) {
+                        switch (response.getResponseCode()) {
                             case (301), (302) -> {
                                 game = response.getGame();
                                 update();
                             }
+
                             case (402) -> SingleToast.show(getApplicationContext(), "Impossibile unirsi", 3000);
 
                             case (405) -> SingleToast.show(getApplicationContext(), "Permesso negato", 3000);
@@ -154,6 +157,7 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
                         }
                     }
                 });
+                channel.addShutdownListener((message) -> System.out.println(message.getMessage()));
             } catch (IOException | TimeoutException e) {
                 e.printStackTrace();
             }
@@ -210,23 +214,20 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
         alert.setMessage("La briscola che hai selezionato è " + suit);
         alert.setTitle("Conferma");
         alert.setCancelable(true);
-        alert.setPositiveButton("Conferma", (dialog, whichButton) -> {
-            executorService.execute(() -> {
-                GameRequest setBriscolaRequest = GameRequest.newBuilder()
-                        .setGameId(game.getId())
-                        .setRequestType("briscola")
-                        .setBriscola(suit)
-                        .setRequestingPlayer(myPlayer)
-                        .build();
-                try {
-                    channel.basicPublish(todoQueueGames, "", null, setBriscolaRequest.toByteArray());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
-        });
-        alert.setNegativeButton("Annulla", (dialog, whichButton) -> {
-        });
+        alert.setPositiveButton("Conferma", (dialog, whichButton) -> executorService.execute(() -> {
+            GameRequest setBriscolaRequest = GameRequest.newBuilder()
+                    .setGameId(game.getId())
+                    .setRequestType("briscola")
+                    .setBriscola(suit)
+                    .setRequestingPlayer(myPlayer)
+                    .build();
+            try {
+                channel.basicPublish(todoQueueGames, "", null, setBriscolaRequest.toByteArray());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }));
+        alert.setNegativeButton("Annulla", (dialog, whichButton) -> {});
         alert.show();
     }
 
