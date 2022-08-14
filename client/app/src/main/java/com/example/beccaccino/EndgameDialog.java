@@ -15,15 +15,15 @@ import java.util.Objects;
 
 public class EndgameDialog extends Dialog implements View.OnClickListener {
 
-    public Dialog d;
-    public Button yes, no;
-    public TextView team1Name, team2Name, team1Score, team2Score;
     private final String team1;
     private final String team2;
     private final int scoreTeam1;
     private final int scoreTeam2;
     // private final GameViewModel gameViewModel;
     private final boolean isMatchOver;
+    public Dialog d;
+    public Button yes, no;
+    public TextView team1Name, team2Name, team1Score, team2Score;
 
     public EndgameDialog(@NonNull Context context, String player1, String player2, String player3, String player4, int scoreTeam1, int scoreTeam2, boolean isMatchOver) {
         super(context);

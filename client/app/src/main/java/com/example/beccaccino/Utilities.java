@@ -4,6 +4,7 @@ import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.impl.ForgivingExceptionHandler;
 
 import java.io.IOException;
 import java.util.Map;
@@ -14,6 +15,8 @@ public class Utilities {
     public static Connection createConnection() throws IOException, TimeoutException {
 
         ConnectionFactory factory = new ConnectionFactory();
+
+        factory.setExceptionHandler(new ForgivingExceptionHandler());
 
 
         factory.setUsername("user");

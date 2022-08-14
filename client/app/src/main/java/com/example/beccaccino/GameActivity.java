@@ -11,20 +11,12 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import com.google.protobuf.GeneratedMessageLite;
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.BuiltinExchangeType;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.DefaultConsumer;
-import com.rabbitmq.client.Envelope;
+import com.rabbitmq.client.*;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -35,21 +27,18 @@ import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 public class GameActivity extends AppCompatActivity implements MyAdapter.ItemClickListener {
+    private final List<Button> buttonsMessage = new ArrayList<>();
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private final String todoQueueGames = "todoQueueGames";
+    private final String resultsQueueGames = "resultsQueueGames";
     private Game game;
     private MyAdapter mAdapter;
     private RecyclerView recyclerView;
-    private final List<Button> buttonsMessage = new ArrayList<>();
-    //private GameViewModel viewModel;
     private Button buttonMessageSelected;
     private Map<String, ImageView> gameField;
     private Map<String, TextView> messageField;
-
-    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private Channel channel;
     private Connection connection;
-    private final String todoQueueGames = "todoQueueGames";
-    private final String resultsQueueGames = "resultsQueueGames";
-
     private boolean isMyTurn;
     private List<Card> playableCards;
     private boolean amITheFirst = false;
@@ -89,7 +78,7 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
     @Override
     protected void onStart() {
         super.onStart();
-        if (connection != null && !connection.isOpen()) {
+        if (connection == null || !connection.isOpen()) {
             setupRabbitMQ();
         }
     }
@@ -126,14 +115,13 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
             try {
                 connection = Utilities.createConnection();
                 channel = connection.createChannel();
-                String myResultsQueueGames = this.resultsQueueGames + game.getId() + myPlayer.getId();
 
                 Utilities.createQueue(channel, todoQueueGames, BuiltinExchangeType.DIRECT, todoQueueGames,
                         false, false, false, null, "");
-                Utilities.createQueue(channel, myResultsQueueGames, BuiltinExchangeType.DIRECT, myResultsQueueGames,
+                Utilities.createQueue(channel, resultsQueueGames + game.getId() + myPlayer.getId(), BuiltinExchangeType.DIRECT, resultsQueueGames + game.getId() + myPlayer.getId(),
                         false, false, false, null, "");
 
-                channel.basicConsume(myResultsQueueGames, new DefaultConsumer(channel) {
+                channel.basicConsume(resultsQueueGames + game.getId() + myPlayer.getId(), new DefaultConsumer(channel) {
                     @Override
                     public void handleDelivery(String consumerTag, Envelope envelope,
                                                AMQP.BasicProperties properties, byte[] body) throws IOException {
@@ -141,6 +129,9 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
                         switch (response.getResponseCode()) {
                             case (301), (302) -> {
                                 game = response.getGame();
+                                System.out.println("Turn: " + game.getRound());
+                                System.out.println("Current Player: " + game.getPublicData().getCurrentPlayer().getNickname());
+                                System.out.println("Briscola: " + game.getPublicData().getBriscola());
                                 update();
                             }
 
@@ -157,7 +148,6 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
                         }
                     }
                 });
-                channel.addShutdownListener((message) -> System.out.println(message.getMessage()));
             } catch (IOException | TimeoutException e) {
                 e.printStackTrace();
             }
@@ -180,7 +170,7 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
             }
             Log.d("CARTA GIOCATA", cardName);
             Card card = card(cardName);
-            if (this.game.getRound() == 1) {
+            if (this.game.getRound() == 1 && game.getPublicData().getBriscola() == Suit.DEFAULT_SUIT) {
                 this.confirmBriscola(card.getSuit());
             } else {
                 if (playableCards.contains(card)) {
@@ -227,7 +217,8 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
                 e.printStackTrace();
             }
         }));
-        alert.setNegativeButton("Annulla", (dialog, whichButton) -> {});
+        alert.setNegativeButton("Annulla", (dialog, whichButton) -> {
+        });
         alert.show();
     }
 
@@ -267,8 +258,13 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
         playerName2.setText(circularList.next());
         playerName3.setText(circularList.next());
         playerName4.setText(circularList.next());
+        List<String> myPlayersView = new ArrayList<>();
+        myPlayersView.add(circularList.next());
+        myPlayersView.add(circularList.next());
+        myPlayersView.add(circularList.next());
+        myPlayersView.add(circularList.next());
         if (gameField == null) {
-            createGameField(players);
+            createGameField(myPlayersView);
         }
     }
 
@@ -293,29 +289,30 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
     }
 
     private void update() {
-        TextView gameLog = findViewById(R.id.log);
-        Player currentPlayer = game.getPublicData().getCurrentPlayer();
-        System.out.println("IO: " + myPlayer);
-        System.out.println("Current: " + currentPlayer);
-        this.isMyTurn = currentPlayer.equals(this.myPlayer);
-        if (game.getRound() == 1) {
-            if (this.isMyTurn) {
-                Log.d("PRIMO GIOCATORE", "IO");
-                String battezza = "Seleziona la briscola";
-                gameLog.setText(battezza);
-            } else {
-                String staBattezzando = currentPlayer.getNickname() + " sta battezzando";
-                gameLog.setText(staBattezzando);
-            }
-        } else {
-            if (this.isMyTurn) {
-                if (game.getRound() % 4 == 1) {
-                    this.amITheFirst = true;
+        runOnUiThread(() -> {
+            TextView gameLog = findViewById(R.id.log);
+            Player currentPlayer = game.getPublicData().getCurrentPlayer();
+            System.out.println("IO: " + myPlayer.getNickname());
+            System.out.println("Current: " + currentPlayer.getNickname());
+            this.isMyTurn = currentPlayer.equals(this.myPlayer);
+            if (game.getRound() == 1 && game.getPublicData().getBriscola() == Suit.DEFAULT_SUIT) {
+                if (this.isMyTurn) {
+                    Log.d("PRIMO GIOCATORE", "IO");
+                    String battezza = "Seleziona la briscola";
+                    gameLog.setText(battezza);
+                } else {
+                    String staBattezzando = currentPlayer.getNickname() + " sta battezzando";
+                    gameLog.setText(staBattezzando);
                 }
-                Log.d("TURN", this.myPlayer.getNickname());
             } else {
-                Log.d("TURN", "THEIRTURN");
-            }
+                if (this.isMyTurn) {
+                    if (game.getRound() % 4 == 1) {
+                        this.amITheFirst = true;
+                    }
+                    Log.d("TURN", this.myPlayer.getNickname());
+                } else {
+                    Log.d("TURN", "THEIRTURN");
+                }
 
             /*
             if (game.getRound() % 4 == 1 && game.getRound() > 1) {
@@ -324,14 +321,20 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
             } else {
                 this.showPlays(current);
             }*/
-            String turn = "E' il turno di " + currentPlayer.getNickname();
-            gameLog.setText(turn);
-        }
-        updatePlayableCards();
-        updateHand();
-        updateButtonsVisibility();
-        updateMetadata();
-        showPlays();
+                String turn;
+                if (this.isMyTurn) {
+                    turn = "E'il tuo turno";
+                } else {
+                    turn = "E' il turno di " + currentPlayer.getNickname();
+                }
+                gameLog.setText(turn);
+            }
+            updatePlayableCards();
+            updateHand();
+            updateButtonsVisibility();
+            updateMetadata();
+            showPlays();
+        });
     }
 
     /*Decide which message buttons to make visible*/
@@ -359,18 +362,19 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
         System.out.println("Current player index: " + indexCurrent);
 
         for (int i = 0; i < 4; i++) {
-            ImageView placeholder = gameField.get(nicknames.get(decrement(indexCurrent, i)));
+            ImageView placeholder = gameField.get(nicknames.get(decrement(indexCurrent, i+1)));
             int cardId = R.drawable.retro;
             System.out.println("i: " + i);
-            System.out.println("decrementedIndex: " + nicknames.get(decrement(indexCurrent, i)));
+            System.out.println("decrementedIndex: " + nicknames.get(decrement(indexCurrent, i+1)));
 
-            if(i < cards.size()){
-                Card card = cards.get(i);
+            if (i < cards.size()) {
+                Card card = cards.get(cards.size() - i - 1);
                 cardId = getResources().getIdentifier(name(card), "drawable", "com.faventia.beccaccino");
             }
-            if (i == cards.size() - 1){
-                TextView messageHolder = messageField.get(nicknames.get(decrement(indexCurrent, i)));
-                if(messageHolder!= null){
+
+            if (i == cards.size() - 1) {
+                TextView messageHolder = messageField.get(nicknames.get(decrement(indexCurrent, i+1)));
+                if (messageHolder != null) {
                     System.out.println("Setting message");
                     messageHolder.setText(game.getPublicData().getMessage());
                 }
@@ -460,10 +464,10 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
         }
     }
 
-    private void updatePlayableCards(){
+    private void updatePlayableCards() {
         playableCards = new ArrayList<>(this.game.getPrivateData(0).getMyCardsList());
         Suit dominantSuit = this.game.getPublicData().getDominantSuit();
-        if(playableCards.stream().anyMatch(c -> c.getSuit() == dominantSuit)){
+        if (playableCards.stream().anyMatch(c -> c.getSuit() == dominantSuit)) {
             playableCards = playableCards.stream().filter(c -> c.getSuit() == dominantSuit).collect(Collectors.toList());
         }
     }
@@ -472,7 +476,7 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
         return card.getValue().toString().toLowerCase() + "di" + card.getSuit().toString().toLowerCase();
     }
 
-    private Card card(String name){
+    private Card card(String name) {
         String[] tokens = name.split("di");
 
         return Card.newBuilder()
@@ -481,9 +485,9 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
                 .build();
     }
 
-    private int decrement(int num, int i){
+    private int decrement(int num, int i) {
         num -= i;
-        if(num<0){
+        if (num < 0) {
             num = 4 + num;
         }
         return num;

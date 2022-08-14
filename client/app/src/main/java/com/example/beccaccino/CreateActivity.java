@@ -14,7 +14,6 @@ import com.rabbitmq.client.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -81,7 +80,8 @@ public class CreateActivity extends AppCompatActivity {
                                                AMQP.BasicProperties properties, byte[] body) throws IOException {
                         Response response = Response.parseFrom(body);
                         switch (Response.parseFrom(body).getResponseCode()) {
-                            case (200) -> {}
+                            case (200) -> {
+                            }
                             case (201) -> {
                                 if (response.getRequestingPlayer().getId().equals(myPlayer.getId())) {
                                     System.out.println("Uscito da: " + Response.parseFrom(body).getLobby().getId());
@@ -104,7 +104,7 @@ public class CreateActivity extends AppCompatActivity {
                                     System.out.println("Partita non mia");
                                 }
                             }
-                            case(300) -> {
+                            case (300) -> {
                                 try {
                                     if (isMyLobby(response.getLobby())) {
                                         System.out.println("Inizia il mio game " + response.getResponseMessage());
@@ -195,7 +195,7 @@ public class CreateActivity extends AppCompatActivity {
                         .build();
                 try {
                     channel.basicPublish(todoQueueLobbies, "", null, startGameRequest.toByteArray());
-                    System.out.println("Mando : "+startGameRequest);
+                    System.out.println("Mando : " + startGameRequest);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -203,7 +203,7 @@ public class CreateActivity extends AppCompatActivity {
         }
     }
 
-    private void consumeGameQueue(String name){
+    private void consumeGameQueue(String name) {
         try {
             channel.basicConsume(name, new DefaultConsumer(channel) {
                 @Override
