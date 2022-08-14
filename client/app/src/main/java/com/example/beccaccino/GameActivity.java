@@ -362,10 +362,10 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
         System.out.println("Current player index: " + indexCurrent);
 
         for (int i = 0; i < 4; i++) {
-            ImageView placeholder = gameField.get(nicknames.get(decrement(indexCurrent, i+1)));
+            ImageView placeholder = gameField.get(nicknames.get(decrement(indexCurrent, i + 1)));
             int cardId = R.drawable.retro;
             System.out.println("i: " + i);
-            System.out.println("decrementedIndex: " + nicknames.get(decrement(indexCurrent, i+1)));
+            System.out.println("decrementedIndex: " + nicknames.get(decrement(indexCurrent, i + 1)));
 
             if (i < cards.size()) {
                 Card card = cards.get(cards.size() - i - 1);
@@ -373,7 +373,7 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
             }
 
             if (i == cards.size() - 1) {
-                TextView messageHolder = messageField.get(nicknames.get(decrement(indexCurrent, i+1)));
+                TextView messageHolder = messageField.get(nicknames.get(decrement(indexCurrent, i + 1)));
                 if (messageHolder != null) {
                     System.out.println("Setting message");
                     messageHolder.setText(game.getPublicData().getMessage());
