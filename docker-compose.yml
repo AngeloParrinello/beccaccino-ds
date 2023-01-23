@@ -32,3 +32,5 @@ services:
     environment:
       - RABBIT_HOST=rabbitmq
       - MONGODB=mongodb://mongo
+    volumes:
+      - "/logs:/logs"

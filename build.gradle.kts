@@ -17,7 +17,9 @@ subprojects {
 
         // RabbitMQ dependencies
         implementation("com.rabbitmq:amqp-client:5.14.2")
-        runtimeOnly("org.slf4j:slf4j-nop:1.7.32")
+
+        implementation("ch.qos.logback:logback-core:1.2.3")
+        implementation("ch.qos.logback:logback-classic:1.2.3")
 
         // Use JUnit Jupiter for testing.
         testImplementation("org.junit.jupiter:junit-jupiter:5.7.2")
