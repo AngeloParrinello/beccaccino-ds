@@ -127,7 +127,7 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
                                                AMQP.BasicProperties properties, byte[] body) throws IOException {
                         GameResponse response = GameResponse.parseFrom(body);
                         switch (response.getResponseCode()) {
-                            case (301), (302) -> {
+                            case (301): {
                                 game = response.getGame();
                                 System.out.println("Turn: " + game.getRound());
                                 System.out.println("Current Player: " + game.getPublicData().getCurrentPlayer().getNickname());
@@ -135,15 +135,23 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
                                 update();
                             }
 
-                            case (402) -> SingleToast.show(getApplicationContext(), "Impossibile unirsi", 3000);
+                            case (302): {
+                                game = response.getGame();
+                                System.out.println("Turn: " + game.getRound());
+                                System.out.println("Current Player: " + game.getPublicData().getCurrentPlayer().getNickname());
+                                System.out.println("Briscola: " + game.getPublicData().getBriscola());
+                                update();
+                            }
 
-                            case (405) -> SingleToast.show(getApplicationContext(), "Permesso negato", 3000);
+                            case (402): SingleToast.show(getApplicationContext(), "Impossibile unirsi", 3000);
 
-                            case (406) -> SingleToast.show(getApplicationContext(), "Richiesta illegale", 3000);
+                            case (405): SingleToast.show(getApplicationContext(), "Permesso negato", 3000);
 
-                            case (407) -> SingleToast.show(getApplicationContext(), "Operazione fallita", 3000);
+                            case (406): SingleToast.show(getApplicationContext(), "Richiesta illegale", 3000);
 
-                            default -> throw new IllegalStateException();
+                            case (407): SingleToast.show(getApplicationContext(), "Operazione fallita", 3000);
+
+                            default: throw new IllegalStateException();
 
                         }
                     }
@@ -168,12 +176,13 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
             } else {
                 message = "";
             }
-            Log.d("CARTA GIOCATA", cardName);
+
             Card card = card(cardName);
             if (this.game.getRound() == 1 && game.getPublicData().getBriscola() == Suit.DEFAULT_SUIT) {
                 this.confirmBriscola(card.getSuit());
             } else {
                 if (playableCards.contains(card)) {
+                    Log.d("CARTA GIOCATA", cardName);
                     executorService.execute(() -> {
                         GameRequest playRequest = GameRequest.newBuilder()
                                 .setGameId(game.getId())

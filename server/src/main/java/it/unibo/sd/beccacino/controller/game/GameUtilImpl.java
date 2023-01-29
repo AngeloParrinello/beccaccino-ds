@@ -100,22 +100,19 @@ public class GameUtilImpl implements GameUtil {
         List<Card> playableCards = requestingPlayerData.getMyCardsList();
         boolean isCardInPlayerHand = playableCards.contains(request.getCardPlayed());
         boolean isCardDominantSuit = request.getCardPlayed().getSuit() == (game.getPublicData().getDominantSuit());
-        boolean isCardBriscola = request.getCardPlayed().getSuit() == (game.getPublicData().getBriscola());
-        if (game.getPublicData().getCardsOnTableCount() == 0) {
-            return isCardInPlayerHand;
-        } else if (canPlayerAnswerToPlay(game, playableCards)) {
-            return isCardInPlayerHand && (isCardBriscola || isCardDominantSuit);
-        } else {
-            return true;
+        if (game.getPublicData().getCardsOnTableCount() != 0) {
+            if (canPlayerAnswerToPlay(game, playableCards)) {
+                return isCardInPlayerHand && isCardDominantSuit;
+            }
         }
+        return isCardInPlayerHand;
     }
 
     private boolean canPlayerAnswerToPlay(Game game, List<Card> cardsInHand) {
-        Suit briscola = game.getPublicData().getBriscola();
         Suit dominantSuit = game.getPublicData().getDominantSuit();
-        long playableCards = cardsInHand.stream()
-                .filter((c) -> (c.getSuit() == briscola || c.getSuit() == dominantSuit)).count();
-        return playableCards > 0;
+        long numCardsDominantSuit = cardsInHand.stream()
+                .filter((c) -> (c.getSuit() == dominantSuit)).count();
+        return numCardsDominantSuit > 0;
     }
 
     @Override
@@ -123,7 +120,12 @@ public class GameUtilImpl implements GameUtil {
         this.checkAndClearTable(request.getGameId());
         this.setDominantSuitIfNecessary(request);
         if (this.dbManager.setMessage(request.getCardMessage(), request.getGameId())) {
-            return this.dbManager.registerPlay(request.getCardPlayed(), request.getGameId());
+            boolean status = this.dbManager.registerPlay(request.getCardPlayed(), request.getGameId());
+            if(status){
+                dbManager.removeCardFromHand(request.getGameId(), request.getCardPlayed());
+                //System.out.println("Carta rimossa dalla mano");
+            }
+            return status;
         } else {
             return false;
         }
@@ -131,6 +133,9 @@ public class GameUtilImpl implements GameUtil {
 
     private void setDominantSuitIfNecessary(GameRequest request) {
         Game game = this.getGameById(request.getGameId());
+        if (game.getPublicData().getCardsOnTableCount() == 4) {
+            this.dbManager.setDominantSuit(null, request.getGameId());
+        }
         if (game.getPublicData().getCardsOnTableCount() == 0) {
             this.dbManager.setDominantSuit(request.getCardPlayed().getSuit(), request.getGameId());
         }
@@ -151,8 +156,10 @@ public class GameUtilImpl implements GameUtil {
     @Override
     public void checkAndClearTable(String gameId) {
         Game game = this.getGameById(gameId);
+        System.out.println("n cards on table: " + game.getPublicData().getCardsOnTableCount());
         if (game.getPublicData().getCardsOnTableCount() == 4) {
             this.dbManager.clearCardsOnTable(gameId);
+            System.out.println("Clear table - Card number: " + game.getPublicData().getCardsOnTableCount());
         }
     }
 

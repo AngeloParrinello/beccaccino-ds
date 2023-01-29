@@ -15,8 +15,9 @@ COPY --chown=gradle:gradle . ${WORKINGDIR}
 # artifact is compiled for glibc). Instructions on how to do this can be found here: https://github.com/sgerrand/alpine-pkg-glibc
 RUN apk update
 RUN wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub
-RUN wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.35-r0/glibc-2.35-r0.apk
-RUN apk add --force-overwrite glibc-2.35-r0.apk
+#RUN wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.35-r0/glibc-2.35-r0.apk
+#RUN apk add --force-overwrite glibc-2.35-r0.apk
+RUN apk add gcompat
 # Concede rights at the script
 RUN chmod +x /home/gradle/src/script.sh
 RUN chmod +x /home/gradle/src/gradlew

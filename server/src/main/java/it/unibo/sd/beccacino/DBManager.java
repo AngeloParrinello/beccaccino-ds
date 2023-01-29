@@ -4,11 +4,12 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
+import com.mongodb.MongoException;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
+import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 import org.bson.BsonValue;
 import org.bson.Document;
@@ -18,6 +19,11 @@ import org.bson.types.ObjectId;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Filters.lt;
+import static com.mongodb.client.model.Updates.set;
+import static com.mongodb.client.model.Updates.unset;
+
 public class DBManager {
     private static final String LOBBIES_COLLECTION = "lobbies";
     private final MongoDatabase db;
@@ -26,13 +32,13 @@ public class DBManager {
         // Use this when running server using docker.
         MongoClient client = MongoClients.create(System.getenv("MONGODB"));
         // Use this when running server locally.
-        // MongoClient client = new MongoClient(new MongoClientURI("mongodb://localhost:27017"));
+        //MongoClient client = new MongoClient(new MongoClientURI("mongodb://localhost:27017"));
         // Replace the uri string with your MongoDB deployment's connection string
-        // String mongoUri = "mongodb://localhost:27017";
-        /*MongoClientSettings settings = MongoClientSettings.builder()
+        /*String mongoUri = "mongodb://localhost:27017";
+        MongoClientSettings settings = MongoClientSettings.builder()
                 .applyConnectionString(new ConnectionString(mongoUri))
                 .build();
-         MongoClient client = MongoClients.create(settings);*/
+        MongoClient client = MongoClients.create(settings);*/
         this.db = client.getDatabase("beccacino");
     }
 
@@ -50,7 +56,7 @@ public class DBManager {
     }
 
     public boolean removeDocument(String field, String id, String collectionName) {
-        return this.db.getCollection(collectionName).deleteOne(Filters.eq(field, new ObjectId(id))).wasAcknowledged();
+        return this.db.getCollection(collectionName).deleteOne(eq(field, new ObjectId(id))).wasAcknowledged();
     }
 
     public MongoDatabase getDB() {
@@ -58,16 +64,16 @@ public class DBManager {
     }
 
     public Document retrieveDocumentByID(String field, String id, String collectionName) {
-        return db.getCollection(collectionName).find(Filters.eq(field, String.valueOf(id))).first();
+        return db.getCollection(collectionName).find(eq(field, String.valueOf(id))).first();
     }
 
     public UpdateResult updateDocument(String id, Document document, String collectionName) {
-        return this.db.getCollection(collectionName).replaceOne(Filters.eq("_id", String.valueOf(id)), document);
+        return this.db.getCollection(collectionName).replaceOne(eq("_id", String.valueOf(id)), document);
     }
 
     public Game getGameById(String id) {
         Document gameDocument = db.getCollection("games")
-                .find(Filters.eq("_id", new ObjectId(id)))
+                .find(eq("_id", new ObjectId(id)))
                 .first();
         if (gameDocument != null) {
             ObjectId gameID = (ObjectId) gameDocument.get("_id");
@@ -87,7 +93,7 @@ public class DBManager {
 
     public Lobby getLobbyById(String id) {
         Document lobbyDocument = db.getCollection(LOBBIES_COLLECTION)
-                .find(Filters.eq("_id", new ObjectId(id)))
+                .find(eq("_id", new ObjectId(id)))
                 .first();
         if (lobbyDocument != null) {
             ObjectId lobbyID = (ObjectId) lobbyDocument.get("_id");
@@ -107,7 +113,7 @@ public class DBManager {
     }
 
     public boolean removeLobbyPlayer(Player player, String lobbyId) {
-        Bson lobbyFilter = Filters.eq("_id", new ObjectId(lobbyId));
+        Bson lobbyFilter = eq("_id", new ObjectId(lobbyId));
         Bson removedPlayer = Updates.pull("players", new Document("_id", player.getId()));
         return this.db.getCollection(LOBBIES_COLLECTION)
                 .updateOne(lobbyFilter, removedPlayer)
@@ -115,7 +121,7 @@ public class DBManager {
     }
 
     public boolean updateLobbyPlayers(Player playerJoined, String joinLobbyId) {
-        Bson lobbyFilter = Filters.eq("_id", new ObjectId(joinLobbyId));
+        Bson lobbyFilter = eq("_id", new ObjectId(joinLobbyId));
         Bson updatedPlayer = Updates.push("players", new Document("_id", playerJoined.getId())
                 .append("nickname", playerJoined.getNickname()));
         return this.db.getCollection(LOBBIES_COLLECTION)
@@ -123,7 +129,7 @@ public class DBManager {
     }
 
     public boolean updateBriscola(Suit briscola, String gameID) {
-        Bson filter = Filters.eq("_id", new ObjectId(gameID));
+        Bson filter = eq("_id", new ObjectId(gameID));
         Bson update = Updates.set("publicData.briscola", briscola);
         return this.db.getCollection("games")
                 .updateOne(filter, update)
@@ -131,7 +137,7 @@ public class DBManager {
     }
 
     public boolean registerPlay(Card cardPlayed, String gameId) {
-        Bson filter = Filters.eq("_id", new ObjectId(gameId));
+        Bson filter = eq("_id", new ObjectId(gameId));
         Bson update = Updates.push("publicData.cards_on_table", new Document("value", cardPlayed.getValue())
                 .append("suit", cardPlayed.getSuit()));
         return this.db.getCollection("games")
@@ -140,7 +146,7 @@ public class DBManager {
     }
 
     public boolean setMessage(String cardMessage, String gameId) {
-        Bson filter = Filters.eq("_id", new ObjectId(gameId));
+        Bson filter = eq("_id", new ObjectId(gameId));
         Bson update = Updates.set("publicData.message", cardMessage);
         return this.db.getCollection("games")
                 .updateOne(filter, update)
@@ -148,14 +154,14 @@ public class DBManager {
     }
 
     public void setDominantSuit(Suit suit, String gameId) {
-        Bson filter = Filters.eq("_id", new ObjectId(gameId));
+        Bson filter = eq("_id", new ObjectId(gameId));
         Bson update = Updates.set("publicData.dominantSuit", suit);
         this.db.getCollection("games")
                 .updateOne(filter, update).wasAcknowledged();
     }
 
     public void setPlayerTurn(Player player, String gameID) {
-        Bson filter = Filters.eq("_id", new ObjectId(gameID));
+        Bson filter = eq("_id", new ObjectId(gameID));
         Bson update = Updates.set("publicData.currentPlayer", new Document("_id", player.getId())
                 .append("nickname", player.getNickname()));
         this.db.getCollection("games")
@@ -163,13 +169,31 @@ public class DBManager {
     }
 
     public void clearCardsOnTable(String gameId) {
-        Bson filter = Filters.eq("_id", new ObjectId(gameId));
-        Bson update = Updates.set("publicData.cardsOnTable", null);
-        this.db.getCollection("games").updateOne(filter, update);
+        System.out.println("num games: " + this.db.getCollection("games").countDocuments(eq("_id", gameId)));
+
+        UpdateResult result = this.db.getCollection("games").updateOne(eq("_id", gameId), set("public_data.cards_on_table", new ArrayList<>()));
+        System.out.println(result.wasAcknowledged() + " " + result.getMatchedCount() + " " + result.getModifiedCount());
+        /*
+        Bson query = lt("publicData.cardsOnTable", gameId);
+        try {
+            DeleteResult result = this.db.getCollection("games").deleteMany(query);
+            System.out.println("Deleted document count: " + result.getDeletedCount());
+        } catch (MongoException me) {
+            System.err.println("Unable to delete due to an error: " + me);
+        }
+        */
+        /*
+        for (Card card: game.getPublicData().getCardsOnTableList()) {
+            Bson filter = eq("_id", new ObjectId(gameId));
+            Bson update = Updates.pull("publicData", new Document("value", card.getValue())
+                    .append("suit", card.getSuit()));
+            this.db.getCollection("games").updateOne(filter, update);
+        }
+        */
     }
 
     public void saveCardsWon(List<Card> cardsPlayed, String gameId, int i) {
-        Bson filter = Filters.eq("_id", new ObjectId(gameId));
+        Bson filter = eq("_id", new ObjectId(gameId));
         cardsPlayed.forEach(card -> {
             Bson update = Updates.push("publicData.team" + i + "_card_won", new Document("value", card.getValue())
                     .append("suit", card.getSuit()));
@@ -182,8 +206,26 @@ public class DBManager {
         Game game = this.getGameById(gameID);
         int currentTeamScore =
                 teamNumber == 1 ? game.getPublicData().getScoreTeam1() : game.getPublicData().getScoreTeam2();
-        Bson filter = Filters.eq("_id", new ObjectId(gameID));
+        Bson filter = eq("_id", new ObjectId(gameID));
         Bson update = Updates.set("publicData.scoreTeam" + teamNumber, currentTeamScore + pointsMade);
         this.db.getCollection("games").updateOne(filter, update);
+    }
+
+    public void removeCardFromHand(String gameID, Card card){
+        /*
+        try{
+            Bson gameFilter = Filters.eq("_id", new ObjectId(gameID));
+            Bson delete = Updates.pull("privateData.myCards", new Document("suit",card.getSuit()).append("value", card.getValue()));
+            this.db.getCollection("games").updateOne(gameFilter, delete);
+        } catch( Exception e){
+            e.printStackTrace();
+        }
+
+        public void pullByFilter(String queryField, Object queryValue, String arrayName, Object value) {
+            MongoCollection<Document> collection = getCollection("players");
+            Bson update = Updates.pullByFilter(Filters.eq(arrayName, value));
+            collection.updateOne(Filters.eq(queryField, queryValue), update);
+        }
+        */
     }
 }

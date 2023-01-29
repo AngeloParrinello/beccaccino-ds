@@ -35,6 +35,8 @@ public class CreateActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create);
 
+
+
         Intent intent = getIntent();
 
         try {
@@ -62,6 +64,7 @@ public class CreateActivity extends AppCompatActivity {
 
     @Override
     protected void onStart() {
+        System.out.println("[CREATE LOBBY] started activity");
         super.onStart();
         updateUsernames(lobby);
         executorService.execute(() -> {
@@ -80,19 +83,22 @@ public class CreateActivity extends AppCompatActivity {
                                                AMQP.BasicProperties properties, byte[] body) throws IOException {
                         Response response = Response.parseFrom(body);
                         switch (Response.parseFrom(body).getResponseCode()) {
-                            case (200) -> {
+                            case (200): {
+
+                                break;
                             }
-                            case (201) -> {
+                            case (201): {
                                 if (response.getRequestingPlayer().getId().equals(myPlayer.getId())) {
                                     System.out.println("Uscito da: " + Response.parseFrom(body).getLobby().getId());
                                     Intent myIntent = new Intent(CreateActivity.this, MainActivity.class);
                                     CreateActivity.this.startActivity(myIntent);
-                                    overridePendingTransition(R.anim.fragment_fade_enter, R.anim.fragment_fade_exit);
+                                    // overridePendingTransition(R.anim.fragment_fade_enter, R.anim.fragment_fade_exit);
                                 } else if (isMyLobby(response.getLobby())) {
                                     updateUsernames(response.getLobby());
                                 }
+                                break;
                             }
-                            case (202) -> {
+                            case (202): {
                                 if (response.getRequestingPlayer().getId().equals(myPlayer.getId())) {
                                     System.out.println("Ho joinato: " + Response.parseFrom(body).getLobby().getId());
                                 } else if (isMyLobby(response.getLobby())) {
@@ -103,8 +109,9 @@ public class CreateActivity extends AppCompatActivity {
                                 } else {
                                     System.out.println("Partita non mia");
                                 }
+                                break;
                             }
-                            case (300) -> {
+                            case (300): {
                                 try {
                                     if (isMyLobby(response.getLobby())) {
                                         System.out.println("Inizia il mio game " + response.getResponseMessage());
@@ -116,16 +123,17 @@ public class CreateActivity extends AppCompatActivity {
                                 } catch (Exception e) {
                                     e.printStackTrace();
                                 }
+                                break;
                             }
-                            case (402) -> SingleToast.show(getApplicationContext(), "Impossibile unirsi", 3000);
+                            case (402): SingleToast.show(getApplicationContext(), "Impossibile unirsi", 3000);
 
-                            case (405) -> SingleToast.show(getApplicationContext(), "Permesso negato", 3000);
+                            case (405): SingleToast.show(getApplicationContext(), "Permesso negato", 3000);
 
-                            case (406) -> SingleToast.show(getApplicationContext(), "Richiesta illegale", 3000);
+                            case (406): SingleToast.show(getApplicationContext(), "Richiesta illegale", 3000);
 
-                            case (407) -> SingleToast.show(getApplicationContext(), "Operazione fallita", 3000);
+                            case (407): SingleToast.show(getApplicationContext(), "Operazione fallita", 3000);
 
-                            default -> throw new IllegalStateException();
+                            default: throw new IllegalStateException();
 
                         }
                     }

@@ -91,6 +91,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void createMatch() {
+        System.out.println("[MAIN MENU]: create lobby button pressed, sending create lobby request...");
         Request createLobbyRequest = Request.newBuilder()
                 .setLobbyMessage("create")
                 .setRequestingPlayer(myPlayer).build();
@@ -222,38 +223,40 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void responseHandler(Response response) {
-        System.out.println(response.getResponseCode());
+        System.out.println("[MAIN ACTIVITY] received respond with code " + response.getResponseCode());
         switch (response.getResponseCode()) {
-            case (200) -> {
+            case (200): {
+                if (response.getRequestingPlayer().getId().equals(myPlayer.getId())) {
+                    System.out.println("[MAIN ACTIVITY] LobbyID: " + response.getLobby().getId());
+                    Intent data = new Intent(MainActivity.this, CreateActivity.class);
+                    data.putExtra("lobby", response.getLobby().toByteArray());
+                    data.putExtra("player", myPlayer.toByteArray());
+                    MainActivity.this.startActivity(data);
+                    break;
+                    //overridePendingTransition(R.anim.fragment_fade_enter, R.anim.fragment_fade_exit);
+                }
+            }
+
+            case (202): {
                 if (response.getRequestingPlayer().getId().equals(myPlayer.getId())) {
                     System.out.println("LOBBY ID: " + response.getLobby().getId());
                     Intent data = new Intent(MainActivity.this, CreateActivity.class);
                     data.putExtra("lobby", response.getLobby().toByteArray());
                     data.putExtra("player", myPlayer.toByteArray());
                     MainActivity.this.startActivity(data);
-                    overridePendingTransition(R.anim.fragment_fade_enter, R.anim.fragment_fade_exit);
+                    break;
+                    //overridePendingTransition(R.anim.fragment_fade_enter, R.anim.fragment_fade_exit);
                 }
             }
+            case (402): SingleToast.show(getApplicationContext(), "Impossibile unirsi", 3000);
 
-            case (202) -> {
-                if (response.getRequestingPlayer().getId().equals(myPlayer.getId())) {
-                    System.out.println("LOBBY ID: " + response.getLobby().getId());
-                    Intent data = new Intent(MainActivity.this, CreateActivity.class);
-                    data.putExtra("lobby", response.getLobby().toByteArray());
-                    data.putExtra("player", myPlayer.toByteArray());
-                    MainActivity.this.startActivity(data);
-                    overridePendingTransition(R.anim.fragment_fade_enter, R.anim.fragment_fade_exit);
-                }
-            }
-            case (402) -> SingleToast.show(getApplicationContext(), "Impossibile unirsi", 3000);
+            case (405): SingleToast.show(getApplicationContext(), "Permesso negato", 3000);
 
-            case (405) -> SingleToast.show(getApplicationContext(), "Permesso negato", 3000);
+            case (406): SingleToast.show(getApplicationContext(), "Richiesta illegale", 3000);
 
-            case (406) -> SingleToast.show(getApplicationContext(), "Richiesta illegale", 3000);
+            case (407): SingleToast.show(getApplicationContext(), "Operazione fallita", 3000);
 
-            case (407) -> SingleToast.show(getApplicationContext(), "Operazione fallita", 3000);
-
-            default -> throw new IllegalStateException();
+            default: throw new IllegalStateException();
         }
     }
 }

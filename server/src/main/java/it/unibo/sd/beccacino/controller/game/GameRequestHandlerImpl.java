@@ -89,6 +89,7 @@ public class GameRequestHandlerImpl implements GameRequestHandler {
                         this.gameUtil.updateCurrentPlayer(request.getGameId());
                         this.gameUtil.computeWinnerAndSetNextPlayer(request.getGameId());
                         Game updatedGame = this.gameUtil.getGameById(request.getGameId());
+                        System.out.println("Play registered, state of the game: " + updatedGame);
                         this.gameStub.sendGameResponse(updatedGame, ResponseCode.PLAY_OK);
                     } else {
                         this.gameStub.sendGameErrorResponse(ResponseCode.FAIL, request.getRequestingPlayer(), game.getId());
