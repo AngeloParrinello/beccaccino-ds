@@ -32,7 +32,7 @@ dependencies {
     // MongoDB dependece
     //implementation("org.mongodb:mongo-java-driver:3.12.10")
     //implementation("org.mongodb:mongodb-driver-core:4.2.1")
-    implementation("org.mongodb:mongodb-driver-sync:4.5.0")
+    implementation("org.mongodb:mongodb-driver-sync:4.8.0")
 }
 
 protobuf {

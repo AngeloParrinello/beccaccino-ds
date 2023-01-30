@@ -1,5 +1,6 @@
 package it.unibo.sd.beccacino;
 
+import com.mongodb.BasicDBObject;
 import org.bson.Document;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -9,6 +10,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Updates.set;
 import static org.junit.jupiter.api.Assertions.*;
 
 class DBManagerTest {
@@ -60,4 +63,19 @@ class DBManagerTest {
         this.dbManager.updateDocument("1", testDocument, TEST_COLLECTION_NAME);
         assertEquals(testDocument, this.dbManager.retrieveDocumentByID("_id", "1", TEST_COLLECTION_NAME));
     }
+/*
+    @Test void testDeleteDocument() {
+        Document document = new Document("_id", "5");
+        List<BasicDBObject> milestones = new ArrayList<>();
+        milestones.add(new BasicDBObject("milestone_id", "2333"));
+        milestones.add(new BasicDBObject("milestone_id", "2111"));
+        document.put("milestones", milestones);
+        this.dbManager.insertDocument(document, TEST_COLLECTION_NAME);
+
+        this.dbManager.clearMilestones();
+        System.out.println(document);
+        System.out.println(this.dbManager.retrieveDocumentByID("_id", "5", TEST_COLLECTION_NAME));
+        assertNotEquals(document, this.dbManager.retrieveDocumentByID("_id", "5", TEST_COLLECTION_NAME));
+    }
+ */
 }

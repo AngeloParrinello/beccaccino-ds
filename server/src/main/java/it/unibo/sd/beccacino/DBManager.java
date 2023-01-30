@@ -2,12 +2,14 @@ package it.unibo.sd.beccacino;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
+import com.mongodb.BasicDBObject;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.MongoException;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
@@ -21,8 +23,7 @@ import java.util.List;
 
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Filters.lt;
-import static com.mongodb.client.model.Updates.set;
-import static com.mongodb.client.model.Updates.unset;
+import static com.mongodb.client.model.Updates.*;
 
 public class DBManager {
     private static final String LOBBIES_COLLECTION = "lobbies";
@@ -30,15 +31,16 @@ public class DBManager {
 
     public DBManager() {
         // Use this when running server using docker.
-        MongoClient client = MongoClients.create(System.getenv("MONGODB"));
+        //MongoClient client = MongoClients.create(System.getenv("MONGODB"));
         // Use this when running server locally.
-        //MongoClient client = new MongoClient(new MongoClientURI("mongodb://localhost:27017"));
+        MongoClient client = MongoClients.create("mongodb://localhost:27017");
         // Replace the uri string with your MongoDB deployment's connection string
         /*String mongoUri = "mongodb://localhost:27017";
         MongoClientSettings settings = MongoClientSettings.builder()
                 .applyConnectionString(new ConnectionString(mongoUri))
                 .build();
-        MongoClient client = MongoClients.create(settings);*/
+        MongoClient client = MongoClients.create(settings);
+        */
         this.db = client.getDatabase("beccacino");
     }
 
@@ -167,12 +169,27 @@ public class DBManager {
         this.db.getCollection("games")
                 .updateOne(filter, update).wasAcknowledged();
     }
+/*
+    public void clearMilestones(){
+        Bson filter = eq("_id", 5);
+        Bson update = Updates.popFirst("milestones");
 
+        UpdateResult result = this.db.getCollection("players").updateOne(
+                Filters.eq("_id", "5"),
+                Updates.popFirst("milestones")
+        );
+        System.out.println(result.wasAcknowledged() + " " + result.getMatchedCount() + " " + result.getModifiedCount());
+        //this.db.getCollection("players").updateOne(eq("_id", 5), set("milestones", new ArrayList<>()));
+    }
+ */
     public void clearCardsOnTable(String gameId) {
         System.out.println("num games: " + this.db.getCollection("games").countDocuments(eq("_id", gameId)));
-
-        UpdateResult result = this.db.getCollection("games").updateOne(eq("_id", gameId), set("public_data.cards_on_table", new ArrayList<>()));
-        System.out.println(result.wasAcknowledged() + " " + result.getMatchedCount() + " " + result.getModifiedCount());
+        for(int i=0; i<4; i++){
+            UpdateResult result = this.db.getCollection("games").updateOne(
+                    Filters.eq("_id", gameId),
+                    Updates.popFirst("public_data.cards_on_table")
+            );
+        }
         /*
         Bson query = lt("publicData.cardsOnTable", gameId);
         try {

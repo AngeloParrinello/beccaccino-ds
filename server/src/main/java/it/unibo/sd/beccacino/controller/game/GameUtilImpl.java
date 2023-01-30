@@ -133,6 +133,7 @@ public class GameUtilImpl implements GameUtil {
 
     private void setDominantSuitIfNecessary(GameRequest request) {
         Game game = this.getGameById(request.getGameId());
+        System.out.println("NumOfCardsOnTable: " + game.getPublicData().getCardsOnTableCount());
         if (game.getPublicData().getCardsOnTableCount() == 4) {
             this.dbManager.setDominantSuit(null, request.getGameId());
         }
