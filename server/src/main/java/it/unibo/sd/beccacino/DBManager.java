@@ -31,9 +31,9 @@ public class DBManager {
 
     public DBManager() {
         // Use this when running server using docker.
-        //MongoClient client = MongoClients.create(System.getenv("MONGODB"));
+        MongoClient client = MongoClients.create(System.getenv("MONGODB"));
         // Use this when running server locally.
-        MongoClient client = MongoClients.create("mongodb://localhost:27017");
+        //MongoClient client = MongoClients.create("mongodb://localhost:27017");
         // Replace the uri string with your MongoDB deployment's connection string
         /*String mongoUri = "mongodb://localhost:27017";
         MongoClientSettings settings = MongoClientSettings.builder()
@@ -183,30 +183,12 @@ public class DBManager {
     }
  */
     public void clearCardsOnTable(String gameId) {
-        System.out.println("num games: " + this.db.getCollection("games").countDocuments(eq("_id", gameId)));
-        for(int i=0; i<4; i++){
-            UpdateResult result = this.db.getCollection("games").updateOne(
-                    Filters.eq("_id", gameId),
-                    Updates.popFirst("public_data.cards_on_table")
-            );
-        }
-        /*
-        Bson query = lt("publicData.cardsOnTable", gameId);
-        try {
-            DeleteResult result = this.db.getCollection("games").deleteMany(query);
-            System.out.println("Deleted document count: " + result.getDeletedCount());
-        } catch (MongoException me) {
-            System.err.println("Unable to delete due to an error: " + me);
-        }
-        */
-        /*
-        for (Card card: game.getPublicData().getCardsOnTableList()) {
+        for(int i=0; i<4; i++) {
             Bson filter = eq("_id", new ObjectId(gameId));
-            Bson update = Updates.pull("publicData", new Document("value", card.getValue())
-                    .append("suit", card.getSuit()));
-            this.db.getCollection("games").updateOne(filter, update);
+            Bson update = Updates.popFirst("publicData.cards_on_table");
+            this.db.getCollection("games")
+                    .updateOne(filter, update);
         }
-        */
     }
 
     public void saveCardsWon(List<Card> cardsPlayed, String gameId, int i) {
@@ -229,20 +211,14 @@ public class DBManager {
     }
 
     public void removeCardFromHand(String gameID, Card card){
-        /*
-        try{
-            Bson gameFilter = Filters.eq("_id", new ObjectId(gameID));
-            Bson delete = Updates.pull("privateData.myCards", new Document("suit",card.getSuit()).append("value", card.getValue()));
-            this.db.getCollection("games").updateOne(gameFilter, delete);
-        } catch( Exception e){
+        try {
+            Bson filter = eq("_id", new ObjectId(gameID));
+            Bson update = Updates.pull("privateData", new Document("value", card.getValue())
+                    .append("suit", card.getSuit()));
+            this.db.getCollection("games")
+                    .updateOne(filter, update);
+        } catch (Exception e) {
             e.printStackTrace();
         }
-
-        public void pullByFilter(String queryField, Object queryValue, String arrayName, Object value) {
-            MongoCollection<Document> collection = getCollection("players");
-            Bson update = Updates.pullByFilter(Filters.eq(arrayName, value));
-            collection.updateOne(Filters.eq(queryField, queryValue), update);
-        }
-        */
     }
 }

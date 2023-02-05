@@ -90,6 +90,7 @@ public class GameUtilImpl implements GameUtil {
 
     @Override
     public boolean setBriscola(GameRequest request) {
+        System.out.println("[SERVER] Setting briscola suit..");
         return this.dbManager.updateBriscola(request.getBriscola(), request.getGameId());
     }
 
@@ -100,12 +101,14 @@ public class GameUtilImpl implements GameUtil {
         List<Card> playableCards = requestingPlayerData.getMyCardsList();
         boolean isCardInPlayerHand = playableCards.contains(request.getCardPlayed());
         boolean isCardDominantSuit = request.getCardPlayed().getSuit() == (game.getPublicData().getDominantSuit());
-        if (game.getPublicData().getCardsOnTableCount() != 0) {
-            if (canPlayerAnswerToPlay(game, playableCards)) {
-                return isCardInPlayerHand && isCardDominantSuit;
-            }
+        int cardsOnTableNumber = game.getPublicData().getCardsOnTableCount();
+        if (cardsOnTableNumber == 0 || cardsOnTableNumber == 4 || !canPlayerAnswerToPlay(game, playableCards)) {
+            System.out.println("[SERVER] is card playable: " + isCardInPlayerHand);
+            return isCardInPlayerHand;
+        } else {
+            System.out.println("[SERVER] is card playable: " + (isCardInPlayerHand && isCardDominantSuit));
+            return isCardInPlayerHand && isCardDominantSuit;
         }
-        return isCardInPlayerHand;
     }
 
     private boolean canPlayerAnswerToPlay(Game game, List<Card> cardsInHand) {
@@ -120,10 +123,11 @@ public class GameUtilImpl implements GameUtil {
         this.checkAndClearTable(request.getGameId());
         this.setDominantSuitIfNecessary(request);
         if (this.dbManager.setMessage(request.getCardMessage(), request.getGameId())) {
+            System.out.println("[SERVER] Registering play..");
             boolean status = this.dbManager.registerPlay(request.getCardPlayed(), request.getGameId());
             if(status){
+                System.out.println("[SERVER] Removing played card from player hand..");
                 dbManager.removeCardFromHand(request.getGameId(), request.getCardPlayed());
-                //System.out.println("Carta rimossa dalla mano");
             }
             return status;
         } else {
@@ -133,11 +137,8 @@ public class GameUtilImpl implements GameUtil {
 
     private void setDominantSuitIfNecessary(GameRequest request) {
         Game game = this.getGameById(request.getGameId());
-        System.out.println("NumOfCardsOnTable: " + game.getPublicData().getCardsOnTableCount());
-        if (game.getPublicData().getCardsOnTableCount() == 4) {
-            this.dbManager.setDominantSuit(null, request.getGameId());
-        }
         if (game.getPublicData().getCardsOnTableCount() == 0) {
+            System.out.println("[SERVER] Setting dominant suit..");
             this.dbManager.setDominantSuit(request.getCardPlayed().getSuit(), request.getGameId());
         }
     }
@@ -151,16 +152,16 @@ public class GameUtilImpl implements GameUtil {
             indexOfCurrentPlayer = -1;
         }
         Player nextPlayer = game.getPlayersList().get(indexOfCurrentPlayer + 1);
+        System.out.println("[SERVER] Updating player turn..");
         this.dbManager.setPlayerTurn(nextPlayer, gameID);
     }
 
     @Override
     public void checkAndClearTable(String gameId) {
         Game game = this.getGameById(gameId);
-        System.out.println("n cards on table: " + game.getPublicData().getCardsOnTableCount());
         if (game.getPublicData().getCardsOnTableCount() == 4) {
+            System.out.println("[SERVER] Clearing table..");
             this.dbManager.clearCardsOnTable(gameId);
-            System.out.println("Clear table - Card number: " + game.getPublicData().getCardsOnTableCount());
         }
     }
 
@@ -168,6 +169,7 @@ public class GameUtilImpl implements GameUtil {
     public void computeWinnerAndSetNextPlayer(String gameId) {
         Game game = this.getGameById(gameId);
         if (game.getPublicData().getCardsOnTableCount() == 4) {
+            this.dbManager.setDominantSuit(null, gameId);
             List<Card> cardsPlayed = game.getPublicData().getCardsOnTableList();
             BeccacinoBunchOfCards cardsUtil = new BeccacinoBunchOfCards(cardsPlayed);
             Optional<Card> winningCard = cardsUtil.getHighestCardOfSuit(game.getPublicData().getBriscola());
