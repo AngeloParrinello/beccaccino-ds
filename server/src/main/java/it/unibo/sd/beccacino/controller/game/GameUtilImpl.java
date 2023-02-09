@@ -127,7 +127,7 @@ public class GameUtilImpl implements GameUtil {
             boolean status = this.dbManager.registerPlay(request.getCardPlayed(), request.getGameId());
             if(status){
                 System.out.println("[SERVER] Removing played card from player hand..");
-                dbManager.removeCardFromHand(request.getGameId(), request.getCardPlayed());
+                dbManager.removeCardFromHand(request.getGameId(), request.getCardPlayed(), request.getRequestingPlayer());
             }
             return status;
         } else {

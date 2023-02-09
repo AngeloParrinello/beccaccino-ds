@@ -210,8 +210,16 @@ public class DBManager {
         this.db.getCollection("games").updateOne(filter, update);
     }
 
-    public void removeCardFromHand(String gameID, Card card){
+    public void removeCardFromHand(String gameID, Card card, Player player){
         try {
+            Bson filter = new BasicDBObject("_id", new ObjectId(gameID)).append("privateData", new BasicDBObject("$elemMatch", new BasicDBObject("player.nickname", player.getNickname())));
+            Bson update = new BasicDBObject("$pull", new BasicDBObject("privateData.$.myCards", new Document("value", card.getValue()).append("suit", card.getSuit())));
+            UpdateResult result = this.db.getCollection("games").updateOne(filter, update);
+            System.out.println("risultato: " + result.getMatchedCount() + result.getModifiedCount());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        /*try {
             Bson filter = eq("_id", new ObjectId(gameID));
             Bson update = Updates.pull("privateData", new Document("value", card.getValue())
                     .append("suit", card.getSuit()));
@@ -219,6 +227,6 @@ public class DBManager {
                     .updateOne(filter, update);
         } catch (Exception e) {
             e.printStackTrace();
-        }
+        }*/
     }
 }
