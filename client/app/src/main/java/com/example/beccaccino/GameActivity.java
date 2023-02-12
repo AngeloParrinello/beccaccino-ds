@@ -44,6 +44,8 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
     private boolean amITheFirst = false;
     private Player myPlayer;
 
+    private int currentPlayerIndex = 0;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -244,6 +246,9 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
         score.setText("Punti: ");
 
         // TODO se la partita è finita showare l'endgameDialog con showGameRecap()
+        if (game.getPublicData().getScoreTeam1() != 0){
+            this.showGameRecap();
+        }
     }
 
     private void showGameRecap() {
@@ -366,15 +371,21 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
 
         List<Card> cards = game.getPublicData().getCardsOnTableList();
 
-        int indexCurrent = nicknames.indexOf(game.getPublicData().getCurrentPlayer().getNickname());
+        if(cards.size() < 4){
+            this.currentPlayerIndex = nicknames.indexOf(game.getPublicData().getCurrentPlayer().getNickname());
+        } else {
+            this.currentPlayerIndex = 0;
+        }
 
-        System.out.println("Current player index: " + indexCurrent);
+        //int indexCurrent = nicknames.indexOf(game.getPublicData().getCurrentPlayer().getNickname());
+
+        System.out.println("Current player index: " + currentPlayerIndex);
 
         for (int i = 0; i < 4; i++) {
-            ImageView placeholder = gameField.get(nicknames.get(decrement(indexCurrent, i + 1)));
+            ImageView placeholder = gameField.get(nicknames.get(decrement(currentPlayerIndex, i + 1)));
             int cardId = R.drawable.retro;
             System.out.println("i: " + i);
-            System.out.println("decrementedIndex: " + nicknames.get(decrement(indexCurrent, i + 1)));
+            System.out.println("decrementedIndex: " + nicknames.get(decrement(currentPlayerIndex, i + 1)));
 
             if (i < cards.size()) {
                 Card card = cards.get(cards.size() - i - 1);
@@ -382,7 +393,7 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
             }
 
             if (i == cards.size() - 1) {
-                TextView messageHolder = messageField.get(nicknames.get(decrement(indexCurrent, i + 1)));
+                TextView messageHolder = messageField.get(nicknames.get(decrement(currentPlayerIndex, i + 1)));
                 if (messageHolder != null) {
                     System.out.println("Setting message");
                     messageHolder.setText(game.getPublicData().getMessage());

@@ -219,7 +219,13 @@ public class CreateActivity extends AppCompatActivity {
                                            AMQP.BasicProperties properties, byte[] body) throws IOException {
                     GameResponse gameResponse = GameResponse.parseFrom(body);
                     if (gameResponse.getResponseCode() == 300) {
-                        System.out.println("Parte una nuova partita");
+                        System.out.println("New game starting");
+                        Intent myIntent = new Intent(CreateActivity.this, GameActivity.class);
+                        myIntent.putExtra("game", gameResponse.getGame().toByteArray());
+                        myIntent.putExtra("player", myPlayer.toByteArray());
+                        CreateActivity.this.startActivity(myIntent);
+                    } else if (gameResponse.getResponseCode() == 303){
+                        System.out.println("Reconnection to existing game.");
                         Intent myIntent = new Intent(CreateActivity.this, GameActivity.class);
                         myIntent.putExtra("game", gameResponse.getGame().toByteArray());
                         myIntent.putExtra("player", myPlayer.toByteArray());
