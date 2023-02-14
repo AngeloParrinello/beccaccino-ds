@@ -1,9 +1,11 @@
 package com.example.beccaccino;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.text.Editable;
 import android.util.Log;
 import android.widget.Button;
@@ -180,10 +182,10 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    @SuppressLint("HardwareIds")
     private void setPlayer(final String nickname) {
         myPlayer = Player.newBuilder()
-                .setId(String.valueOf(new Random()
-                        .nextInt())).setNickname(nickname).build();
+                .setId(Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID)).setNickname(nickname).build();
         this.setupRabbitMQ();
     }
 

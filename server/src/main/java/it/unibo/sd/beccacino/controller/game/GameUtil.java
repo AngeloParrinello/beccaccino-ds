@@ -17,7 +17,7 @@ public interface GameUtil {
      * @param request The details about the game to be created.
      * @return The game's Document.
      */
-    Document createNewGame(GameRequest request);
+    Document createNewGame(GameRequest request, String lobbyId);
 
     /**
      * Check if the player who made the start request is the lobby leader.

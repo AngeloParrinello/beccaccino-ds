@@ -30,14 +30,14 @@ public class GameRequestHandlerImpl implements GameRequestHandler {
         if (gameUtil.doesLobbyExists(lobbyId)) {
             if (this.gameUtil.isLobbyFull(lobbyId)) {
                 if (this.gameUtil.isPlayerLobbyLeader(request)) {
-                    System.out.println("Ecco la lobby: "+ lobbyId);
-                    Document emptyGameDocument = this.gameUtil.createNewGame(request);
+                    System.out.println("[Server] Game creation from lobby: "+ lobbyId);
+                    Document emptyGameDocument = this.gameUtil.createNewGame(request, lobbyId);
                     BsonValue insertResponse = this.gameUtil.insertGame(emptyGameDocument);
                     String createdGameID = insertResponse.asObjectId().getValue().toString();
                     if (!createdGameID.equals("")) {
                         Game createdGame = this.gameUtil.getGameById(createdGameID);
-                        createdGame.getPlayersList().forEach(g -> System.out.println("Il game creato contiene: " + g.getNickname()));
-                        this.gameUtil.removeLobby(lobbyId);
+                        createdGame.getPlayersList().forEach(g -> System.out.println("[Server] Created game with players: " + g.getNickname()));
+                        //this.gameUtil.removeLobby(lobbyId);
                         this.gameStub.sendGameResponse(createdGame, ResponseCode.START_OK);
                         return createdGameID;
                     } else {

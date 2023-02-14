@@ -54,27 +54,42 @@ public class LobbyManagerImpl implements LobbyManager {
     }
 
     private void joinLobbyRequestHandler(Request joinLobbyRequest) {
-        System.out.println("Request Join Lobby: "+ joinLobbyRequest);
-        String joinLobbyId = joinLobbyRequest.getLobbyId();
-        System.out.println("Request ID Join Lobby: "+ joinLobbyId);
-        Player playerJoined = joinLobbyRequest.getRequestingPlayer();
-        System.out.println("Request Player Create Lobby: "+ playerJoined);
-        if (this.doesLobbyExist(joinLobbyId) && this.getLobbySize(joinLobbyId) <= ROOM_CAPACITY) {
-            System.out.println("La lobby esiste e non è piena");
-            boolean statusRequest = this.dbManager.updateLobbyPlayers(playerJoined, joinLobbyId);
-            System.out.println("Dopo aver aggiornato la lobby di player ti dico: ..." + statusRequest);
-            Lobby lobbyUpdated = this.getLobby(joinLobbyId);
-            if (statusRequest) {
-                System.out.println("Join LObby OK");
-                this.lobbiesStub.sendLobbyResponse(lobbyUpdated, ResponseCode.JOIN, playerJoined);
+        try {
+            System.out.println("Request Join Lobby: " + joinLobbyRequest);
+            String joinLobbyId = joinLobbyRequest.getLobbyId();
+            System.out.println("Request ID Join Lobby: " + joinLobbyId);
+            Player playerJoined = joinLobbyRequest.getRequestingPlayer();
+            System.out.println("Requesting player: " + playerJoined);
+            System.out.println("Lobby: " + this.dbManager.getLobbyById(joinLobbyId));
+            if (this.doesLobbyExist(joinLobbyId) && this.getLobbySize(joinLobbyId) <= ROOM_CAPACITY) {
+                System.out.println("Lobby exists and is not full");
+                boolean statusRequest = this.dbManager.updateLobbyPlayers(playerJoined, joinLobbyId);
+                System.out.println("After lobby update, response: " + statusRequest);
+                Lobby lobbyUpdated = this.getLobby(joinLobbyId);
+                if (statusRequest) {
+                    System.out.println("Join Lobby OK");
+                    this.lobbiesStub.sendLobbyResponse(lobbyUpdated, ResponseCode.JOIN, playerJoined);
+                    /*Game game = this.dbManager.getGameByLobbyId(joinLobbyId);
+                    if(game != null){
+                        this.gameStub.sendGameResponse(this.dbManager.getGameByLobbyId(joinLobbyId), ResponseCode.RECONNECTION_OK);
+                    }*/
+                } else {
+                    System.out.println("Join Lobby ERROR");
+                    this.lobbiesStub.sendLobbyResponse(lobbyUpdated, ResponseCode.JOIN_ERROR, playerJoined);
+                }
             } else {
-                System.out.println("Join LObby ERROR");
-                this.lobbiesStub.sendLobbyResponse(lobbyUpdated, ResponseCode.JOIN_ERROR, playerJoined);
+                if (this.dbManager.getLobbyById(joinLobbyId).getPlayersList().contains(joinLobbyRequest.getRequestingPlayer())) {
+                    System.out.println("[Server] Player reconnecting to lobby: " + joinLobbyId);
+                    this.lobbiesStub.sendLobbyResponse(this.dbManager.getLobbyById(joinLobbyId), ResponseCode.JOIN, playerJoined);
+
+                } else {
+                    // Could be also a join error because the lobby is full.
+                    System.out.println("Join Lobby FULL");
+                    this.lobbiesStub.sendLobbyResponse(null, ResponseCode.CREATE_ERROR, playerJoined);
+                }
             }
-        } else {
-            // TODO could be also a join error because the lobby is full.
-            System.out.println("Join LObby FULL");
-            this.lobbiesStub.sendLobbyResponse(null, ResponseCode.CREATE_ERROR, playerJoined);
+        } catch (Exception e){
+            e.printStackTrace();
         }
     }
 

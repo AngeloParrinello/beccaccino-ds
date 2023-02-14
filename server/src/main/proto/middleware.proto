@@ -25,6 +25,7 @@ message Game {
   PublicData public_data = 2;
   repeated PrivateData private_data = 4;
   int32 round = 5; //TODO s'ela?
+  string lobby_id = 6;
 }
 
 /*

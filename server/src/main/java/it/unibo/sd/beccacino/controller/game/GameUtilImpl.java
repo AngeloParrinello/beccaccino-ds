@@ -23,7 +23,7 @@ public class GameUtilImpl implements GameUtil {
     }
 
     @Override
-    public Document createNewGame(GameRequest request) {
+    public Document createNewGame(GameRequest request, String lobbyId) {
         List<Player> playerList = request.getLobby().getPlayersList();
         List<PrivateData> privateDataList = game.dealCards(playerList);
         PublicData publicData = PublicData.newBuilder()
@@ -38,6 +38,7 @@ public class GameUtilImpl implements GameUtil {
                 .addAllPrivateData(privateDataList)
                 .addAllPlayers(playerList)
                 .setRound(1)
+                .setLobbyId(lobbyId)
                 .build();
         try {
             return Document.parse(JsonFormat.printer().print(game.toBuilder()));
@@ -206,6 +207,7 @@ public class GameUtilImpl implements GameUtil {
         BeccacinoBunchOfCards team2Cards = new BeccacinoBunchOfCards(game.getPublicData().getTeam2CardWonList());
         int team2Points = team2Cards.getPoints();
         this.dbManager.updateTeamPoints(game.getId(), team2Points, 2);
+        System.out.println("[SERVER] Game finished: Team1 " + team1Points + " - " + team2Points + "Team2");
     }
 
     private boolean isMatchOver(Game game) {

@@ -93,6 +93,26 @@ public class DBManager {
         return null;
     }
 
+    public Game getGameByLobbyId(String id) {
+        Document gameDocument = db.getCollection("games")
+                .find(eq("lobbyId", new ObjectId(id)))
+                .first();
+        if (gameDocument != null) {
+            ObjectId gameID = (ObjectId) gameDocument.get("_id");
+            gameDocument.remove("_id");
+            String gameJson = gameDocument.toJson();
+            Game.Builder gameBuilder = Game.newBuilder();
+            gameBuilder.setId(gameID.toString());
+            try {
+                JsonFormat.parser().ignoringUnknownFields().merge(gameJson, gameBuilder);
+            } catch (InvalidProtocolBufferException e) {
+                e.printStackTrace();
+            }
+            return gameBuilder.build();
+        }
+        return null;
+    }
+
     public Lobby getLobbyById(String id) {
         Document lobbyDocument = db.getCollection(LOBBIES_COLLECTION)
                 .find(eq("_id", new ObjectId(id)))
