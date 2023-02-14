@@ -6,12 +6,13 @@ import it.unibo.sd.beccacino.PrivateData;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class BeccacinoGameImpl implements BeccacinoGame {
 
     @Override
     public List<PrivateData> dealCards(List<Player> playerList) {
-        Deck deck = new DeckImpl(42);
+        Deck deck = new DeckImpl(new Random().nextInt());
         List<PrivateData> privateDataList = new ArrayList<>();
         for (Player p : playerList) {
             List<Card> cardList = new ArrayList<>();
