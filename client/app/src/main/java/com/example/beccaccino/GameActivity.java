@@ -320,7 +320,7 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
                 }
             } else {
                 if (this.isMyTurn) {
-                    if (game.getRound() % 4 == 1) {
+                    if (game.getPublicData().getCardsOnTableList().size() == 4 || game.getPublicData().getCardsOnTableList().size() == 0) {
                         this.amITheFirst = true;
                     }
                     Log.d("TURN", this.myPlayer.getNickname());
