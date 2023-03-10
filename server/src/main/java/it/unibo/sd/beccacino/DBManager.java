@@ -249,4 +249,10 @@ public class DBManager {
             e.printStackTrace();
         }*/
     }
+
+    public boolean isAlreadyInALobby(Player player){
+        Document lobby = this.db.getCollection(LOBBIES_COLLECTION).find(eq("players.nickname", player.getNickname())).first();
+        System.out.println("Search result for requesting player among existing lobbies: " + lobby);
+        return lobby != null;
+    }
 }
