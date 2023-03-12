@@ -20,6 +20,7 @@ import org.bson.types.ObjectId;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Filters.lt;
@@ -254,5 +255,47 @@ public class DBManager {
         Document lobby = this.db.getCollection(LOBBIES_COLLECTION).find(eq("players.nickname", player.getNickname())).first();
         System.out.println("Search result for requesting player among existing lobbies: " + lobby);
         return lobby != null;
+    }
+
+    public List<Game> getStuckGamesList(){
+        // Get the current time in epoch milliseconds
+        long currentTime = System.currentTimeMillis();
+
+        // Compute the time 60 seconds ago
+        long timestamp = currentTime - 60000;
+
+        // Build the JavaScript function to check the last update time of the array field
+        String jsFunction = "function() { " +
+                "var lastUpdate = this.myArrayField.$lastUpdate; " +
+                "return lastUpdate == null || lastUpdate.getTime() < " + timestamp + "; " +
+                "}";
+
+        // Create the query using the $where operator and the JavaScript function
+        Bson query = new Document("$where", jsFunction);
+
+        // Execute the query to get the list of documents in the "games" collection
+        List<Document> results = this.db.getCollection("games").find(query).into(new ArrayList<>());
+
+        List<Game> games = results.stream().map(gameDocument -> {
+            System.out.println("Stuck game found: " + gameDocument);
+            ObjectId gameID = (ObjectId) gameDocument.get("_id");
+            gameDocument.remove("_id");
+            String gameJson = gameDocument.toJson();
+            Game.Builder gameBuilder = Game.newBuilder();
+            gameBuilder.setId(gameID.toString());
+            try {
+                JsonFormat.parser().ignoringUnknownFields().merge(gameJson, gameBuilder);
+            } catch (InvalidProtocolBufferException e) {
+                e.printStackTrace();
+            }
+            return gameBuilder.build();
+        }).collect(Collectors.toList());
+
+        games.forEach(game -> {
+            this.removeDocument("_id", game.getId(), "games");
+            this.removeDocument("_id", game.getLobbyId(), LOBBIES_COLLECTION);
+        });
+
+        return games;
     }
 }

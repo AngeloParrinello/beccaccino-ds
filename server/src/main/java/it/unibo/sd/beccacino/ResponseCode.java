@@ -8,6 +8,7 @@ public enum ResponseCode {
     BRISCOLA_OK(301, "Briscola set"),
     PLAY_OK(302, "Play made"),
     RECONNECTION_OK(303, "A player has reconnected"),
+    GAME_DELETED(304, "Game has been deleted"),
     CREATE_ERROR(400, "Cannot create lobby."),
     LEAVE_ERROR(401, "Cannot leave lobby."),
     JOIN_ERROR(402, "Cannot join lobby."),

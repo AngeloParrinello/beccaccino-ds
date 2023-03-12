@@ -145,6 +145,12 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
                                 update();
                             }
 
+                            case (304): {
+                                System.out.println("The game has been detected as stuck and got terminated, your are now going back to main menu");
+                                Intent data = new Intent(GameActivity.this, MainActivity.class);
+                                GameActivity.this.startActivity(data);
+                            }
+
                             case (402): SingleToast.show(getApplicationContext(), "Impossibile unirsi", 3000);
 
                             case (405): SingleToast.show(getApplicationContext(), "Permesso negato", 3000);

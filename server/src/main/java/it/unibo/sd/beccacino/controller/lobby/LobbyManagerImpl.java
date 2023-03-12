@@ -40,6 +40,11 @@ public class LobbyManagerImpl implements LobbyManager {
         Player requestingPlayer = createLobbyRequest.getRequestingPlayer();
         System.out.println("Request Player Create Lobby: "+ requestingPlayer);
 
+        if(this.dbManager.isAlreadyInALobby(requestingPlayer)){
+            this.lobbiesStub.sendLobbyResponse(null, ResponseCode.CREATE_ERROR, requestingPlayer);
+            return;
+        }
+
         String roomID = this.createNewLobby(requestingPlayer).asObjectId().getValue().toString();
 
         System.out.println("Request new Lobby: "+ roomID);
@@ -60,8 +65,7 @@ public class LobbyManagerImpl implements LobbyManager {
             System.out.println("Request ID Join Lobby: " + joinLobbyId);
             Player playerJoined = joinLobbyRequest.getRequestingPlayer();
             System.out.println("Requesting player: " + playerJoined);
-            System.out.println("Lobby: " + this.dbManager.getLobbyById(joinLobbyId));
-            if(this.dbManager.isAlreadyInALobby(playerJoined)){
+            if(this.dbManager.isAlreadyInALobby(playerJoined) && !this.getLobby(joinLobbyId).getPlayersList().contains(playerJoined)){
                 this.lobbiesStub.sendLobbyResponse(null, ResponseCode.JOIN_ERROR, playerJoined);
                 return;
             }
