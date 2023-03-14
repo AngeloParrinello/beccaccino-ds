@@ -156,6 +156,14 @@ public class DBManager {
         Bson update = Updates.set("publicData.briscola", briscola);
         return this.db.getCollection("games")
                 .updateOne(filter, update)
+                .wasAcknowledged() && updateTimestamp(gameID);
+    }
+
+    public boolean updateTimestamp(String gameID) {
+        Bson filter = eq("_id", new ObjectId(gameID));
+        Bson update = Updates.set("publicData.lastUpdated",  System.currentTimeMillis());
+        return this.db.getCollection("games")
+                .updateOne(filter, update)
                 .wasAcknowledged();
     }
 
@@ -165,7 +173,7 @@ public class DBManager {
                 .append("suit", cardPlayed.getSuit()));
         return this.db.getCollection("games")
                 .updateOne(filter, update)
-                .wasAcknowledged();
+                .wasAcknowledged() && updateTimestamp(gameId);
     }
 
     public boolean setMessage(String cardMessage, String gameId) {
@@ -173,7 +181,7 @@ public class DBManager {
         Bson update = Updates.set("publicData.message", cardMessage);
         return this.db.getCollection("games")
                 .updateOne(filter, update)
-                .wasAcknowledged();
+                .wasAcknowledged() && updateTimestamp(gameId);
     }
 
     public void setDominantSuit(Suit suit, String gameId) {
@@ -261,13 +269,15 @@ public class DBManager {
         // Get the current time in epoch milliseconds
         long currentTime = System.currentTimeMillis();
 
+        System.out.println("Current timestamp: " + currentTime);
+
         // Compute the time 60 seconds ago
         long timestamp = currentTime - 60000;
 
         // Build the JavaScript function to check the last update time of the array field
         String jsFunction = "function() { " +
-                "var lastUpdate = this.myArrayField.$lastUpdate; " +
-                "return lastUpdate == null || lastUpdate.getTime() < " + timestamp + "; " +
+                "var lastUpdated = this.publicData.lastUpdated; " +
+                "return lastUpdated != null && lastUpdated < " + timestamp + "; " +
                 "}";
 
         // Create the query using the $where operator and the JavaScript function
@@ -295,6 +305,14 @@ public class DBManager {
             this.removeDocument("_id", game.getId(), "games");
             this.removeDocument("_id", game.getLobbyId(), LOBBIES_COLLECTION);
         });
+
+        /*
+        for (Document result : results) {
+                this.removeDocument("_id", result.getObjectId("_id").toHexString(), "games");
+                this.removeDocument("_id", result.getObjectId("lobbyId").toHexString(), LOBBIES_COLLECTION);
+                System.out.println("Game ID: " + result.getObjectId("_id").toHexString() + ", last update timestamp: " + result.getLong("lastUpdate"));
+        }
+        */
 
         return games;
     }

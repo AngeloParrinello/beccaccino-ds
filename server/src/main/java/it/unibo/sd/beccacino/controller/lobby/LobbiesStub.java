@@ -52,11 +52,19 @@ public class LobbiesStub {
                 if(request.getLobbyMessage().equals("leave")){
                     //TODO rimuovi la coda
                 } else {
-                    createQueueFor(request.getRequestingPlayer().getId());
+                    createQueueFor(request);
                 }
             }
         });
 
+        // Queue for users not in lobbies
+        try {
+            this.channel.queueDeclare(resultsQueue, false, false, false, null);
+            this.channel.exchangeDeclare(resultsQueue, BuiltinExchangeType.FANOUT);
+            this.channel.queueBind(resultsQueue, resultsQueue, "");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -113,11 +121,12 @@ public class LobbiesStub {
         return lastResponseCode;
     }
 
-    private void createQueueFor(String playerID){
+    private void createQueueFor(Request request){
+        final String queueName = resultsQueue + request.getLobbyId() + request.getRequestingPlayer().getId();
         try {
-            this.channel.queueDeclare(resultsQueue + playerID, false, false, false, null);
+            this.channel.queueDeclare(queueName, false, false, false, null);
             this.channel.exchangeDeclare(resultsQueue, BuiltinExchangeType.FANOUT);
-            this.channel.queueBind(resultsQueue + playerID, resultsQueue, "");
+            this.channel.queueBind(queueName, resultsQueue, "");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -129,8 +138,6 @@ public class LobbiesStub {
             connection.close();
         } catch (IOException | TimeoutException e) {
             e.printStackTrace();
-
         }
     }
-
 }

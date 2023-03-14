@@ -128,6 +128,7 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
                     public void handleDelivery(String consumerTag, Envelope envelope,
                                                AMQP.BasicProperties properties, byte[] body) throws IOException {
                         GameResponse response = GameResponse.parseFrom(body);
+                        System.out.println("Messaggio ricevuto: " + response.getResponseCode());
                         switch (response.getResponseCode()) {
                             case (301): {
                                 game = response.getGame();
@@ -135,6 +136,7 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
                                 System.out.println("Current Player: " + game.getPublicData().getCurrentPlayer().getNickname());
                                 System.out.println("Briscola: " + game.getPublicData().getBriscola());
                                 update();
+                                break;
                             }
 
                             case (302): {
@@ -143,21 +145,23 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
                                 System.out.println("Current Player: " + game.getPublicData().getCurrentPlayer().getNickname());
                                 System.out.println("Briscola: " + game.getPublicData().getBriscola());
                                 update();
+                                break;
                             }
 
                             case (304): {
                                 System.out.println("The game has been detected as stuck and got terminated, your are now going back to main menu");
                                 Intent data = new Intent(GameActivity.this, MainActivity.class);
                                 GameActivity.this.startActivity(data);
+                                break;
                             }
 
-                            case (402): SingleToast.show(getApplicationContext(), "Impossibile unirsi", 3000);
+                            case (402): SingleToast.show(getApplicationContext(), "Impossibile unirsi", 3000); break;
 
-                            case (405): SingleToast.show(getApplicationContext(), "Permesso negato", 3000);
+                            case (405): SingleToast.show(getApplicationContext(), "Permesso negato", 3000); break;
 
-                            case (406): SingleToast.show(getApplicationContext(), "Richiesta illegale", 3000);
+                            case (406): SingleToast.show(getApplicationContext(), "Richiesta illegale", 3000); break;
 
-                            case (407): SingleToast.show(getApplicationContext(), "Operazione fallita", 3000);
+                            case (407): SingleToast.show(getApplicationContext(), "Operazione fallita", 3000); break;
 
                             default: throw new IllegalStateException();
 

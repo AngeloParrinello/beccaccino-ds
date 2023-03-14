@@ -67,6 +67,7 @@ public class CreateActivity extends AppCompatActivity {
         System.out.println("[CREATE LOBBY] started activity");
         super.onStart();
         updateUsernames(lobby);
+        final String queueName = resultsQueueLobbies + lobby.getId() + myPlayer.getId();
         executorService.execute(() -> {
             try {
                 connection = Utilities.createConnection();
@@ -74,10 +75,10 @@ public class CreateActivity extends AppCompatActivity {
 
                 Utilities.createQueue(channel, todoQueueLobbies, BuiltinExchangeType.DIRECT, todoQueueLobbies,
                         false, false, false, null, "");
-                Utilities.createQueue(channel, resultsQueueLobbies, BuiltinExchangeType.FANOUT, resultsQueueLobbies + myPlayer.getId(),
+                Utilities.createQueue(channel, resultsQueueLobbies, BuiltinExchangeType.FANOUT, queueName,
                         false, false, false, null, "");
 
-                channel.basicConsume(resultsQueueLobbies + myPlayer.getId(), new DefaultConsumer(channel) {
+                channel.basicConsume(queueName, new DefaultConsumer(channel) {
                     @Override
                     public void handleDelivery(String consumerTag, Envelope envelope,
                                                AMQP.BasicProperties properties, byte[] body) throws IOException {
@@ -125,13 +126,13 @@ public class CreateActivity extends AppCompatActivity {
                                 }
                                 break;
                             }
-                            case (402): SingleToast.show(getApplicationContext(), "Impossibile unirsi", 3000);
+                            case (402): SingleToast.show(getApplicationContext(), "Impossibile unirsi", 3000); break;
 
-                            case (405): SingleToast.show(getApplicationContext(), "Permesso negato", 3000);
+                            case (405): SingleToast.show(getApplicationContext(), "Permesso negato", 3000); break;
 
-                            case (406): SingleToast.show(getApplicationContext(), "Richiesta illegale", 3000);
+                            case (406): SingleToast.show(getApplicationContext(), "Richiesta illegale", 3000); break;
 
-                            case (407): SingleToast.show(getApplicationContext(), "Operazione fallita", 3000);
+                            case (407): SingleToast.show(getApplicationContext(), "Operazione fallita", 3000); break;
 
                             default: throw new IllegalStateException();
 

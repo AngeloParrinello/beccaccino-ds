@@ -42,6 +42,7 @@ message PublicData {
   Suit dominant_suit = 7;
   repeated Card team1_card_won = 9;
   repeated Card team2_card_won = 10;
+  int64 lastUpdated = 11;
 }
 
 message PrivateData {
