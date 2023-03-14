@@ -146,8 +146,6 @@ public class BeccacinoBunchOfCards implements BunchOfCards {
      * {@inheritDoc}
      */
     public List<Card> getLowestCards() {
-        // e' impossibile che non torni nulla, pertanto no controlli se lista e'
-        // vuota
         final BeccacinoCardComparator comparator = new BeccacinoCardComparator();
         this.listOfCards.sort(comparator);
         final Value minValue = this.listOfCards.get(0).getValue();
@@ -174,8 +172,6 @@ public class BeccacinoBunchOfCards implements BunchOfCards {
         pointsMap.put(Value.QUATTRO, count);
         pointsMap.put(Value.CINQUE, count);
         pointsMap.put(Value.SEI, count);
-        // incremento qua cosi a partire da "Fante" count e' incrementato (count
-        // = 1)
         pointsMap.put(Value.SETTE, count++);
         pointsMap.put(Value.FANTE, count);
         pointsMap.put(Value.CAVALLO, count);
@@ -183,6 +179,6 @@ public class BeccacinoBunchOfCards implements BunchOfCards {
         pointsMap.put(Value.DUE, count);
         pointsMap.put(Value.TRE, count);
         count += 2;
-        pointsMap.put(Value.ASSO, count); // count = 3 --> punteggio assi
+        pointsMap.put(Value.ASSO, count);
     }
 }

@@ -31,7 +31,7 @@ public class LobbyManagerImpl implements LobbyManager {
                 System.out.println("Start game handler");
                 this.startGameLobbyRequestHandler(request);
             }
-            default -> throw new RuntimeException(); // TODO: Log illegal request received.
+            default -> throw new RuntimeException();
         }
     }
 
@@ -77,10 +77,6 @@ public class LobbyManagerImpl implements LobbyManager {
                 if (statusRequest) {
                     System.out.println("Join Lobby OK");
                     this.lobbiesStub.sendLobbyResponse(lobbyUpdated, ResponseCode.JOIN, playerJoined);
-                    /*Game game = this.dbManager.getGameByLobbyId(joinLobbyId);
-                    if(game != null){
-                        this.gameStub.sendGameResponse(this.dbManager.getGameByLobbyId(joinLobbyId), ResponseCode.RECONNECTION_OK);
-                    }*/
                 } else {
                     System.out.println("Join Lobby ERROR");
                     this.lobbiesStub.sendLobbyResponse(lobbyUpdated, ResponseCode.JOIN_ERROR, playerJoined);
@@ -91,7 +87,6 @@ public class LobbyManagerImpl implements LobbyManager {
                     this.lobbiesStub.sendLobbyResponse(this.dbManager.getLobbyById(joinLobbyId), ResponseCode.JOIN, playerJoined);
 
                 } else {
-                    // Could be also a join error because the lobby is full.
                     System.out.println("Join Lobby FULL");
                     this.lobbiesStub.sendLobbyResponse(null, ResponseCode.CREATE_ERROR, playerJoined);
                 }
