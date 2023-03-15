@@ -1,5 +1,7 @@
 @startuml
 
+package controller.game {
+
 interface GameRequestHandler {
 +startGameRequestHandler(request: GameRequest): Troop
 +handleRequest(request: GameRequeste): void
@@ -45,6 +47,8 @@ class GameStub {
 + getLastResponseCode(): ResponseCode
 - shutdownStub(): void
 - setupQueues(Game game): void
+
+}
 
 }
 

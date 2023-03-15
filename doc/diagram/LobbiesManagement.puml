@@ -1,0 +1,38 @@
+@startuml
+
+package controller.lobby {
+
+interface LobbyManager {
++ handleRequest(request: Request): void
+}
+
+class LobbyManagerImpl {
+- createLobbyRequestHandler( createLobbyRequest: Request): void
+- joinLobbyRequestHandler(joinLobbyRequest: Request): void
+- leaveLobbyRequestHandler( leaveLobbyRequest: Request): void
+-  startGameLobbyRequestHandler(request: Request ): void
+- getLobby( id: String): Lobby
+-  deleteLobby(id: String ): void
+- getLobbySize(id: String ): int
+- doesLobbyExist(id: String ): boolean
+- createNewLobby(requestingPlayer: Player): BsonValue
+}
+
+class LobbiesStub {
++ run(): void
++ sendLobbyResponse( lobbyUpdated: Lobby, responseCode: ResponseCode ,  requestingPlayer: Player): void
++ sendGameStartLobbyResponse( lobby: Lobby, requestingPlayer: Player , gameID: String ): void
++ sendGameReconnectLobbyResponse(lobby: Lobby ,  requestingPlayer: Player, gameID: String ): void
++ getLastOperation(): Lobby
++ getLastResponseCode(): ResponseCode
+- createQueueFor( request: Request): void
+- shutdownStub(): void
+
+}
+
+}
+
+LobbyManager<|-down- LobbyManagerImpl
+LobbyManager *--left- LobbiesStub
+
+@enduml
