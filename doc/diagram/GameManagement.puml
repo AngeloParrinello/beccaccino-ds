@@ -1,0 +1,56 @@
+@startuml
+
+interface GameRequestHandler {
++startGameRequestHandler(request: GameRequest): Troop
++handleRequest(request: GameRequeste): void
+}
+
+class GameRequestHandlerImpl {
+- setBriscolaRequestHandler(request: GameRequest): void
+- makePlayRequestHandler(request: GameRequest): void
+}
+
+interface GameUtil {
+    + createNewGame(request: GameRequest, lobbyId: String): Document
+    + isPlayerLobbyLeader(request: GameRequest): boolean
+    + getGameById(id: String): Game
+    + insertGame(Document gameDocument): BsonValue
+    + removeLobby(id: String): void
+    + isLobbyFull(id: String): boolean
+    + doesLobbyExists(id: String): boolean
+    + isPlayerCurrentPlayer(game: Game, requestingPlayer: Player): boolean
+    + isBriscolaSet(game: Game): boolean
+    + setBriscola(request: GameRequest): boolean
+    + isCardPlayable(request: GameRequest): boolean
+    + makePlay(request: GameRequest): boolean
+    + updateCurrentPlayer(GameID: String): void
+    + checkAndClearTable(gameId: String): void
+    + computeWinnerAndSetNextPlayer(gameId: String): void
+}
+
+class GameUtilImpl {
+ - canPlayerAnswerToPlay(game: Game, cardsInHand: List<Card>): boolean
+ - setDominantSuitIfNecessary(request: GameRequest): void
+ - computePoints(game: Game): void
+ - isMatchOver(game: Game): boolean
+
+}
+
+class GameStub {
++ run(): void
++ sendGameResponse(gameUpdated: Game, responseCode: ResponseCode ): void
++ sendGameErrorResponse(responseCode: ResponseCode , requestingPlayer: Player , gameId: String ): void
++ startNewGame(request: GameRequest ): String
++ getLastOperation(): Game
++ getLastResponseCode(): ResponseCode
+- shutdownStub(): void
+- setupQueues(Game game): void
+
+}
+
+GameRequestHandler <|-down- GameRequestHandlerImpl
+GameUtil <|-down- GameUtilImpl
+GameUtil <--left- GameRequestHandlerImpl : use
+GameRequestHandler *--left- GameStub
+
+@enduml
