@@ -106,7 +106,7 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
                 (dialog, which) -> dialog.dismiss());
         alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Esci",
                 (dialog, which) -> {
-                    // TODO Gestire l'uscita dalla Lobby
+                    // TODO Terminate the game for everyone? Auto-win opposing team?
                     GameActivity.super.onBackPressed();
                 });
         alertDialog.show();
@@ -256,7 +256,7 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
         score.setText("Punti: ");
 
         // TODO se la partita è finita showare l'endgameDialog con showGameRecap()
-        if (game.getPublicData().getScoreTeam1() != 0){
+        if (game.getPublicData().getScoreTeam1() != 0 || game.getPublicData().getScoreTeam2() != 0){
             this.showGameRecap();
         }
     }
@@ -264,9 +264,10 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
     private void showGameRecap() {
         int score1 = game.getPublicData().getScoreTeam1();
         int score2 = game.getPublicData().getScoreTeam2();
+        int myTeam = game.getPlayersList().indexOf(myPlayer) % 2 + 1;
         //boolean isMatchOver = Boolean.valueOf("Nel caso di match a più partite, capire se abbiamo finito o no");
         EndgameDialog recap = new EndgameDialog(this, game.getPlayers(0).getNickname(), game.getPlayers(1).getNickname(),
-                game.getPlayers(2).getNickname(), game.getPlayers(3).getNickname(), score1, score2, true);
+                game.getPlayers(2).getNickname(), game.getPlayers(3).getNickname(), score1, score2, myTeam, true);
         recap.show();
     }
 

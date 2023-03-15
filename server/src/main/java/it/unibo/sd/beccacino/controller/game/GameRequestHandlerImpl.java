@@ -91,6 +91,9 @@ public class GameRequestHandlerImpl implements GameRequestHandler {
                         Game updatedGame = this.gameUtil.getGameById(request.getGameId());
                         System.out.println("Play registered, state of the game: " + updatedGame);
                         this.gameStub.sendGameResponse(updatedGame, ResponseCode.PLAY_OK);
+                        if(isOver(updatedGame)){
+                            this.gameUtil.deleteGame(updatedGame);
+                        }
                     } else {
                         this.gameStub.sendGameErrorResponse(ResponseCode.FAIL, request.getRequestingPlayer(), game.getId());
                     }
@@ -103,5 +106,9 @@ public class GameRequestHandlerImpl implements GameRequestHandler {
         } else {
             this.gameStub.sendGameErrorResponse(ResponseCode.PERMISSION_DENIED, request.getRequestingPlayer(), game.getId());
         }
+    }
+
+    private boolean isOver(Game game){
+        return game.getPublicData().getScoreTeam1() != 0 || game.getPublicData().getScoreTeam2() != 0;
     }
 }
