@@ -102,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
             try {
                 channel.basicPublish(todoQueueLobbies, "", null, createLobbyRequest.toByteArray());
 
-                channel.basicConsume(resultsQueueLobbies, new DefaultConsumer(channel) {
+                channel.basicConsume(resultsQueueLobbies + myPlayer.getId(), new DefaultConsumer(channel) {
                     @Override
                     public void handleDelivery(String consumerTag, Envelope envelope,
                                                AMQP.BasicProperties properties, byte[] body) throws IOException {
@@ -132,10 +132,11 @@ public class MainActivity extends AppCompatActivity {
 
                 channel.basicPublish(todoQueueLobbies, "", null, searchLobbyRequest.toByteArray());
                 //TODO non va
-                channel.basicConsume(resultsQueueLobbies, new DefaultConsumer(channel) {
+                channel.basicConsume(resultsQueueLobbies + myPlayer.getId(), new DefaultConsumer(channel) {
                     @Override
                     public void handleDelivery(String consumerTag, Envelope envelope,
                                                AMQP.BasicProperties properties, byte[] body) throws IOException {
+                        channel.basicAck(envelope.getDeliveryTag(), false);
                         responseHandler(Response.parseFrom(body));
                     }
                 });
@@ -174,7 +175,7 @@ public class MainActivity extends AppCompatActivity {
 
                 Utilities.createQueue(channel, todoQueueLobbies, BuiltinExchangeType.DIRECT, todoQueueLobbies,
                         false, false, false, null, "");
-                Utilities.createQueue(channel, resultsQueueLobbies, BuiltinExchangeType.FANOUT, resultsQueueLobbies,
+                Utilities.createQueue(channel, resultsQueueLobbies, BuiltinExchangeType.FANOUT, resultsQueueLobbies + myPlayer.getId(),
                         false, false, false, null, "");
 
             } catch (IOException | TimeoutException e) {

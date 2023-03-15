@@ -67,14 +67,15 @@ public class CreateActivity extends AppCompatActivity {
         System.out.println("[CREATE LOBBY] started activity");
         super.onStart();
         updateUsernames(lobby);
-        final String queueName = resultsQueueLobbies + lobby.getId() + myPlayer.getId();
+        final String queueName = resultsQueueLobbies + myPlayer.getId();
         executorService.execute(() -> {
             try {
                 connection = Utilities.createConnection();
                 channel = connection.createChannel();
 
                 Utilities.createQueue(channel, todoQueueLobbies, BuiltinExchangeType.DIRECT, todoQueueLobbies,
-                        false, false, false, null, "");
+                        false,
+                        false, false, null, "");
                 Utilities.createQueue(channel, resultsQueueLobbies, BuiltinExchangeType.FANOUT, queueName,
                         false, false, false, null, "");
 
@@ -83,6 +84,7 @@ public class CreateActivity extends AppCompatActivity {
                     public void handleDelivery(String consumerTag, Envelope envelope,
                                                AMQP.BasicProperties properties, byte[] body) throws IOException {
                         Response response = Response.parseFrom(body);
+                        channel.basicAck(envelope.getDeliveryTag(), false);
                         switch (Response.parseFrom(body).getResponseCode()) {
                             case (200): {
 

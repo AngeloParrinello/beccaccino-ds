@@ -50,22 +50,16 @@ public class LobbiesStub {
                 lobbyManager.handleRequest(request);
 
                 if(request.getLobbyMessage().equals("leave")){
-                    //TODO rimuovi la coda
+                    try {
+                        channel.queueDeclarePassive(resultsQueue + request.getRequestingPlayer().getId());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 } else {
                     createQueueFor(request);
                 }
             }
         });
-
-        // Queue for users not in lobbies
-        try {
-            this.channel.queueDeclare(resultsQueue, false, false, false, null);
-            this.channel.exchangeDeclare(resultsQueue, BuiltinExchangeType.FANOUT);
-            this.channel.queueBind(resultsQueue, resultsQueue, "");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
     }
 
     public void sendLobbyResponse(Lobby lobbyUpdated, ResponseCode responseCode, Player requestingPlayer) {
@@ -122,7 +116,7 @@ public class LobbiesStub {
     }
 
     private void createQueueFor(Request request){
-        final String queueName = resultsQueue + request.getLobbyId() + request.getRequestingPlayer().getId();
+        final String queueName = resultsQueue + request.getRequestingPlayer().getId();
         try {
             this.channel.queueDeclare(queueName, false, false, false, null);
             this.channel.exchangeDeclare(resultsQueue, BuiltinExchangeType.FANOUT);
