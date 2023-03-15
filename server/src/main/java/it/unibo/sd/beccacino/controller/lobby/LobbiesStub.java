@@ -101,7 +101,21 @@ public class LobbiesStub {
 
         try {
             channel.basicPublish(resultsQueue, "", null, response.toByteArray());
-            System.out.println("Response inviata!");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void sendGameReconnectLobbyResponse(Lobby lobby, Player requestingPlayer, String gameID) {
+        Response response = Response.newBuilder()
+                .setLobby(lobby)
+                .setResponseCode(303)
+                .setResponseMessage(gameID)
+                .setRequestingPlayer(requestingPlayer)
+                .build();
+
+        try {
+            channel.basicPublish(resultsQueue, "", null, response.toByteArray());
         } catch (IOException e) {
             e.printStackTrace();
         }

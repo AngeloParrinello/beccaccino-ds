@@ -227,12 +227,6 @@ public class CreateActivity extends AppCompatActivity {
                         myIntent.putExtra("game", gameResponse.getGame().toByteArray());
                         myIntent.putExtra("player", myPlayer.toByteArray());
                         CreateActivity.this.startActivity(myIntent);
-                    } else if (gameResponse.getResponseCode() == 303){
-                        System.out.println("Reconnection to existing game.");
-                        Intent myIntent = new Intent(CreateActivity.this, GameActivity.class);
-                        myIntent.putExtra("game", gameResponse.getGame().toByteArray());
-                        myIntent.putExtra("player", myPlayer.toByteArray());
-                        CreateActivity.this.startActivity(myIntent);
                     } else {
                         throw new IllegalStateException();
                     }

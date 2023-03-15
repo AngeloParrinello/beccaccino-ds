@@ -69,7 +69,7 @@ public class LobbyManagerImpl implements LobbyManager {
                 this.lobbiesStub.sendLobbyResponse(null, ResponseCode.JOIN_ERROR, playerJoined);
                 return;
             }
-            if (this.doesLobbyExist(joinLobbyId) && this.getLobbySize(joinLobbyId) <= ROOM_CAPACITY) {
+            if (this.doesLobbyExist(joinLobbyId) && this.getLobbySize(joinLobbyId) < ROOM_CAPACITY) {
                 System.out.println("Lobby exists and is not full");
                 boolean statusRequest = this.dbManager.updateLobbyPlayers(playerJoined, joinLobbyId);
                 System.out.println("After lobby update, response: " + statusRequest);
@@ -84,8 +84,9 @@ public class LobbyManagerImpl implements LobbyManager {
             } else {
                 if (this.dbManager.getLobbyById(joinLobbyId).getPlayersList().contains(joinLobbyRequest.getRequestingPlayer())) {
                     System.out.println("[Server] Player reconnecting to lobby: " + joinLobbyId);
-                    this.lobbiesStub.sendLobbyResponse(this.dbManager.getLobbyById(joinLobbyId), ResponseCode.JOIN, playerJoined);
-
+                    Lobby lobby = this.dbManager.getLobbyById(joinLobbyId);
+                    Game game = this.dbManager.getGameByLobbyId(joinLobbyId);
+                    this.lobbiesStub.sendGameReconnectLobbyResponse(lobby, playerJoined, game.getId());
                 } else {
                     System.out.println("Join Lobby FULL");
                     this.lobbiesStub.sendLobbyResponse(null, ResponseCode.CREATE_ERROR, playerJoined);

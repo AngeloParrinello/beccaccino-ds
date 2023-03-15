@@ -25,6 +25,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String PATH_TO_USERNAME = "username_file";
     private final String todoQueueLobbies = "todoQueueLobbies";
     private final String resultsQueueLobbies = "resultsQueueLobbies";
+    private final String resultsQueueGames = "resultsQueueGames";
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private Connection connection;
     private Player myPlayer;
@@ -131,7 +132,6 @@ public class MainActivity extends AppCompatActivity {
                         .build();
 
                 channel.basicPublish(todoQueueLobbies, "", null, searchLobbyRequest.toByteArray());
-                //TODO non va
                 channel.basicConsume(resultsQueueLobbies + myPlayer.getId(), new DefaultConsumer(channel) {
                     @Override
                     public void handleDelivery(String consumerTag, Envelope envelope,
@@ -252,6 +252,19 @@ public class MainActivity extends AppCompatActivity {
                     //overridePendingTransition(R.anim.fragment_fade_enter, R.anim.fragment_fade_exit);
                 }
             }
+            case (303): {
+                try {
+                    if (isMyLobby(response.getLobby())) {
+                        System.out.println("Inizia il mio game " + response.getResponseMessage());
+                        String queueName = resultsQueueGames + response.getResponseMessage() + myPlayer.getId();
+                        Utilities.createQueue(channel, queueName, BuiltinExchangeType.DIRECT,
+                                queueName, false, false, false, null, "");
+                        consumeGameQueue(queueName);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
             case (402): SingleToast.show(getApplicationContext(), "Impossibile unirsi", 3000); break;
 
             case (405): SingleToast.show(getApplicationContext(), "Permesso negato", 3000); break;
@@ -262,5 +275,32 @@ public class MainActivity extends AppCompatActivity {
 
             default: throw new IllegalStateException();
         }
+    }
+    private boolean isMyLobby(Lobby lobby) {
+        return lobby.getPlayersList().stream().anyMatch(p -> p.getId().equals(myPlayer.getId()));
+    }
+
+    private void consumeGameQueue(String name) {
+        try {
+            channel.basicConsume(name, new DefaultConsumer(channel) {
+                @Override
+                public void handleDelivery(String consumerTag, Envelope envelope,
+                                           AMQP.BasicProperties properties, byte[] body) throws IOException {
+                    GameResponse gameResponse = GameResponse.parseFrom(body);
+                    if (gameResponse.getResponseCode() == 300) {
+                        System.out.println("New game starting");
+                        Intent myIntent = new Intent(MainActivity.this, GameActivity.class);
+                        myIntent.putExtra("game", gameResponse.getGame().toByteArray());
+                        myIntent.putExtra("player", myPlayer.toByteArray());
+                        MainActivity.this.startActivity(myIntent);
+                    } else {
+                        throw new IllegalStateException();
+                    }
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 }

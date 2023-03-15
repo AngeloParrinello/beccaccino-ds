@@ -96,7 +96,7 @@ public class DBManager {
 
     public Game getGameByLobbyId(String id) {
         Document gameDocument = db.getCollection("games")
-                .find(eq("lobbyId", new ObjectId(id)))
+                .find(eq("lobbyId", id))
                 .first();
         if (gameDocument != null) {
             ObjectId gameID = (ObjectId) gameDocument.get("_id");
