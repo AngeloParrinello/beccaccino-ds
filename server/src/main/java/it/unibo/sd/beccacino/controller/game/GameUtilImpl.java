@@ -200,6 +200,11 @@ public class GameUtilImpl implements GameUtil {
         }
     }
 
+    public void deleteGame(Game game){
+        this.dbManager.removeDocument("_id", game.getId(), "games");
+        this.dbManager.removeDocument("_id", game.getLobbyId(), "lobbies");
+    }
+
     private void computePoints(Game game) {
         BeccacinoBunchOfCards team1Cards = new BeccacinoBunchOfCards(game.getPublicData().getTeam1CardWonList());
         int team1Points = team1Cards.getPoints();

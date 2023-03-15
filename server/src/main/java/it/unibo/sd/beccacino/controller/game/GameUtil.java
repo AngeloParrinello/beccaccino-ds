@@ -128,4 +128,11 @@ public interface GameUtil {
      * @param gameId the game's ID
      */
     void computeWinnerAndSetNextPlayer(String gameId);
+
+    /**
+     *  Delete given game from db.
+     *
+     * @param game the game to be deleted
+     */
+    void deleteGame(Game game);
 }

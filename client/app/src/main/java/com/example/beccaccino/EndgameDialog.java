@@ -19,19 +19,22 @@ public class EndgameDialog extends Dialog implements View.OnClickListener {
     private final String team2;
     private final int scoreTeam1;
     private final int scoreTeam2;
+    private final int myTeam;
     // private final GameViewModel gameViewModel;
     private final boolean isMatchOver;
     public Dialog d;
     public Button yes, no;
     public TextView team1Name, team2Name, team1Score, team2Score;
 
-    public EndgameDialog(@NonNull Context context, String player1, String player2, String player3, String player4, int scoreTeam1, int scoreTeam2, boolean isMatchOver) {
+
+    public EndgameDialog(@NonNull Context context, String player1, String player2, String player3, String player4, int scoreTeam1, int scoreTeam2, int myTeam, boolean isMatchOver) {
         super(context);
         this.team1 = player1 + "\n" + "&\n" + player3;
         this.team2 = player2 + "\n" + "&\n" + player4;
         this.scoreTeam1 = scoreTeam1;
         this.scoreTeam2 = scoreTeam2;
         this.isMatchOver = isMatchOver;
+        this.myTeam = myTeam;
         // this.gameViewModel = viewModel;
     }
 
@@ -42,15 +45,17 @@ public class EndgameDialog extends Dialog implements View.OnClickListener {
         setContentView(R.layout.custom_dialog);
         setCancelable(false);
         TextView winner = findViewById(R.id.winner);
+        final int myScore = myTeam == 1 ? scoreTeam1 : scoreTeam2;
+        final int theirScore = myTeam == 1 ? scoreTeam2 : scoreTeam1;
 
         if (this.isMatchOver) {
-            if (scoreTeam2 > scoreTeam1) {
+            if (theirScore > myScore) {
                 winner.setText(R.string.matchLost);
             } else {
                 winner.setText(R.string.matchWin);
             }
         } else {
-            if (scoreTeam2 > scoreTeam1) {
+            if (theirScore > myScore) {
                 winner.setText(R.string.roundLost);
             } else {
                 winner.setText(R.string.roundWin);
