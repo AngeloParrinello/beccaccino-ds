@@ -1,0 +1,47 @@
+@startuml
+
+package model {
+
+class Card{
+- suit: Suit
+- value: Value
+}
+
+class Player {
+- id: String
+- nickname: String
+}
+
+class PrivateDate {
+- player: Player
+- cards: List<Card>
+}
+
+interface BeccaccinoGame {
++ dealCards(playerList: List<Player>): List<PrivateData>
+
+}
+
+class BeccaccinoGameImpl{
+
+}
+
+interface Deck{
+
++ drawCard(): Card
++ getSeed(): int
++ remainingCards: int
+}
+
+class DeckImpl{
+- populateDeck(): void
+}
+
+Deck <|-down- DeckImpl
+BeccaccinoGame <|-down- BeccaccinoGameImpl
+Deck <--right- BeccaccinoGameImpl: use
+PrivateDate <--left- BeccaccinoGameImpl: use
+Player <--down- BeccaccinoGameImpl: use
+Card <--left- DeckImpl: use
+
+@enduml

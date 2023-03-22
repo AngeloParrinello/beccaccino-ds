@@ -1,0 +1,19 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+
+Client -> Client: create play card request
+Client -> RabbitMQ: send playRequest(card, player)
+RabbitMQ -> GameStub: forward msg
+GameStub-> GameStub: msg unmarshalling
+GameStub -> GameRequestHandler:  msg handling
+GameRequestHandler -> GameRequestHandler: check all constraints
+GameRequestHandler -> GameRequestHandler: update game status
+GameRequestHandler --> GameStub: send new game updated
+GameStub --> GameStub: game updated marshaling
+GameStub --> RabbitMQ: notify each client with the new game (gameResponse(gameUpdated))
+RabbitMQ --> Client: forward msg
+Client -> Client: update game screen with new data
+
+@enduml

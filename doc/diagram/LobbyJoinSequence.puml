@@ -1,0 +1,18 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+
+Client -> Client: create join lobby request
+Client -> RabbitMQ: send searchLobbyRequest(matchID, player)
+RabbitMQ -> LobbiesStub: forward msg
+LobbiesStub -> LobbiesStub: msg unmarshalling
+LobbiesStub -> LobbyManager:  msg handling
+LobbyManager -> LobbyManager: searching lobby
+LobbyManager --> LobbiesStub: updated lobby
+LobbiesStub -> LobbiesStub: msg marshalling
+LobbiesStub --> RabbitMQ: send LobbyResponse(updatedLobby)
+RabbitMQ --> Client: forward reply
+Client -> Client: waiting other players
+
+@enduml

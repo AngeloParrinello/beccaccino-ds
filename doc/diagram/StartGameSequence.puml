@@ -1,0 +1,32 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+
+Client -> Client: create start game request
+Client -> RabbitMQ: send startGameRequest(lobby, player)
+RabbitMQ -> LobbiesStub: forward msg
+LobbiesStub -> LobbiesStub: msg unmarshalling
+LobbiesStub -> LobbyManager:  msg handling
+LobbyManager -> LobbyManager: evaluate the request
+LobbyManager -> GameStub: send a new game request
+GameStub -> GameRequestHandler: asking if it's possible to start the game
+GameRequestHandler -> GameRequestHandler: check possible inconsistencies
+GameRequestHandler -> GameRequestHandler: create a new game
+GameRequestHandler --> GameStub: send new game data
+GameStub --> GameStub: create new connections
+GameStub --> RabbitMQ: send gameResponse(game) to each client
+RabbitMQ --> Client: forward game data
+GameStub --> LobbyManager: forward status response
+LobbyManager -> LobbyManager: check if the response is ok
+LobbyManager --> LobbiesStub: forward response data
+LobbiesStub -> LobbiesStub: response data marshaling
+LobbiesStub --> RabbitMQ: send response(responseCode)
+RabbitMQ --> Client: forward msg
+Client -> Client: check the integrity of the data
+Client -> Client: create a private channel with the server
+Client -> Client: change the game screen with the game data received previously
+Client -> Client: ready to play
+
+
+@enduml
