@@ -1,0 +1,14 @@
+@startuml
+WAITING -right-> START: start msg
+
+state START{
+
+[*]-->tryingStartNewGame
+tryingStartNewGame --> WAITING: START_ERROR
+tryingStartNewGame --> WAITING: PERMISSION_DENIED
+tryingStartNewGame --> WAITING: ILLEGAL_REQUEST
+tryingStartNewGame --> WAITING: send gameID
+
+}
+
+@enduml

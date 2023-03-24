@@ -1,0 +1,14 @@
+@startuml
+'https://plantuml.com/state-diagram
+
+WAITING -right-> CREATE: create msg
+
+state CREATE{
+
+[*] --> checkPresencePlayer
+checkPresencePlayer --> WAITING: CREATE_ERROR
+checkPresencePlayer --> createLobby: passed checks
+createLobby --> WAITING: send new lobby
+
+}
+@enduml

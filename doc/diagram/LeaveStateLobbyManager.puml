@@ -1,0 +1,15 @@
+@startuml
+@startuml
+WAITING -right-> LEAVE: leave msg
+
+state LEAVE{
+
+[*] --> removePlayer
+removePlayer --> checkDeletionLobby
+checkDeletionLobby --> WAITING: send lobby updated
+removePlayer -right-> WAITING: LEAVE_ERROR
+
+}
+
+@enduml
+@enduml

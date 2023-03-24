@@ -1,0 +1,18 @@
+@startuml
+WAITING -up-> JOIN: join msg
+
+state JOIN{
+
+[*] --> checkAlreadyPresentANDcheckPlayerInAnotherLobby
+checkAlreadyPresentANDcheckPlayerInAnotherLobby -right-> WAITING: JOIN_ERROR
+checkAlreadyPresentANDcheckPlayerInAnotherLobby -right-> doesLobbyExistANDcheckLobbySize
+doesLobbyExistANDcheckLobbySize --> tryingReconnectToLobby: check failed
+tryingReconnectToLobby --> WAITING: send lobby with reconnected player
+tryingReconnectToLobby --> WAITING: CREATE_ERROR
+doesLobbyExistANDcheckLobbySize -down-> addPlayer
+addPlayer --> WAITING: send lobby updated
+addPlayer --> WAITING: JOIN_ERROR
+
+
+}
+@enduml
