@@ -1,0 +1,16 @@
+@startuml
+WAITING -right-> BRISCOLA: set briscola msg
+
+state BRISCOLA{
+
+[*]--> checkAuthorization
+checkAuthorization --> WAITING: PERMISSION_DENIED
+checkAuthorization --> checkBriscola
+checkBriscola --> WAITING: ILLEGAL_REQUEST
+checkBriscola  --> tryingUpdateBriscola
+tryingUpdateBriscola --> WAITING: [ok] game updated
+tryingUpdateBriscola --> WAITING: FAIL
+
+}
+
+@enduml

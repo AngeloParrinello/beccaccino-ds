@@ -1,0 +1,18 @@
+@startuml
+WAITING -right-> START: start msg
+
+state START{
+
+[*]--> checkExistence
+checkExistence --> WAITING: illegal status
+checkExistence --> checkCardinality
+checkCardinality --> WAITING: error status
+checkCardinality --> checkPlayer
+checkPlayer --> WAITING: permission-denied status
+checkPlayer --> createGame
+createGame --> WAITING: error status
+createGame --> WAITING: [ok] game id
+
+}
+
+@enduml

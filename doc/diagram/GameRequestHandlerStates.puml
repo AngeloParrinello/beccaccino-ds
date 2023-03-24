@@ -1,0 +1,11 @@
+@startuml
+
+[*] -left-> WAITING
+WAITING -down-> START: start msg
+START--> WAITING: gameID or error
+WAITING -up-> BRISCOLA: set briscola msg
+BRISCOLA --> WAITING: updated game or error
+WAITING -left-> PLAY: play msg
+PLAY --> WAITING: updated game or error
+
+@enduml
