@@ -34,3 +34,4 @@ services:
       - MONGODB=mongodb://mongo
     volumes:
       - "/logs:/opt/WebSphere/HTTPServer/logs"
+    restart: always
