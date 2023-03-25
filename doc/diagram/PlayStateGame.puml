@@ -1,0 +1,19 @@
+@startuml
+WAITING -right-> PLAY: play msg
+
+state PLAY{
+
+[*]--> checkAuthorization
+checkAuthorization -right-> WAITING: PERMISSION_DENIED
+checkAuthorization --> checkBriscola
+checkBriscola -right-> WAITING: ILLEGAL_REQUEST
+checkBriscola  --> checkCardPlayable
+checkCardPlayable -right-> WAITING: ILLEGAL_REQUEST
+checkCardPlayable --> tryingPlayCard
+tryingPlayCard -right-> WAITING: FAIL
+tryingPlayCard --> checkFinish: card played
+checkFinish -right-> WAITING: game updated
+
+}
+
+@enduml
