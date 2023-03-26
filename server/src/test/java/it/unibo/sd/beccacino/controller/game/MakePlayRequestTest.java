@@ -5,6 +5,8 @@ import it.unibo.sd.beccacino.*;
 import it.unibo.sd.beccacino.controller.lobby.LobbiesStub;
 import it.unibo.sd.beccacino.controller.lobby.LobbyManager;
 import it.unibo.sd.beccacino.controller.lobby.LobbyManagerImpl;
+import it.unibo.sd.beccacino.rabbitmq.RabbitMQManager;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,6 +29,8 @@ public class MakePlayRequestTest {
         this.player2 = Player.newBuilder().setId("2").setNickname("second_player").build();
         this.player3 = Player.newBuilder().setId("3").setNickname("third_player").build();
         this.player4 = Player.newBuilder().setId("4").setNickname("fourth_player").build();
+        this.gameRequestHandler.getGameUtil().getDbManager().getDB().getCollection("players").drop();
+        this.gameRequestHandler.getGameUtil().getDbManager().getDB().getCollection("lobbies").drop();
     }
 
     /**
@@ -161,10 +165,12 @@ public class MakePlayRequestTest {
     }
 
     private Game startGame() {
-        this.lobbyManager.handleRequest(Request.newBuilder()
+        Request player1Request = Request.newBuilder()
                 .setLobbyMessage("create")
                 .setRequestingPlayer(this.player1)
-                .build());
+                .build();
+        this.lobbiesStub.createQueueFor(player1Request);
+        this.lobbyManager.handleRequest(player1Request);
         String lobbyID = this.lobbiesStub.getLastOperation().getId();
         this.lobbyManager.handleRequest(Request.newBuilder()
                 .setLobbyMessage("join")
@@ -182,7 +188,7 @@ public class MakePlayRequestTest {
                 .setLobbyId(lobbyID)
                 .build());
         Lobby testLobby = this.lobbiesStub.getLastOperation();
-        this.gameRequestHandler.handleRequest(GameRequest.newBuilder()
+        String gameID = this.gameRequestHandler.startGameRequestHandler(GameRequest.newBuilder()
                 .setRequestType("start")
                 .setLobby(testLobby)
                 .setRequestingPlayer(this.player1)
@@ -190,7 +196,7 @@ public class MakePlayRequestTest {
         this.gameRequestHandler.handleRequest(GameRequest.newBuilder()
                 .setRequestType("briscola")
                 .setBriscola(Suit.COPPE)
-                .setGameId(this.gameStub.getLastOperation().getId())
+                .setGameId(gameID)
                 .setRequestingPlayer(this.player1)
                 .build());
         return this.gameStub.getLastOperation();
