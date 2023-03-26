@@ -1,8 +1,10 @@
 package it.unibo.sd.beccacino.controller.game;
 
+import it.unibo.sd.beccacino.DBManager;
 import it.unibo.sd.beccacino.Game;
 import it.unibo.sd.beccacino.GameRequest;
 import it.unibo.sd.beccacino.Player;
+import it.unibo.sd.beccacino.model.BeccacinoGame;
 import org.bson.BsonValue;
 import org.bson.Document;
 
@@ -135,4 +137,9 @@ public interface GameUtil {
      * @param game the game to be deleted
      */
     void deleteGame(Game game);
+
+    public DBManager getDbManager();
+
+    public BeccacinoGame getGame();
+
 }

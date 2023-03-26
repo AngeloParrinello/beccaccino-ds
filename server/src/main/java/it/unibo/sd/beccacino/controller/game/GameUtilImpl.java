@@ -223,4 +223,12 @@ public class GameUtilImpl implements GameUtil {
         }
         return true;
     }
+
+    public DBManager getDbManager() {
+        return dbManager;
+    }
+
+    public BeccacinoGame getGame() {
+        return game;
+    }
 }

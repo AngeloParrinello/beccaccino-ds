@@ -129,7 +129,7 @@ public class LobbiesStub {
         return lastResponseCode;
     }
 
-    private void createQueueFor(Request request){
+    public void createQueueFor(Request request){
         final String queueName = resultsQueue + request.getRequestingPlayer().getId();
         try {
             this.channel.queueDeclare(queueName, false, false, false, null);

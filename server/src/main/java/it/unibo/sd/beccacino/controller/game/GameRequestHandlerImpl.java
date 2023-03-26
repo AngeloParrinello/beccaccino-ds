@@ -111,4 +111,12 @@ public class GameRequestHandlerImpl implements GameRequestHandler {
     private boolean isOver(Game game){
         return game.getPublicData().getScoreTeam1() != 0 || game.getPublicData().getScoreTeam2() != 0;
     }
+
+    public GameStub getGameStub() {
+        return gameStub;
+    }
+
+    public GameUtil getGameUtil() {
+        return gameUtil;
+    }
 }

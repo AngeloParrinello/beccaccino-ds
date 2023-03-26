@@ -6,4 +6,9 @@ public interface GameRequestHandler {
 
     void handleRequest(GameRequest request);
     String startGameRequestHandler(GameRequest request);
+
+    public GameStub getGameStub();
+
+    public GameUtil getGameUtil();
+
 }

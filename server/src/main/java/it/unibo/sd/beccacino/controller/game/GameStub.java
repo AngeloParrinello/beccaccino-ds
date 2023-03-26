@@ -109,7 +109,7 @@ public class GameStub {
         }
     }
 
-    private void setupQueues(Game game) {
+    public void setupQueues(Game game) {
         game.getPlayersList().forEach(g -> System.out.println("Setup queues for players : "+g.getNickname()));
         game.getPlayersList().forEach(player -> {
             String resultQueueName = resultsQueue + game.getId() + player.getId();
