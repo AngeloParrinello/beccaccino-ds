@@ -24,17 +24,18 @@ public class SetBriscolaRequestTest {
         this.player2 = Player.newBuilder().setId("2").setNickname("second_player").build();
         this.player3 = Player.newBuilder().setId("3").setNickname("third_player").build();
         this.player4 = Player.newBuilder().setId("4").setNickname("fourth_player").build();
+        this.gameRequestHandler.getGameUtil().getDbManager().getDB().getCollection("players").drop();
+        this.gameRequestHandler.getGameUtil().getDbManager().getDB().getCollection("lobbies").drop();
     }
 
     @Test
     void testSetBriscola() {
         Lobby testLobby = createLobby();
-        this.gameRequestHandler.handleRequest(GameRequest.newBuilder()
+        String gameID = this.gameRequestHandler.startGameRequestHandler(GameRequest.newBuilder()
                 .setRequestType("start")
                 .setLobby(testLobby)
                 .setRequestingPlayer(this.player)
                 .build());
-        String gameID = this.gameStub.getLastOperation().getId();
         this.gameRequestHandler.handleRequest(GameRequest.newBuilder()
                 .setRequestType("briscola")
                 .setBriscola(Suit.COPPE)
@@ -47,12 +48,11 @@ public class SetBriscolaRequestTest {
     @Test
     void testWrongPlayerSetBriscola() {
         Lobby testLobby = createLobby();
-        this.gameRequestHandler.handleRequest(GameRequest.newBuilder()
+        String gameID = this.gameRequestHandler.startGameRequestHandler(GameRequest.newBuilder()
                 .setRequestType("start")
                 .setLobby(testLobby)
                 .setRequestingPlayer(this.player)
                 .build());
-        String gameID = this.gameStub.getLastOperation().getId();
         this.gameRequestHandler.handleRequest(GameRequest.newBuilder()
                 .setRequestType("briscola")
                 .setBriscola(Suit.COPPE)
@@ -65,12 +65,11 @@ public class SetBriscolaRequestTest {
     @Test
     void testSetBriscolaAlreadyDone() {
         Lobby testLobby = createLobby();
-        this.gameRequestHandler.handleRequest(GameRequest.newBuilder()
+        String gameID = this.gameRequestHandler.startGameRequestHandler(GameRequest.newBuilder()
                 .setRequestType("start")
                 .setLobby(testLobby)
                 .setRequestingPlayer(this.player)
                 .build());
-        String gameID = this.gameStub.getLastOperation().getId();
         this.gameRequestHandler.handleRequest(GameRequest.newBuilder()
                 .setRequestType("briscola")
                 .setBriscola(Suit.COPPE)
