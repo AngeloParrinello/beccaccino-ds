@@ -27,6 +27,9 @@ class LobbyManagerTest {
         this.player3 = Player.newBuilder().setId("3").setNickname("third_player").build();
         this.player4 = Player.newBuilder().setId("4").setNickname("fourth_player").build();
         this.player5 = Player.newBuilder().setId("5").setNickname("fifth_player").build();
+
+        this.dbManager.getDB().getCollection("players").drop();
+        this.dbManager.getDB().getCollection("lobbies").drop();
     }
 
     @Test
