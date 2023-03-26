@@ -24,18 +24,19 @@ public class StartGameRequestTest {
         this.player2 = Player.newBuilder().setId("2").setNickname("second_player").build();
         this.player3 = Player.newBuilder().setId("3").setNickname("third_player").build();
         this.player4 = Player.newBuilder().setId("4").setNickname("fourth_player").build();
+        this.gameRequestHandler.getGameUtil().getDbManager().getDB().getCollection("players").drop();
+        this.gameRequestHandler.getGameUtil().getDbManager().getDB().getCollection("lobbies").drop();
     }
 
     @Test
     void testStartGame() {
         Lobby testLobby = createLobby();
-        this.gameRequestHandler.handleRequest(GameRequest.newBuilder()
+        String gameID = this.gameRequestHandler.startGameRequestHandler(GameRequest.newBuilder()
                 .setRequestType("start")
                 .setLobby(testLobby)
                 .setRequestingPlayer(this.player)
                 .build());
-        System.out.println(this.gameStub.getLastOperation());
-        Assertions.assertNotNull(this.gameStub.getLastOperation());
+        Assertions.assertNotNull(gameID);
     }
 
     @Test
@@ -62,30 +63,32 @@ public class StartGameRequestTest {
                 .setRequestingPlayer(this.player2)
                 .setLobbyId(testLobby.getId())
                 .build());
-        this.gameRequestHandler.handleRequest(GameRequest.newBuilder()
+        String gameID = this.gameRequestHandler.startGameRequestHandler(GameRequest.newBuilder()
                 .setRequestType("start")
                 .setLobby(testLobby)
                 .setRequestingPlayer(this.player)
                 .build());
-        Assertions.assertEquals(ResponseCode.START_ERROR, this.gameStub.getLastResponseCode());
+        Assertions.assertEquals("error", gameID);
     }
 
     @Test
     void testStartGameWithoutPermissions() {
         Lobby testLobby = createLobby();
-        this.gameRequestHandler.handleRequest(GameRequest.newBuilder()
+        String gameID = this.gameRequestHandler.startGameRequestHandler(GameRequest.newBuilder()
                 .setRequestType("start")
                 .setLobby(testLobby)
                 .setRequestingPlayer(this.player2)
                 .build());
-        Assertions.assertEquals(ResponseCode.PERMISSION_DENIED, this.gameStub.getLastResponseCode());
+        Assertions.assertEquals("permission-denied", gameID);
     }
 
     private Lobby createLobby() {
-        this.lobbyManager.handleRequest(Request.newBuilder()
+        Request player1Request = Request.newBuilder()
                 .setLobbyMessage("create")
                 .setRequestingPlayer(this.player)
-                .build());
+                .build();
+        this.lobbiesStub.createQueueFor(player1Request);
+        this.lobbyManager.handleRequest(player1Request);
         String lobbyID = this.lobbiesStub.getLastOperation().getId();
         this.lobbyManager.handleRequest(Request.newBuilder()
                 .setLobbyMessage("join")
