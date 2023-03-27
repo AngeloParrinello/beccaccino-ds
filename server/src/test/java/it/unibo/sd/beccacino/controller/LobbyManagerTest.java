@@ -9,6 +9,9 @@ import it.unibo.sd.beccacino.controller.lobby.LobbyManager;
 import it.unibo.sd.beccacino.controller.lobby.LobbyManagerImpl;
 import org.junit.jupiter.api.*;
 
+import java.util.Arrays;
+import java.util.Collections;
+
 class LobbyManagerTest {
     private final LobbiesStub lobbiesStub = new LobbiesStub(new GameStub());
     private final LobbyManager lobbyManager = new LobbyManagerImpl(lobbiesStub, new GameStub());
@@ -38,7 +41,8 @@ class LobbyManagerTest {
                                                .setLobbyMessage("create")
                                                .setRequestingPlayer(this.player)
                                                .build());
-        System.out.println(this.lobbiesStub.getLastOperation());
+        System.out.println("Last operation is: " + this.lobbiesStub.getLastOperation());
+        Assertions.assertEquals(Collections.singletonList(this.player), this.lobbiesStub.getLastOperation().getPlayersList());
     }
 
     @Test
@@ -55,6 +59,7 @@ class LobbyManagerTest {
                                                 .setLobbyId(lobbyID)
                                                 .build());
         System.out.println("LOBBY UPDATED:" + this.lobbiesStub.getLastOperation());
+        Assertions.assertEquals(Arrays.asList(this.player, this.player2), this.lobbiesStub.getLastOperation().getPlayersList());
     }
 
     @Test
@@ -90,6 +95,7 @@ class LobbyManagerTest {
                 .build());
         System.out.println("[TEST] fifth join:\n" + this.lobbiesStub.getLastOperation());
         System.out.println(this.lobbiesStub.getLastResponseCode());
+        Assertions.assertEquals("Cannot create lobby.", this.lobbiesStub.getLastResponseCode().toString());
     }
 
     @Test
@@ -112,6 +118,7 @@ class LobbyManagerTest {
                 .build());
         System.out.println("[TEST] Lobby after leave:\n" + this.lobbiesStub.getLastOperation());
         System.out.println(this.lobbiesStub.getLastResponseCode());
+        Assertions.assertEquals(Collections.singletonList(this.player), this.lobbiesStub.getLastOperation().getPlayersList());
     }
 
     @Test
@@ -128,5 +135,7 @@ class LobbyManagerTest {
                 .setLobbyId(lobbyID)
                 .build());
         System.out.println("[TEST] lobby null: \n" + this.dbManager.getLobbyById(lobbyID));
+        Assertions.assertNull(this.dbManager.getLobbyById(lobbyID));
+
     }
 }
