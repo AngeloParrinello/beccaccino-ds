@@ -217,7 +217,6 @@ public class MainActivity extends AppCompatActivity {
                 // Error occurred when opening raw file for reading.
             } finally {
                 String username = stringBuilder.toString();
-                // TODO l'id è messo in automatico da Proto?
                 setPlayer(username);
                 Log.d("MyApp", username);
             }

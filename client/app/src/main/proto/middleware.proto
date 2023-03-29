@@ -76,7 +76,6 @@ enum Value {
   RE = 9;
 }
 
-// TODO why should i pass the entire lobby??
 message GameRequest {
   string request_type = 1;
   Lobby lobby = 2;

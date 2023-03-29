@@ -106,7 +106,7 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
                 (dialog, which) -> dialog.dismiss());
         alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Esci",
                 (dialog, which) -> {
-                    // TODO Terminate the game for everyone? Auto-win opposing team?
+                    // The player is willingly exiting the game
                     GameActivity.super.onBackPressed();
                 });
         alertDialog.show();
@@ -255,7 +255,6 @@ public class GameActivity extends AppCompatActivity implements MyAdapter.ItemCli
         TextView score = findViewById(R.id.score);
         score.setText("Punti: ");
 
-        // TODO se la partita è finita showare l'endgameDialog con showGameRecap()
         if (game.getPublicData().getScoreTeam1() != 0 || game.getPublicData().getScoreTeam2() != 0){
             this.showGameRecap();
         }

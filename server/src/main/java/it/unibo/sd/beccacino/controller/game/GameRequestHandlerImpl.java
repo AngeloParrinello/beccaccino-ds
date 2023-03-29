@@ -68,7 +68,6 @@ public class GameRequestHandlerImpl implements GameRequestHandler {
                     Game updatedGame = this.gameUtil.getGameById(request.getGameId());
                     this.gameStub.sendGameResponse(updatedGame, ResponseCode.BRISCOLA_OK);
                 } else {
-                    // TODO if something goes wrong, should we return null or the 'old' game?
                     this.gameStub.sendGameErrorResponse(ResponseCode.FAIL, requestingPlayer, game.getId());
                 }
             } else {
